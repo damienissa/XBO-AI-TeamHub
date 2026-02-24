@@ -31,12 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. An admin can assign a role (admin or member) to any user, and the user's access changes immediately within one token TTL cycle
   4. The sidebar displays all 7 XBO departments with navigation links
   5. The application runs end-to-end via `docker compose up` with no manual database setup
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Backend foundation — Docker Compose, PostgreSQL, SQLAlchemy async setup, Alembic with CI head check, TimestampMixin, department seed
-- [ ] 01-02: Auth endpoints — register, login (httpOnly cookie JWT), /me, logout, token versioning, role enforcement dependencies for admin and member roles
-- [ ] 01-03: Frontend auth — Next.js App Router with (auth)/(app) route groups, login/register pages, auth guard, sidebar with department links
+- [ ] 01-01-PLAN.md — Backend foundation: Docker Compose, PostgreSQL, SQLAlchemy 2.x async, Alembic async env.py, User + Department models, GET /api/departments, idempotent seed (departments + admin user)
+- [ ] 01-02-PLAN.md — Auth endpoints: POST /login (httpOnly cookie JWT), GET /me, POST /logout, POST /refresh (sliding window), POST /users (admin-only), PATCH /users/{id}/role, token_version invalidation, pytest suite
+- [ ] 01-03-PLAN.md — Frontend auth: Next.js 14 App Router scaffold, middleware.ts + verifySession() DAL two-layer guard, login page (inline errors, no signup link), fixed sidebar with departments, board placeholder
 
 ### Phase 2: Kanban Core
 **Goal**: Admin and member users can manage the full ticket lifecycle on a Kanban board — creating tickets, moving them between columns with owner assignment, viewing all ticket details with rich text and activity history, and filtering the board
