@@ -20,7 +20,7 @@ Every XBO request has a tracked lifecycle from Backlog to Done — with owner ac
 
 **Auth & Users**
 - [ ] Email/password registration and login with JWT
-- [ ] Three roles: admin, member, requester
+- [ ] Two roles: admin, member (AI dev team only)
 - [ ] Protected routes; role-based access enforcement
 
 **Departments**
@@ -99,7 +99,7 @@ Every XBO request has a tracked lifecycle from Backlog to Done — with owner ac
 ## Constraints
 
 - **Tech Stack**: FastAPI + PostgreSQL + SQLAlchemy + Alembic + Next.js + TypeScript + Tailwind — locked per eng requirements
-- **Auth**: JWT, no third-party auth provider
+- **Auth**: JWT, no third-party auth provider; two roles only (admin, member) — platform is AI dev team only
 - **Secrets**: No hardcoded API keys or credentials; env vars only
 - **Migration safety**: All schema changes via Alembic, never manual DDL
 - **Incremental delivery**: Each phase must leave the codebase runnable

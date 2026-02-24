@@ -13,7 +13,7 @@
 - [ ] **AUTH-02**: User can log in with email and password and receive a session (JWT in httpOnly cookie)
 - [ ] **AUTH-03**: User session persists across browser refresh
 - [ ] **AUTH-04**: User can log out and cookie is cleared
-- [ ] **AUTH-05**: Three roles exist: `admin`, `member`, `requester`
+- [ ] **AUTH-05**: Two roles exist: `admin`, `member` (platform is AI dev team only)
 - [ ] **AUTH-06**: Admin can assign and change user roles
 - [ ] **AUTH-07**: Protected routes redirect unauthenticated users to login
 - [ ] **AUTH-08**: Token is invalidated within one TTL cycle when user is deactivated (token versioning)
@@ -28,7 +28,7 @@
 
 - [ ] **TICKET-01**: User (admin/member) can create a ticket with: title, problem_statement (rich text), urgency (1–5), business_impact (text), success_criteria (text), due_date, effort_estimate (hours), next_step (text), department_id
 - [ ] **TICKET-02**: New tickets are created in Backlog column with owner_id = null
-- [ ] **TICKET-03**: User can edit any ticket field (admin/member); requester can edit only their own tickets
+- [ ] **TICKET-03**: Any authenticated user (admin/member) can edit any ticket field
 - [ ] **TICKET-04**: Admin can delete a ticket
 - [ ] **TICKET-05**: Ticket has a priority field (low / medium / high / critical)
 - [ ] **TICKET-06**: Ticket stores status_column (Backlog / Discovery / In Progress / Review/QA / Done)
@@ -73,7 +73,7 @@
 - [ ] **PORTAL-02**: Each department page has a "Submit New Request" button
 - [ ] **PORTAL-03**: Ticket creation form includes all ticket fields plus ROI inputs (ROI inputs required for portal submissions)
 - [ ] **PORTAL-04**: ROI inputs: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate (optional), revenue_blocked (optional), strategic_value (1–5)
-- [ ] **PORTAL-05**: Requester role can submit tickets via the portal (limited to their department)
+- [ ] **PORTAL-05**: Any AI team member (admin/member) can submit an intake form for any department on behalf of that department's employees
 - [ ] **PORTAL-06**: Attachment metadata stub: user can specify attachment filename + file size; actual file bytes are not stored in v1
 - [ ] **PORTAL-07**: Ticket templates can be created (title, problem_statement template, default fields)
 - [ ] **PORTAL-08**: User can create a ticket from a template (fields pre-filled, editable before submit)
@@ -108,7 +108,7 @@
 - [ ] **WIKI-01**: Wiki pages have: title, content (Tiptap JSON rich text), created_by, created_at, updated_at
 - [ ] **WIKI-02**: Wiki page list shows all pages with title and last updated
 - [ ] **WIKI-03**: Admin and member roles can create and edit wiki pages
-- [ ] **WIKI-04**: Requester role can read wiki pages but not edit
+- [ ] **WIKI-04**: All authenticated users (admin/member) can read wiki pages; only admin can delete pages
 - [ ] **WIKI-05**: Ticket detail includes a "Linked Pages" section where wiki pages can be linked
 
 ### AI Features (AI) — gated by AI_ENABLED env flag
@@ -162,6 +162,8 @@
 | Feature | Reason |
 |---------|--------|
 | Multi-tenant / multi-workspace | Single XBO tenant by design; workspace isolation doubles data model complexity |
+| External employee access | Platform is AI dev team only; other departments don't have accounts — team submits on their behalf |
+| Requester role | Removed; only admin + member roles. External access can be added in v2 if needed |
 | Real-time WebSocket (v1) | Polling at 30s intervals sufficient for < 30 users; add when polling latency is measured as a problem |
 | SSO / OAuth login | Email + password + JWT sufficient for internal team |
 | Native mobile app | Responsive web is sufficient; mobile-specific build not warranted at <30 users |
@@ -176,24 +178,98 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01..08 | Phase 1 | Pending |
-| DEPT-01..03 | Phase 1 | Pending |
-| TICKET-01..10 | Phase 2 | Pending |
-| BOARD-01..08 | Phase 2 | Pending |
-| DETAIL-01..06 | Phase 2 | Pending |
-| COLLAB-01..07 | Phase 3 | Pending |
-| PORTAL-01..08 | Phase 3 | Pending |
-| DASH-01..07 | Phase 4 | Pending |
-| ROI-01..06 | Phase 4 | Pending |
-| WIKI-01..05 | Phase 5 | Pending |
-| ADV-01..11 | Phase 5 | Pending |
-| AI-01..07 | Phase 6 | Pending |
+| AUTH-01 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-02 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-03 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-04 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-05 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-06 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-07 | Phase 1 — Foundation and Auth | Pending |
+| AUTH-08 | Phase 1 — Foundation and Auth | Pending |
+| DEPT-01 | Phase 1 — Foundation and Auth | Pending |
+| DEPT-02 | Phase 1 — Foundation and Auth | Pending |
+| DEPT-03 | Phase 1 — Foundation and Auth | Pending |
+| TICKET-01 | Phase 2 — Kanban Core | Pending |
+| TICKET-02 | Phase 2 — Kanban Core | Pending |
+| TICKET-03 | Phase 2 — Kanban Core | Pending |
+| TICKET-04 | Phase 2 — Kanban Core | Pending |
+| TICKET-05 | Phase 2 — Kanban Core | Pending |
+| TICKET-06 | Phase 2 — Kanban Core | Pending |
+| TICKET-07 | Phase 2 — Kanban Core | Pending |
+| TICKET-08 | Phase 2 — Kanban Core | Pending |
+| TICKET-09 | Phase 2 — Kanban Core | Pending |
+| TICKET-10 | Phase 2 — Kanban Core | Pending |
+| BOARD-01 | Phase 2 — Kanban Core | Pending |
+| BOARD-02 | Phase 2 — Kanban Core | Pending |
+| BOARD-03 | Phase 2 — Kanban Core | Pending |
+| BOARD-04 | Phase 2 — Kanban Core | Pending |
+| BOARD-05 | Phase 2 — Kanban Core | Pending |
+| BOARD-06 | Phase 2 — Kanban Core | Pending |
+| BOARD-07 | Phase 2 — Kanban Core | Pending |
+| BOARD-08 | Phase 2 — Kanban Core | Pending |
+| DETAIL-01 | Phase 2 — Kanban Core | Pending |
+| DETAIL-02 | Phase 2 — Kanban Core | Pending |
+| DETAIL-03 | Phase 2 — Kanban Core | Pending |
+| DETAIL-04 | Phase 2 — Kanban Core | Pending |
+| DETAIL-05 | Phase 2 — Kanban Core | Pending |
+| DETAIL-06 | Phase 2 — Kanban Core | Pending |
+| COLLAB-01 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-02 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-03 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-04 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-05 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-06 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-07 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-01 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-02 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-03 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-04 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-05 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-06 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-07 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-08 | Phase 3 — Collaboration and Department Portal | Pending |
+| DASH-01 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-02 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-03 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-04 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-05 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-06 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-07 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-01 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-02 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-03 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-04 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-05 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-06 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| WIKI-01 | Phase 5 — Advanced Features | Pending |
+| WIKI-02 | Phase 5 — Advanced Features | Pending |
+| WIKI-03 | Phase 5 — Advanced Features | Pending |
+| WIKI-04 | Phase 5 — Advanced Features | Pending |
+| WIKI-05 | Phase 5 — Advanced Features | Pending |
+| ADV-01 | Phase 5 — Advanced Features | Pending |
+| ADV-02 | Phase 5 — Advanced Features | Pending |
+| ADV-03 | Phase 5 — Advanced Features | Pending |
+| ADV-04 | Phase 5 — Advanced Features | Pending |
+| ADV-05 | Phase 5 — Advanced Features | Pending |
+| ADV-06 | Phase 5 — Advanced Features | Pending |
+| ADV-07 | Phase 5 — Advanced Features | Pending |
+| ADV-08 | Phase 5 — Advanced Features | Pending |
+| ADV-09 | Phase 5 — Advanced Features | Pending |
+| ADV-10 | Phase 5 — Advanced Features | Pending |
+| ADV-11 | Phase 5 — Advanced Features | Pending |
+| AI-01 | Phase 6 — AI Features | Pending |
+| AI-02 | Phase 6 — AI Features | Pending |
+| AI-03 | Phase 6 — AI Features | Pending |
+| AI-04 | Phase 6 — AI Features | Pending |
+| AI-05 | Phase 6 — AI Features | Pending |
+| AI-06 | Phase 6 — AI Features | Pending |
+| AI-07 | Phase 6 — AI Features | Pending |
 
 **Coverage:**
 - v1 requirements: 78 total
 - Mapped to phases: 78
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after initial definition*
+*Last updated: 2026-02-24 — traceability expanded to per-requirement rows after roadmap creation*
