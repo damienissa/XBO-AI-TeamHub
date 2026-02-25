@@ -59,12 +59,12 @@
 
 ### Collaboration (COLLAB)
 
-- [ ] **COLLAB-01**: User can add a comment to a ticket (body text, author_id, created_at)
-- [ ] **COLLAB-02**: Comment thread is displayed in chronological order on ticket detail
-- [ ] **COLLAB-03**: Author can delete their own comment; admin can delete any comment
-- [ ] **COLLAB-04**: User can add subtasks to a ticket (title, done boolean, position integer)
-- [ ] **COLLAB-05**: Subtasks are displayed as a checklist and can be checked/unchecked
-- [ ] **COLLAB-06**: Subtasks can be reordered via drag-and-drop (position persisted server-side)
+- [x] **COLLAB-01**: User can add a comment to a ticket (body text, author_id, created_at)
+- [x] **COLLAB-02**: Comment thread is displayed in chronological order on ticket detail
+- [x] **COLLAB-03**: Author can delete their own comment; admin can delete any comment
+- [x] **COLLAB-04**: User can add subtasks to a ticket (title, done boolean, position integer)
+- [x] **COLLAB-05**: Subtasks are displayed as a checklist and can be checked/unchecked
+- [x] **COLLAB-06**: Subtasks can be reordered via drag-and-drop (position persisted server-side)
 - [ ] **COLLAB-07**: Card on Kanban shows subtask completion count (e.g., "2/5 subtasks")
 
 ### Department Portal (PORTAL)
@@ -72,11 +72,11 @@
 - [ ] **PORTAL-01**: Department portal section lists all 7 departments
 - [ ] **PORTAL-02**: Each department page has a "Submit New Request" button
 - [ ] **PORTAL-03**: Ticket creation form includes all ticket fields plus ROI inputs (ROI inputs required for portal submissions)
-- [ ] **PORTAL-04**: ROI inputs: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate (optional), revenue_blocked (optional), strategic_value (1–5)
+- [x] **PORTAL-04**: ROI inputs: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate (optional), revenue_blocked (optional), strategic_value (1–5)
 - [ ] **PORTAL-05**: Any AI team member (admin/member) can submit an intake form for any department on behalf of that department's employees
-- [ ] **PORTAL-06**: Attachment metadata stub: user can specify attachment filename + file size; actual file bytes are not stored in v1
-- [ ] **PORTAL-07**: Ticket templates can be created (title, problem_statement template, default fields)
-- [ ] **PORTAL-08**: User can create a ticket from a template (fields pre-filled, editable before submit)
+- [x] **PORTAL-06**: Attachment metadata stub: user can specify attachment filename + file size; actual file bytes are not stored in v1
+- [x] **PORTAL-07**: Ticket templates can be created (title, problem_statement template, default fields)
+- [x] **PORTAL-08**: User can create a ticket from a template (fields pre-filled, editable before submit)
 
 ### Executive Dashboard (DASH)
 
@@ -213,21 +213,21 @@
 | DETAIL-04 | Phase 2 — Kanban Core | Complete |
 | DETAIL-05 | Phase 2 — Kanban Core | Complete |
 | DETAIL-06 | Phase 2 — Kanban Core | Complete |
-| COLLAB-01 | Phase 3 — Collaboration and Department Portal | Pending |
-| COLLAB-02 | Phase 3 — Collaboration and Department Portal | Pending |
-| COLLAB-03 | Phase 3 — Collaboration and Department Portal | Pending |
-| COLLAB-04 | Phase 3 — Collaboration and Department Portal | Pending |
-| COLLAB-05 | Phase 3 — Collaboration and Department Portal | Pending |
-| COLLAB-06 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-01 | Phase 3 — Collaboration and Department Portal | Complete |
+| COLLAB-02 | Phase 3 — Collaboration and Department Portal | Complete |
+| COLLAB-03 | Phase 3 — Collaboration and Department Portal | Complete |
+| COLLAB-04 | Phase 3 — Collaboration and Department Portal | Complete |
+| COLLAB-05 | Phase 3 — Collaboration and Department Portal | Complete |
+| COLLAB-06 | Phase 3 — Collaboration and Department Portal | Complete |
 | COLLAB-07 | Phase 3 — Collaboration and Department Portal | Pending |
 | PORTAL-01 | Phase 3 — Collaboration and Department Portal | Pending |
 | PORTAL-02 | Phase 3 — Collaboration and Department Portal | Pending |
 | PORTAL-03 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-04 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-04 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-05 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-06 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-07 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-08 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-06 | Phase 3 — Collaboration and Department Portal | Complete |
+| PORTAL-07 | Phase 3 — Collaboration and Department Portal | Complete |
+| PORTAL-08 | Phase 3 — Collaboration and Department Portal | Complete |
 | DASH-01 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
 | DASH-02 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
 | DASH-03 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |

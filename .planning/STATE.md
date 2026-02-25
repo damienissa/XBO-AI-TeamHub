@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Every XBO request has a tracked lifecycle from Backlog to Done — with owner accountability, ROI justification, and zero SaaS subscription cost.
-**Current focus:** Phase 2 — Kanban Core
+**Current focus:** Phase 3 — Collaboration and Department Portal
 
 ## Current Position
 
 Phase: 3 of 6 (Collaboration and Department Portal)
-Plan: 0 of 4 in current phase
-Status: Phase 2 complete — ready to start Phase 3
-Last activity: 2026-02-25 — Completed plan 02-04 (human verification checkpoint; all 31 Phase 2 Kanban workflow steps approved by user)
+Plan: 1 of 4 in current phase
+Status: Plan 03-01 complete — collaboration backend (comments, subtasks, templates) with migration
+Last activity: 2026-02-25 — Completed plan 03-01 (3 new ORM models, 3 new routers, Alembic migration 93dab7e5b92c applied at head)
 
 Progress: [████████░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 11.2 min
-- Total execution time: 1.13 hours
+- Total plans completed: 7
+- Average duration: 9.9 min
+- Total execution time: 1.18 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [████████░░] 40%
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
+| 03-collaboration-and-department-portal | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 7 min, 45 min, 6 min, 4 min, 1 min
-- Trend: fast (02-04 verification-only checkpoint approved immediately)
+- Last 5 plans: 45 min, 6 min, 4 min, 1 min, 3 min
+- Trend: fast
 
 *Updated after each plan completion*
 
@@ -70,6 +71,10 @@ Recent decisions affecting current work:
 - [Phase 02-03]: TicketDetailModal mounted once in KanbanBoard, not per-card — single Dialog.Root controlled by nuqs ?ticket= param
 - [Phase 02-03]: TiptapEditor immediatelyRender: false — required for Next.js 14 SSR; prevents hydration mismatch (RESEARCH.md Pattern 6)
 - [Phase 02-03]: KanbanCard useQueryState hook applied via ternary when isOverlay=true — matches existing useDraggable pattern in same file
+- [Phase 03-01]: User.full_name used in CommentOut.author_name — User model has single full_name column not split first_name/last_name fields
+- [Phase 03-01]: ROI stub columns only (hours_saved_per_month, cost_savings_per_month, revenue_impact) — Phase 4 adds full ROI-01 computed fields in separate migration per CONTEXT.md
+- [Phase 03-01]: GET /api/config (no auth) exposes AI_TEAM_HOURLY_RATE for frontend live ROI calculation; added in Phase 3 alongside comment/subtask/template routers
+- [Phase 03-01]: Subtask delete resequences positions 0..N-1 in same transaction — prevents gaps that cause off-by-one errors on subsequent reorders (RESEARCH.md Pitfall 2)
 
 ### Pending Todos
 
@@ -83,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 02-kanban-core/02-04-PLAN.md — Phase 2 Kanban Core human verification checkpoint; all 31 steps approved, Phase 2 complete. Ready for Phase 3.
+Stopped at: Completed 03-collaboration-and-department-portal/03-01-PLAN.md — collaboration backend: 3 ORM models, 3 routers, Alembic migration 93dab7e5b92c. Ready for Plan 03-02.
 Resume file: None
