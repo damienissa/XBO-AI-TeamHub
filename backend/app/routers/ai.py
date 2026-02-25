@@ -113,6 +113,7 @@ async def generate_subtasks(
     """AI-01: Generate a proposed subtask list from ticket context."""
     _require_ai_enabled()
     prompt = _build_ticket_prompt(req)
+    print(f"[SUBTASK DEBUG] prompt={prompt!r}", flush=True)
     system = (
         "You are a project management assistant. "
         "The user will provide ticket details inside <ticket> XML tags. "
@@ -140,6 +141,7 @@ async def generate_subtasks(
         }
     }
     raw = await _call_claude(prompt, system, output_config, max_tokens=1024)
+    print(f"[SUBTASK DEBUG] raw={raw!r}", flush=True)
     parsed = json.loads(raw)
     return SubtaskResponse(subtasks=parsed["subtasks"])
 
