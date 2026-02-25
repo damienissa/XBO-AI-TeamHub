@@ -11,6 +11,7 @@ import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
 import { SubtaskSection } from "./SubtaskSection";
 import { CommentSection } from "./CommentSection";
+import RoiPanel from "./RoiPanel";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -418,6 +419,12 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
 
         {/* Subtasks (COLLAB-04/05/06) — between description fields and activity timeline */}
         <SubtaskSection ticketId={ticket.id} />
+
+        {/* ROI Panel (ROI-04/05) — always visible, never in accordion */}
+        <RoiPanel
+          ticket={ticket}
+          onUpdate={(fields) => updateMutation.mutate(fields)}
+        />
 
         {/* Activity Timeline (DETAIL-05) */}
         <div className="space-y-3">
