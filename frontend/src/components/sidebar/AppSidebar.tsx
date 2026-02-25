@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { label: "Sprints", href: "/sprints", enabled: true },
   { label: "Department Portal", href: "/portal", enabled: true },
   { label: "Templates", href: "/settings/templates", enabled: true },
-  { label: "Wiki", href: "/wiki", enabled: false },
+  { label: "Wiki", href: "/wiki", enabled: true },
 ];
 
 const ADMIN_NAV_ITEMS = [
