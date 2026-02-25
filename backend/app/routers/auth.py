@@ -92,6 +92,18 @@ async def admin_create_user(
     return await create_user(data, db)
 
 
+@router.get("/users", response_model=list[UserOut])
+async def list_users(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> list[User]:
+    """Return all active users ordered by full_name. Used by owner selector on tickets."""
+    result = await db.execute(
+        select(User).where(User.is_active == True).order_by(User.full_name)  # noqa: E712
+    )
+    return result.scalars().all()
+
+
 @router.patch("/users/{user_id}/role", response_model=UserOut)
 async def update_user_role(
     user_id: uuid.UUID,

@@ -1,0 +1,200 @@
+# backend/app/routers/tickets.py
+# Ticket CRUD + move + events/history endpoints.
+# All routes require authentication. DELETE requires admin role (TICKET-04).
+
+import uuid
+from datetime import datetime, timezone
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.core.database import get_db
+from app.dependencies import get_current_user, require_admin
+from app.models.column_history import ColumnHistory
+from app.models.ticket import Ticket
+from app.models.ticket_event import TicketEvent
+from app.models.user import User
+from app.schemas.column_history import ColumnHistoryOut
+from app.schemas.ticket import TicketCreate, TicketMoveRequest, TicketOut, TicketUpdate
+from app.schemas.ticket_event import TicketEventOut
+from app.services.tickets import create_ticket, move_ticket
+
+router = APIRouter()
+
+
+def _compute_time_in_column(entered_at: datetime) -> str:
+    """Compute human-readable time since a column was entered."""
+    now = datetime.now(timezone.utc)
+    # Ensure entered_at is timezone-aware
+    if entered_at.tzinfo is None:
+        entered_at = entered_at.replace(tzinfo=timezone.utc)
+    delta = now - entered_at
+    total_seconds = int(delta.total_seconds())
+    if total_seconds < 3600:
+        minutes = max(total_seconds // 60, 1)
+        return f"{minutes}m in column"
+    elif total_seconds < 86400:
+        hours = total_seconds // 3600
+        return f"{hours}h in column"
+    else:
+        days = total_seconds // 86400
+        return f"{days}d in column"
+
+
+async def _load_ticket_out(db: AsyncSession, ticket_id: uuid.UUID) -> TicketOut:
+    """Fetch ticket with eager-loaded owner/department and compute time_in_column."""
+    result = await db.execute(
+        select(Ticket)
+        .options(
+            selectinload(Ticket.owner),
+            selectinload(Ticket.department),
+        )
+        .where(Ticket.id == ticket_id)
+    )
+    ticket = result.scalar_one_or_none()
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    # Find the open column history row for time_in_column
+    hist_result = await db.execute(
+        select(ColumnHistory).where(
+            ColumnHistory.ticket_id == ticket_id,
+            ColumnHistory.exited_at.is_(None),
+        )
+    )
+    open_row = hist_result.scalar_one_or_none()
+
+    ticket_out = TicketOut.model_validate(ticket)
+    if open_row is not None:
+        ticket_out.time_in_column = _compute_time_in_column(open_row.entered_at)
+
+    return ticket_out
+
+
+@router.post("/", response_model=TicketOut, status_code=201)
+async def create_ticket_endpoint(
+    data: TicketCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> TicketOut:
+    """TICKET-02: Create ticket in Backlog with owner_id=null. Emits TicketEvent."""
+    ticket = await create_ticket(db, data, actor_id=current_user.id)
+    return await _load_ticket_out(db, ticket.id)
+
+
+@router.get("/{ticket_id}", response_model=TicketOut)
+async def get_ticket(
+    ticket_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> TicketOut:
+    """Fetch a single ticket with owner, department, and time_in_column."""
+    return await _load_ticket_out(db, ticket_id)
+
+
+@router.patch("/{ticket_id}", response_model=TicketOut)
+async def update_ticket(
+    ticket_id: uuid.UUID,
+    data: TicketUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> TicketOut:
+    """Partial update. Emits TicketEvent(event_type='edited') for changed fields."""
+    result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    ticket = result.scalar_one_or_none()
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    changed_fields = []
+
+    for field, value in update_data.items():
+        if getattr(ticket, field) != value:
+            setattr(ticket, field, value)
+            changed_fields.append(field)
+
+    if changed_fields:
+        event = TicketEvent(
+            ticket_id=ticket_id,
+            event_type="edited",
+            payload={"fields": changed_fields},
+            actor_id=current_user.id,
+        )
+        db.add(event)
+        await db.commit()
+    else:
+        # No real changes, still refresh for consistent response
+        await db.refresh(ticket)
+
+    return await _load_ticket_out(db, ticket_id)
+
+
+@router.delete("/{ticket_id}", status_code=204)
+async def delete_ticket(
+    ticket_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_admin)],
+) -> None:
+    """TICKET-04: Admin-only delete. CASCADE removes history + events."""
+    result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    ticket = result.scalar_one_or_none()
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    await db.delete(ticket)
+    await db.commit()
+
+
+@router.patch("/{ticket_id}/move", response_model=TicketOut)
+async def move_ticket_endpoint(
+    ticket_id: uuid.UUID,
+    data: TicketMoveRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> TicketOut:
+    """TICKET-07/08: Move ticket with Backlog enforcement rules."""
+    ticket = await move_ticket(db, ticket_id, data, actor_id=current_user.id)
+    return await _load_ticket_out(db, ticket.id)
+
+
+@router.get("/{ticket_id}/events", response_model=list[TicketEventOut])
+async def get_ticket_events(
+    ticket_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> list[TicketEvent]:
+    """DETAIL-05: Return all events for a ticket ordered by created_at asc."""
+    # Verify ticket exists
+    exists = await db.execute(select(Ticket.id).where(Ticket.id == ticket_id))
+    if exists.scalar_one_or_none() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    result = await db.execute(
+        select(TicketEvent)
+        .where(TicketEvent.ticket_id == ticket_id)
+        .order_by(TicketEvent.created_at.asc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/{ticket_id}/history", response_model=list[ColumnHistoryOut])
+async def get_ticket_history(
+    ticket_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> list[ColumnHistoryOut]:
+    """DETAIL-06: Return all column history entries ordered by entered_at asc."""
+    # Verify ticket exists
+    exists = await db.execute(select(Ticket.id).where(Ticket.id == ticket_id))
+    if exists.scalar_one_or_none() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    result = await db.execute(
+        select(ColumnHistory)
+        .where(ColumnHistory.ticket_id == ticket_id)
+        .order_by(ColumnHistory.entered_at.asc())
+    )
+    rows = result.scalars().all()
+    return [ColumnHistoryOut.model_validate(row) for row in rows]
