@@ -20,9 +20,9 @@
 
 ### Departments (DEPT)
 
-- [ ] **DEPT-01**: Seven fixed departments are seeded: cashier, fintech360, xbo_studio, xbo_marketing, xbo_dev, xbo_legal, xbo_hr
+- [x] **DEPT-01**: Seven fixed departments are seeded: cashier, fintech360, xbo_studio, xbo_marketing, xbo_dev, xbo_legal, xbo_hr
 - [ ] **DEPT-02**: Sidebar lists all departments with navigation links
-- [ ] **DEPT-03**: API returns all departments for use in ticket filters and forms
+- [x] **DEPT-03**: API returns all departments for use in ticket filters and forms
 
 ### Tickets (TICKET)
 
@@ -186,9 +186,9 @@
 | AUTH-06 | Phase 1 — Foundation and Auth | Pending |
 | AUTH-07 | Phase 1 — Foundation and Auth | Pending |
 | AUTH-08 | Phase 1 — Foundation and Auth | Pending |
-| DEPT-01 | Phase 1 — Foundation and Auth | Pending |
+| DEPT-01 | Phase 1 — Foundation and Auth | Complete |
 | DEPT-02 | Phase 1 — Foundation and Auth | Pending |
-| DEPT-03 | Phase 1 — Foundation and Auth | Pending |
+| DEPT-03 | Phase 1 — Foundation and Auth | Complete |
 | TICKET-01 | Phase 2 — Kanban Core | Pending |
 | TICKET-02 | Phase 2 — Kanban Core | Pending |
 | TICKET-03 | Phase 2 — Kanban Core | Pending |

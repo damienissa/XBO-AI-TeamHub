@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 1 of 6 (Foundation and Auth)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-24 — Roadmap created; ready to begin Phase 1 planning
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-25 — Completed plan 01-01 (monorepo scaffold, Alembic migration, departments endpoint, seed)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 5%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 6 min
+- Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation-and-auth | 1 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 6 min
+- Trend: baseline established
 
 *Updated after each plan completion*
 
@@ -47,6 +47,9 @@ Recent decisions affecting current work:
 - [Pre-phase]: JWT in httpOnly cookie — not localStorage; prevents XSS account takeover
 - [Pre-phase]: AI behind AI_ENABLED env flag — local dev runs without API keys
 - [Pre-phase]: ROI stored on ticket — first-class field, not a separate service
+- [Phase 01-01]: pwdlib uses PasswordHash.recommended() not PasswordHasher() — the plan sample code had the wrong class name; corrected during seed execution
+- [Phase 01-01]: Frontend placeholder uses alpine:tail -f /dev/null so docker compose up succeeds before plan 01-03 builds the real Next.js frontend
+- [Phase 01-01]: DATABASE_URL set via Docker Compose environment block (not just env_file) so correct asyncpg URL is available inside backend container
 
 ### Pending Todos
 
@@ -59,6 +62,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-24
-Stopped at: Roadmap created — ROADMAP.md, STATE.md written, REQUIREMENTS.md traceability confirmed
+Last session: 2026-02-25
+Stopped at: Completed 01-foundation-and-auth/01-01-PLAN.md — monorepo scaffold, Alembic initial_schema migration, GET /api/departments, idempotent seed script (7 departments + admin@xbo.com). Ready to execute 01-02 (auth endpoints).
 Resume file: None
