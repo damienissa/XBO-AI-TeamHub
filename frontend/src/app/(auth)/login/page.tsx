@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
@@ -7,7 +8,10 @@ export default function LoginPage() {
         <h1 className="text-xl font-semibold text-slate-800">XBO TeamHub</h1>
         <p className="text-slate-500 text-sm mt-1">Sign in to your account</p>
       </div>
-      <LoginForm />
+      {/* Suspense required for useSearchParams() in LoginForm (Next.js 14 requirement) */}
+      <Suspense fallback={<div className="h-64 rounded-lg bg-slate-100 animate-pulse" />}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }
