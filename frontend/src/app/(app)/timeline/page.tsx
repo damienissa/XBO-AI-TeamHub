@@ -144,11 +144,11 @@ export default function TimelinePage() {
               tickFormatter={(v: string) => v.length > 22 ? v.slice(0, 22) + "\u2026" : v}
             />
             <Tooltip
-              formatter={(value: number, name: string) => {
-                if (name === "start") return null;  // hide transparent offset
+              formatter={(value: number | undefined, name: string | undefined) => {
+                if (name === "start" || value === undefined) return null;
                 return [`${Math.round(value / ONE_DAY_MS)} days`, "Duration"];
               }}
-              labelFormatter={(label: string) => label}
+              labelFormatter={(label: unknown) => String(label)}
             />
             {/* Transparent offset bar — pushes visible bar to correct start position */}
             <Bar dataKey="start" stackId="gantt" fill="transparent" isAnimationActive={false} />
