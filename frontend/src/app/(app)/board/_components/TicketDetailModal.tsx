@@ -14,6 +14,7 @@ import { DependenciesSection } from "./DependenciesSection";
 import { SprintField } from "./SprintField";
 import { CommentSection } from "./CommentSection";
 import RoiPanel from "./RoiPanel";
+import { CustomFieldsSection } from "./CustomFieldsSection";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -435,6 +436,14 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
           ticket={ticket}
           onUpdate={(fields) => updateMutation.mutate(fields)}
         />
+
+        {/* Custom Fields (ADV-01/02/03) — workspace + personal fields with type-aware inline editing */}
+        <div className="border-t border-slate-100 pt-4">
+          <CustomFieldsSection
+            ticketId={ticket.id}
+            customFieldValues={(ticket.custom_field_values as Record<string, unknown> | null | undefined) ?? null}
+          />
+        </div>
 
         {/* Activity Timeline (DETAIL-05) */}
         <div className="space-y-3">

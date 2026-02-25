@@ -43,6 +43,9 @@ export interface Ticket {
   // Phase 5 fields (ADV-04, ADV-09)
   sprint_id?: string | null;
   blocked_by_count?: number;
+
+  // Phase 5 custom fields (ADV-01, ADV-02, ADV-03)
+  custom_field_values?: Record<string, unknown> | null;
 }
 
 export interface BoardData {

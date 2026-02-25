@@ -183,6 +183,24 @@ async def move_ticket_endpoint(
     return await _load_ticket_out(db, ticket.id)
 
 
+@router.patch("/{ticket_id}/custom-fields")
+async def update_custom_fields(
+    ticket_id: uuid.UUID,
+    values: dict,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> dict:
+    """ADV-03: Replace ticket's custom_field_values JSONB with the provided dict."""
+    result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    ticket = result.scalar_one_or_none()
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    ticket.custom_field_values = values
+    await db.commit()
+    await db.refresh(ticket)
+    return {"custom_field_values": ticket.custom_field_values}
+
+
 @router.get("/{ticket_id}/events", response_model=list[TicketEventOut])
 async def get_ticket_events(
     ticket_id: uuid.UUID,

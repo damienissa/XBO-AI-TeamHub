@@ -21,6 +21,10 @@ const NAV_ITEMS = [
   { label: "Wiki", href: "/wiki", enabled: false },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { label: "Custom Fields", href: "/settings/custom-fields", enabled: true },
+];
+
 const DEPARTMENTS = [
   { slug: "cashier", name: "Cashier" },
   { slug: "fintech360", name: "Fintech360" },
@@ -72,6 +76,31 @@ export function AppSidebar({ user }: { user: SessionUser }) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin settings — only visible to admin role */}
+        {user.role === "admin" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Settings</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {ADMIN_NAV_ITEMS.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild={item.enabled}
+                      isActive={item.enabled && pathname.startsWith(item.href)}
+                    >
+                      {item.enabled ? (
+                        <Link href={item.href}>{item.label}</Link>
+                      ) : (
+                        <span>{item.label}</span>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Departments — links to /board?dept={slug}, Phase 2 implements board filter */}
         <SidebarGroup>
