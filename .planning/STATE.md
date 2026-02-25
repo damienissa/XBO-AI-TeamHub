@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Every XBO request has a tracked lifecycle from Backlog to Done — with owner accountability, ROI justification, and zero SaaS subscription cost.
-**Current focus:** Phase 1 — Foundation and Auth
+**Current focus:** Phase 2 — Kanban Core
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation and Auth)
-Plan: 3 of 3 in current phase
-Status: Phase 1 complete
-Last activity: 2026-02-25 — Completed plan 01-03 (Next.js frontend, two-layer auth guard, login page, sidebar, session flow)
+Phase: 2 of 6 (Kanban Core)
+Plan: 1 of 5 in current phase
+Status: Plan 02-01 complete
+Last activity: 2026-02-25 — Completed plan 02-01 (Ticket/ColumnHistory/TicketEvent models, migration, CRUD endpoints, board endpoint, 29 tests pass)
 
-Progress: [███░░░░░░░] 17%
+Progress: [████░░░░░░] 23%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 19.3 min
-- Total execution time: 0.95 hours
+- Total plans completed: 4
+- Average duration: 15.5 min
+- Total execution time: 1.05 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
+| 02-kanban-core | 1 | 6 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 7 min, 45 min
-- Trend: increasing (01-03 was frontend scaffold, larger scope)
+- Last 5 plans: 6 min, 7 min, 45 min, 6 min
+- Trend: stable (02-01 was focused backend API, well-scoped)
 
 *Updated after each plan completion*
 
@@ -58,6 +59,9 @@ Recent decisions affecting current work:
 - [Phase 01-03]: Server Action used for logout — httpOnly cookie deletion requires server-side; client-side fetch cannot clear them
 - [Phase 01-03]: COOKIE_SECURE defaults false — allows local HTTP dev; set COOKIE_SECURE=true in production
 - [Phase 01-03]: Split NEXT_PUBLIC_API_URL (browser) vs INTERNAL_API_URL (server/Docker) — localhost:8000 unreachable inside Docker network for server-side fetches
+- [Phase 02-01]: values_callable on SQLAlchemy sa.Enum forces .value storage ("In Progress"/"Review/QA") not .name ("InProgress"/"ReviewQA") — critical for correct DB storage and frontend compatibility
+- [Phase 02-01]: lazy="raise" on Ticket.owner and Ticket.department — forces explicit selectinload on all callers; prevents silent N+1 regressions
+- [Phase 02-01]: db.flush() in create_ticket before ColumnHistory/TicketEvent INSERT — gets ticket.id without committing so all three writes are in one transaction
 
 ### Pending Todos
 
@@ -71,5 +75,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 01-foundation-and-auth/01-03-PLAN.md — Next.js 14 App Router frontend, jose middleware auth guard, verifySession() DAL, LoginForm with inline errors, AppSidebar with 7 departments and Server Action logout. All 8 human verification checks passed. Phase 1 complete.
+Stopped at: Completed 02-kanban-core/02-01-PLAN.md — Ticket/ColumnHistory/TicketEvent ORM models, phase2_kanban_core Alembic migration, ticket CRUD + move service with TICKET-07/08 enforcement, selectinload board endpoint (BOARD-08), GET /api/auth/users, 13 ticket tests + 16 auth tests = 29 total passing.
 Resume file: None

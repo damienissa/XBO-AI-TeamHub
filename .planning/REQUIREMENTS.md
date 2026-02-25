@@ -26,16 +26,16 @@
 
 ### Tickets (TICKET)
 
-- [ ] **TICKET-01**: User (admin/member) can create a ticket with: title, problem_statement (rich text), urgency (1–5), business_impact (text), success_criteria (text), due_date, effort_estimate (hours), next_step (text), department_id
-- [ ] **TICKET-02**: New tickets are created in Backlog column with owner_id = null
-- [ ] **TICKET-03**: Any authenticated user (admin/member) can edit any ticket field
-- [ ] **TICKET-04**: Admin can delete a ticket
-- [ ] **TICKET-05**: Ticket has a priority field (low / medium / high / critical)
-- [ ] **TICKET-06**: Ticket stores status_column (Backlog / Discovery / In Progress / Review/QA / Done)
-- [ ] **TICKET-07**: Backlog tickets must have owner_id = null (enforced server-side)
-- [ ] **TICKET-08**: Moving a ticket out of Backlog requires owner_id to be set in the same request
-- [ ] **TICKET-09**: Every move is recorded as a ColumnHistory entry (ticket_id, column, entered_at TIMESTAMPTZ, exited_at TIMESTAMPTZ)
-- [ ] **TICKET-10**: Every state change emits a TicketEvent (ticket_id, event_type, payload JSON, created_at TIMESTAMPTZ, actor_id)
+- [x] **TICKET-01**: User (admin/member) can create a ticket with: title, problem_statement (rich text), urgency (1–5), business_impact (text), success_criteria (text), due_date, effort_estimate (hours), next_step (text), department_id
+- [x] **TICKET-02**: New tickets are created in Backlog column with owner_id = null
+- [x] **TICKET-03**: Any authenticated user (admin/member) can edit any ticket field
+- [x] **TICKET-04**: Admin can delete a ticket
+- [x] **TICKET-05**: Ticket has a priority field (low / medium / high / critical)
+- [x] **TICKET-06**: Ticket stores status_column (Backlog / Discovery / In Progress / Review/QA / Done)
+- [x] **TICKET-07**: Backlog tickets must have owner_id = null (enforced server-side)
+- [x] **TICKET-08**: Moving a ticket out of Backlog requires owner_id to be set in the same request
+- [x] **TICKET-09**: Every move is recorded as a ColumnHistory entry (ticket_id, column, entered_at TIMESTAMPTZ, exited_at TIMESTAMPTZ)
+- [x] **TICKET-10**: Every state change emits a TicketEvent (ticket_id, event_type, payload JSON, created_at TIMESTAMPTZ, actor_id)
 
 ### Kanban Board (BOARD)
 
@@ -46,7 +46,7 @@
 - [ ] **BOARD-05**: Board filter bar supports: owner, department, created date range, due date range, priority/urgency, aging (time in column threshold)
 - [ ] **BOARD-06**: Applied filters persist in URL query params (shareable filter state)
 - [ ] **BOARD-07**: Board data polls every 30 seconds via TanStack Query refetchInterval
-- [ ] **BOARD-08**: Board loads via a single API endpoint with eager loading (no N+1 queries)
+- [x] **BOARD-08**: Board loads via a single API endpoint with eager loading (no N+1 queries)
 
 ### Ticket Detail (DETAIL)
 
@@ -189,16 +189,16 @@
 | DEPT-01 | Phase 1 — Foundation and Auth | Complete |
 | DEPT-02 | Phase 1 — Foundation and Auth | Complete |
 | DEPT-03 | Phase 1 — Foundation and Auth | Complete |
-| TICKET-01 | Phase 2 — Kanban Core | Pending |
-| TICKET-02 | Phase 2 — Kanban Core | Pending |
-| TICKET-03 | Phase 2 — Kanban Core | Pending |
-| TICKET-04 | Phase 2 — Kanban Core | Pending |
-| TICKET-05 | Phase 2 — Kanban Core | Pending |
-| TICKET-06 | Phase 2 — Kanban Core | Pending |
-| TICKET-07 | Phase 2 — Kanban Core | Pending |
-| TICKET-08 | Phase 2 — Kanban Core | Pending |
-| TICKET-09 | Phase 2 — Kanban Core | Pending |
-| TICKET-10 | Phase 2 — Kanban Core | Pending |
+| TICKET-01 | Phase 2 — Kanban Core | Complete |
+| TICKET-02 | Phase 2 — Kanban Core | Complete |
+| TICKET-03 | Phase 2 — Kanban Core | Complete |
+| TICKET-04 | Phase 2 — Kanban Core | Complete |
+| TICKET-05 | Phase 2 — Kanban Core | Complete |
+| TICKET-06 | Phase 2 — Kanban Core | Complete |
+| TICKET-07 | Phase 2 — Kanban Core | Complete |
+| TICKET-08 | Phase 2 — Kanban Core | Complete |
+| TICKET-09 | Phase 2 — Kanban Core | Complete |
+| TICKET-10 | Phase 2 — Kanban Core | Complete |
 | BOARD-01 | Phase 2 — Kanban Core | Pending |
 | BOARD-02 | Phase 2 — Kanban Core | Pending |
 | BOARD-03 | Phase 2 — Kanban Core | Pending |
@@ -206,7 +206,7 @@
 | BOARD-05 | Phase 2 — Kanban Core | Pending |
 | BOARD-06 | Phase 2 — Kanban Core | Pending |
 | BOARD-07 | Phase 2 — Kanban Core | Pending |
-| BOARD-08 | Phase 2 — Kanban Core | Pending |
+| BOARD-08 | Phase 2 — Kanban Core | Complete |
 | DETAIL-01 | Phase 2 — Kanban Core | Pending |
 | DETAIL-02 | Phase 2 — Kanban Core | Pending |
 | DETAIL-03 | Phase 2 — Kanban Core | Pending |
