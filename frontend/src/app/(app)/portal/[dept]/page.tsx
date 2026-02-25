@@ -47,22 +47,37 @@ const portalSchema = z
     due_date: z.string().optional(),
     effort_estimate: z.number().min(0).optional(),
     next_step: z.string().optional(),
-    // ROI inputs
-    hours_saved_per_month: z.number().min(0).optional(),
-    cost_savings_per_month: z.number().min(0).optional(),
-    revenue_impact: z.number().min(0).optional(),
+    // ROI inputs (ROI-01 field names)
+    current_time_cost_hours_per_week: z.number().positive().optional(),
+    employees_affected: z.number().positive().optional(),
+    avg_hourly_cost: z.number().positive().optional(),
+    expected_savings_rate: z.number().min(0).max(1).optional(),
+    risk_probability: z.number().min(0).max(1).optional(),
+    strategic_value: z.number().int().min(1).max(5).optional(),
     // Attachment stub
     attachment_filename: z.string().optional(),
     attachment_size_bytes: z.number().int().min(0).optional(),
   })
   .refine(
-    (d) =>
-      (d.hours_saved_per_month ?? 0) > 0 ||
-      (d.cost_savings_per_month ?? 0) > 0 ||
-      (d.revenue_impact ?? 0) > 0,
+    (d) => {
+      // If any of the three core ROI inputs is provided, all three must be provided
+      // to ensure a meaningful ROI can be computed (ROI-06)
+      const hasAny =
+        d.current_time_cost_hours_per_week !== undefined ||
+        d.employees_affected !== undefined ||
+        d.avg_hourly_cost !== undefined;
+      if (!hasAny) return false; // require at least one ROI group
+
+      const hasAll =
+        d.current_time_cost_hours_per_week !== undefined &&
+        d.employees_affected !== undefined &&
+        d.avg_hourly_cost !== undefined;
+      return hasAll;
+    },
     {
-      message: "At least one ROI field must be non-zero",
-      path: ["hours_saved_per_month"],
+      message:
+        "Hours/week, Employees affected, and Avg hourly cost must all be provided to compute ROI",
+      path: ["current_time_cost_hours_per_week"],
     }
   );
 
@@ -171,9 +186,15 @@ export default function PortalDeptPage() {
     },
   });
 
-  // Live ROI calculation
-  const hoursSaved = Number(watch("hours_saved_per_month") ?? 0);
-  const computedROI = hoursSaved * hourlyRate;
+  // Live ROI calculation preview from Row 1 core inputs
+  const hoursPerWeek = watch("current_time_cost_hours_per_week") ?? 0;
+  const employeesAffected = watch("employees_affected") ?? 0;
+  const avgHourlyCost = watch("avg_hourly_cost") ?? 0;
+  const expectedSavingsRate = watch("expected_savings_rate") ?? 0;
+
+  const liveWeeklyCost = hoursPerWeek * employeesAffected * avgHourlyCost;
+  const liveYearlyCost = liveWeeklyCost * 52;
+  const liveAnnualSavings = liveYearlyCost * expectedSavingsRate;
 
   const submitMutation = useMutation({
     mutationFn: async (data: PortalFormValues) => {
@@ -190,9 +211,13 @@ export default function PortalDeptPage() {
         due_date: data.due_date || null,
         effort_estimate: data.effort_estimate ?? null,
         next_step: data.next_step || null,
-        hours_saved_per_month: data.hours_saved_per_month ?? null,
-        cost_savings_per_month: data.cost_savings_per_month ?? null,
-        revenue_impact: data.revenue_impact ?? null,
+        // ROI-01 field names
+        current_time_cost_hours_per_week: data.current_time_cost_hours_per_week ?? null,
+        employees_affected: data.employees_affected ?? null,
+        avg_hourly_cost: data.avg_hourly_cost ?? null,
+        expected_savings_rate: data.expected_savings_rate ?? null,
+        risk_probability: data.risk_probability ?? null,
+        strategic_value: data.strategic_value ?? null,
         attachment_filename: data.attachment_filename || null,
         attachment_size_bytes: data.attachment_size_bytes ?? null,
       };
@@ -268,7 +293,7 @@ export default function PortalDeptPage() {
           New Request &mdash; {deptName}
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
-          Fill in all required fields. At least one ROI field is required before submitting.
+          Fill in all required fields. ROI Row 1 (hours, employees, cost) must all be provided before submitting.
         </p>
       </div>
 
@@ -405,78 +430,145 @@ export default function PortalDeptPage() {
         {/* Section 3: ROI Information */}
         <FormSection
           title="ROI Information"
-          note="At least one ROI field must be non-zero before you can submit."
+          note="Row 1 (Hours/week, Employees affected, Avg hourly cost) must all be provided. Row 2 fields are optional."
         >
+          {/* Row 1: Core cost inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FieldRow
-              label="Hours saved / month"
-              htmlFor="hours_saved_per_month"
-              error={errors.hours_saved_per_month?.message}
+              label="Hours saved / week"
+              htmlFor="current_time_cost_hours_per_week"
+              error={errors.current_time_cost_hours_per_week?.message}
+              required
             >
               <Input
-                id="hours_saved_per_month"
+                id="current_time_cost_hours_per_week"
                 type="number"
                 min={0}
                 step={0.5}
-                placeholder="0"
-                {...register("hours_saved_per_month", { valueAsNumber: true })}
-                className={cn(errors.hours_saved_per_month && "border-red-400 focus-visible:ring-red-400")}
+                placeholder="e.g. 2"
+                {...register("current_time_cost_hours_per_week", { valueAsNumber: true })}
+                className={cn(
+                  errors.current_time_cost_hours_per_week && "border-red-400 focus-visible:ring-red-400"
+                )}
               />
             </FieldRow>
 
             <FieldRow
-              label="Cost savings / month ($)"
-              htmlFor="cost_savings_per_month"
-              error={errors.cost_savings_per_month?.message}
+              label="Employees affected"
+              htmlFor="employees_affected"
+              error={errors.employees_affected?.message}
+              required
             >
               <Input
-                id="cost_savings_per_month"
+                id="employees_affected"
                 type="number"
-                min={0}
-                step={0.01}
-                placeholder="0"
-                {...register("cost_savings_per_month", { valueAsNumber: true })}
+                min={1}
+                step={1}
+                placeholder="e.g. 10"
+                {...register("employees_affected", { valueAsNumber: true })}
+                className={cn(errors.employees_affected && "border-red-400 focus-visible:ring-red-400")}
               />
             </FieldRow>
 
             <FieldRow
-              label="Revenue impact ($)"
-              htmlFor="revenue_impact"
-              error={errors.revenue_impact?.message}
+              label="Avg hourly cost ($)"
+              htmlFor="avg_hourly_cost"
+              error={errors.avg_hourly_cost?.message}
+              required
             >
               <Input
-                id="revenue_impact"
+                id="avg_hourly_cost"
                 type="number"
                 min={0}
                 step={0.01}
-                placeholder="0"
-                {...register("revenue_impact", { valueAsNumber: true })}
+                placeholder="e.g. 50"
+                {...register("avg_hourly_cost", { valueAsNumber: true })}
+                className={cn(errors.avg_hourly_cost && "border-red-400 focus-visible:ring-red-400")}
               />
             </FieldRow>
           </div>
 
-          {/* Live ROI display */}
+          {/* Row 2: Adjustment factors */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FieldRow
+              label="Expected savings rate (0–1)"
+              htmlFor="expected_savings_rate"
+              error={errors.expected_savings_rate?.message}
+            >
+              <Input
+                id="expected_savings_rate"
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                placeholder="e.g. 0.8"
+                {...register("expected_savings_rate", { valueAsNumber: true })}
+              />
+            </FieldRow>
+
+            <FieldRow
+              label="Risk probability (0–1)"
+              htmlFor="risk_probability"
+              error={errors.risk_probability?.message}
+            >
+              <Input
+                id="risk_probability"
+                type="number"
+                min={0}
+                max={1}
+                step={0.01}
+                placeholder="e.g. 0.2"
+                {...register("risk_probability", { valueAsNumber: true })}
+              />
+            </FieldRow>
+
+            <FieldRow
+              label="Strategic value (1–5)"
+              htmlFor="strategic_value"
+              error={errors.strategic_value?.message}
+            >
+              <Input
+                id="strategic_value"
+                type="number"
+                min={1}
+                max={5}
+                step={1}
+                placeholder="e.g. 3"
+                {...register("strategic_value", { valueAsNumber: true })}
+              />
+            </FieldRow>
+          </div>
+
+          {/* Live ROI preview */}
           <div
             className={cn(
               "rounded-lg border px-4 py-3 transition-colors",
-              computedROI > 0
+              liveAnnualSavings > 0
                 ? "border-green-200 bg-green-50"
                 : "border-slate-200 bg-slate-50"
             )}
           >
             <p className="text-sm text-slate-600">
-              Estimated monthly value from time savings:{" "}
+              Estimated annual savings:{" "}
               <strong
                 className={cn(
                   "text-base",
-                  computedROI > 0 ? "text-green-700" : "text-slate-500"
+                  liveAnnualSavings > 0 ? "text-green-700" : "text-slate-500"
                 )}
               >
-                ${computedROI.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                ${liveAnnualSavings.toLocaleString("en-US", { maximumFractionDigits: 0 })}
               </strong>
-              <span className="text-xs text-slate-400 ml-2">
-                ({hoursSaved} hrs &times; ${hourlyRate}/hr)
-              </span>
+              {liveWeeklyCost > 0 && (
+                <span className="text-xs text-slate-400 ml-2">
+                  (weekly cost: ${liveWeeklyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })},
+                  {" "}yearly: ${liveYearlyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })})
+                </span>
+              )}
+              {liveWeeklyCost === 0 && (
+                <span className="text-xs text-slate-400 ml-2">
+                  Fill in Row 1 fields to see estimate
+                </span>
+              )}
             </p>
           </div>
         </FormSection>
