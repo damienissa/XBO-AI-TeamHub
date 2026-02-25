@@ -127,8 +127,6 @@ async def generate_subtasks(
                         "subtasks": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "minItems": 1,
-                            "maxItems": 15,
                         }
                     },
                     "required": ["subtasks"],
