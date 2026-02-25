@@ -62,7 +62,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         key=ACCESS_COOKIE_NAME,
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite=settings.COOKIE_SAMESITE,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -71,7 +71,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite=settings.COOKIE_SAMESITE,
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         path="/api/auth/refresh",  # Scoped: browser only sends on refresh endpoint
