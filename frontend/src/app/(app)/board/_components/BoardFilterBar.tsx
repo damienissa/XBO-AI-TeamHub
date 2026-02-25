@@ -4,6 +4,7 @@ import { useQueryStates, parseAsString, parseAsIsoDate, parseAsInteger } from "n
 import { useQuery } from "@tanstack/react-query";
 import { fetchUsers } from "@/lib/api/tickets";
 import { cn } from "@/lib/utils";
+import { SavedFilterDropdown } from "./SavedFilterDropdown";
 
 async function fetchDepartments(): Promise<{ id: string; slug: string; name: string }[]> {
   const res = await fetch(
@@ -190,7 +191,7 @@ export function BoardFilterBar() {
         />
       </div>
 
-      {/* Clear all + active badge */}
+      {/* Clear all + active badge + Saved filters */}
       <div className="flex items-center gap-2 ml-auto">
         {activeFilterCount > 0 && (
           <span className="inline-flex items-center rounded-full bg-slate-800 text-white text-xs font-medium px-2 py-0.5">
@@ -209,6 +210,10 @@ export function BoardFilterBar() {
         >
           Clear all
         </button>
+        <SavedFilterDropdown
+          currentFilters={filters as Record<string, unknown>}
+          onApply={(savedState) => setFilters(savedState as typeof filters)}
+        />
       </div>
     </div>
   );
