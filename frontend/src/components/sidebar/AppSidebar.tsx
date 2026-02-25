@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { label: "Board", href: "/board", enabled: true },
   { label: "Dashboard", href: "/dashboard", enabled: false },
   { label: "Department Portal", href: "/portal", enabled: true },
+  { label: "Templates", href: "/settings/templates", enabled: true },
   { label: "Wiki", href: "/wiki", enabled: false },
 ];
 
