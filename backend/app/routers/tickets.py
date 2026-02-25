@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.dependencies import get_current_user, require_admin
 from app.models.column_history import ColumnHistory
@@ -20,7 +21,18 @@ from app.models.user import User
 from app.schemas.column_history import ColumnHistoryOut
 from app.schemas.ticket import TicketCreate, TicketMoveRequest, TicketOut, TicketUpdate
 from app.schemas.ticket_event import TicketEventOut
+from app.services.roi import compute_roi_fields
 from app.services.tickets import create_ticket, move_ticket
+
+# ROI input fields that trigger server-side recomputation when any is present
+_ROI_INPUT_FIELDS = frozenset({
+    "current_time_cost_hours_per_week",
+    "employees_affected",
+    "avg_hourly_cost",
+    "expected_savings_rate",
+    "risk_probability",
+    "effort_estimate",
+})
 
 router = APIRouter()
 
@@ -115,6 +127,22 @@ async def update_ticket(
         if getattr(ticket, field) != value:
             setattr(ticket, field, value)
             changed_fields.append(field)
+
+    # If any ROI input field was updated, recompute all derived ROI output fields
+    if _ROI_INPUT_FIELDS.intersection(update_data.keys()):
+        roi_computed = compute_roi_fields(
+            current_time_cost_hours_per_week=ticket.current_time_cost_hours_per_week,
+            employees_affected=ticket.employees_affected,
+            avg_hourly_cost=ticket.avg_hourly_cost,
+            expected_savings_rate=ticket.expected_savings_rate,
+            risk_probability=ticket.risk_probability,
+            effort_estimate=ticket.effort_estimate,
+            ai_team_hourly_rate=settings.AI_TEAM_HOURLY_RATE,
+        )
+        for col, val in roi_computed.items():
+            setattr(ticket, col, val)
+            if col not in changed_fields:
+                changed_fields.append(col)
 
     if changed_fields:
         event = TicketEvent(

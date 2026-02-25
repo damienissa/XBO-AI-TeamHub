@@ -46,6 +46,16 @@ class TicketUpdate(BaseModel):
     priority: Optional[Priority] = None
     owner_id: Optional[uuid.UUID] = None
 
+    # Phase 4 ROI input fields (ROI-01)
+    current_time_cost_hours_per_week: Optional[float] = None
+    employees_affected: Optional[float] = None
+    avg_hourly_cost: Optional[float] = None
+    current_error_rate: Optional[float] = None
+    revenue_blocked: Optional[float] = None
+    strategic_value: Optional[int] = None
+    expected_savings_rate: Optional[float] = None
+    risk_probability: Optional[float] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -78,6 +88,24 @@ class TicketOut(BaseModel):
     # Subtask counts — computed by board endpoint via subquery (Pitfall 3 avoidance)
     subtasks_total: int = 0
     subtasks_done: int = 0
+
+    # Phase 4 ROI input fields (ROI-01)
+    current_time_cost_hours_per_week: Optional[float] = None
+    employees_affected: Optional[float] = None
+    avg_hourly_cost: Optional[float] = None
+    current_error_rate: Optional[float] = None
+    revenue_blocked: Optional[float] = None
+    strategic_value: Optional[int] = None
+    expected_savings_rate: Optional[float] = None
+    risk_probability: Optional[float] = None
+
+    # Phase 4 computed/persisted ROI output fields (ROI-02)
+    weekly_cost: Optional[float] = None
+    yearly_cost: Optional[float] = None
+    annual_savings: Optional[float] = None
+    dev_cost: Optional[float] = None
+    roi: Optional[float] = None
+    adjusted_roi: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 
