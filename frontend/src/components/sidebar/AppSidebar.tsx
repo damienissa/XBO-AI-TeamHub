@@ -109,7 +109,7 @@ export function AppSidebar({ user }: { user: SessionUser }) {
               {DEPARTMENTS.map((dept) => (
                 <SidebarMenuItem key={dept.slug}>
                   <SidebarMenuButton asChild>
-                    <Link href={`/board?dept=${dept.slug}`}>{dept.name}</Link>
+                    <Link href={`/dept/${dept.slug}`}>{dept.name}</Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

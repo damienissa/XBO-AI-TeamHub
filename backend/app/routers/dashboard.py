@@ -1,16 +1,16 @@
 """
 backend/app/routers/dashboard.py
 GET /api/dashboard — single aggregation endpoint.
-Returns all executive dashboard KPIs, column times, workload, dept breakdown,
-and throughput trend in one response (DASH-06).
+GET /api/dashboard/dept/{slug} — per-department KPIs + open ticket list.
 """
 from datetime import date, datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 
 from app.core.database import get_db
 from app.dependencies import get_current_user
@@ -28,6 +28,18 @@ from app.schemas.dashboard import (
     UpcomingReleaseOut,
     WorkloadItemOut,
 )
+from app.schemas.department import DepartmentOut
+from app.schemas.ticket import TicketOut
+
+
+class DeptDashboardOut(BaseModel):
+    department: DepartmentOut
+    open_ticket_count: int
+    avg_age_open_hours: Optional[float]      # avg age of non-Done tickets
+    avg_cycle_time_hours: Optional[float]    # avg creation → Done for completed tickets
+    avg_roi: Optional[float]                 # avg roi (nulls excluded)
+    tickets: list[TicketOut]                 # non-Done tickets, newest first
+
 
 router = APIRouter()
 
@@ -333,4 +345,87 @@ async def get_dashboard(
         status_breakdown=status_breakdown,
         tickets_by_owner=tickets_by_owner,
         upcoming_releases=upcoming_releases,
+    )
+
+
+@router.get("/dashboard/dept/{slug}", response_model=DeptDashboardOut)
+async def get_dept_dashboard(
+    slug: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> DeptDashboardOut:
+    """Return KPIs and open tickets for a single department."""
+
+    # 1. Lookup department by slug
+    dept = await db.scalar(select(Department).where(Department.slug == slug))
+    if dept is None:
+        raise HTTPException(status_code=404, detail="Department not found")
+
+    dept_id = dept.id
+
+    # 2. Open ticket count (not Done)
+    open_ticket_count: int = await db.scalar(
+        select(func.count(Ticket.id)).where(
+            Ticket.department_id == dept_id,
+            Ticket.status_column != StatusColumn.Done,
+        )
+    ) or 0
+
+    # 3. Avg age of open tickets in hours
+    age_result = await db.scalar(
+        select(
+            func.avg(func.extract("epoch", func.now() - Ticket.created_at))
+        ).where(
+            Ticket.department_id == dept_id,
+            Ticket.status_column != StatusColumn.Done,
+        )
+    )
+    avg_age_open_hours = (float(age_result) / 3600.0) if age_result else None
+
+    # 4. Avg cycle time (creation → Done) for completed tickets
+    done_ch = aliased(ColumnHistory)
+    cycle_result = await db.scalar(
+        select(
+            func.avg(func.extract("epoch", done_ch.entered_at - Ticket.created_at))
+        )
+        .select_from(Ticket)
+        .join(done_ch, (done_ch.ticket_id == Ticket.id) & (done_ch.column == "Done"))
+        .where(
+            Ticket.department_id == dept_id,
+            Ticket.status_column == StatusColumn.Done,
+        )
+    )
+    avg_cycle_time_hours = (float(cycle_result) / 3600.0) if cycle_result else None
+
+    # 5. Avg ROI (nulls excluded)
+    roi_result = await db.scalar(
+        select(func.avg(Ticket.roi)).where(
+            Ticket.department_id == dept_id,
+            Ticket.roi.is_not(None),
+        )
+    )
+    avg_roi = float(roi_result) if roi_result is not None else None
+
+    # 6. Open tickets with eager-loaded owner + department, newest first
+    ticket_rows = (
+        await db.execute(
+            select(Ticket)
+            .options(selectinload(Ticket.owner), selectinload(Ticket.department))
+            .where(
+                Ticket.department_id == dept_id,
+                Ticket.status_column != StatusColumn.Done,
+            )
+            .order_by(Ticket.created_at.desc())
+        )
+    ).scalars().all()
+
+    tickets = [TicketOut.model_validate(t) for t in ticket_rows]
+
+    return DeptDashboardOut(
+        department=DepartmentOut.model_validate(dept),
+        open_ticket_count=open_ticket_count,
+        avg_age_open_hours=avg_age_open_hours,
+        avg_cycle_time_hours=avg_cycle_time_hours,
+        avg_roi=avg_roi,
+        tickets=tickets,
     )
