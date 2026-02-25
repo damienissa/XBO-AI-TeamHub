@@ -12,7 +12,6 @@ import { TiptapEditor } from "./TiptapEditor";
 import { SubtaskSection } from "./SubtaskSection";
 import { DependenciesSection } from "./DependenciesSection";
 import { CommentSection } from "./CommentSection";
-import RoiPanel from "./RoiPanel";
 import { CustomFieldsSection } from "./CustomFieldsSection";
 import { WikiLinkField } from "./WikiLinkField";
 import { cn } from "@/lib/utils";
@@ -431,12 +430,6 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
 
         {/* Subtasks (COLLAB-04/05/06) — between description fields and activity timeline */}
         <SubtaskSection ticketId={ticket.id} />
-
-        {/* ROI Panel (ROI-04/05) — always visible, never in accordion */}
-        <RoiPanel
-          ticket={ticket}
-          onUpdate={(fields) => updateMutation.mutate(fields)}
-        />
 
         {/* Custom Fields (ADV-01/02/03) — workspace + personal fields with type-aware inline editing */}
         <div className="border-t border-slate-100 pt-4">
