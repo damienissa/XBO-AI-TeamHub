@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 1 of 6 (Foundation and Auth)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-25 — Completed plan 01-02 (auth endpoints, security layer, 16 pytest tests)
+Plan: 3 of 3 in current phase
+Status: Phase 1 complete
+Last activity: 2026-02-25 — Completed plan 01-03 (Next.js frontend, two-layer auth guard, login page, sidebar, session flow)
 
-Progress: [██░░░░░░░░] 11%
+Progress: [███░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 6.5 min
-- Total execution time: 0.2 hours
+- Total plans completed: 3
+- Average duration: 19.3 min
+- Total execution time: 0.95 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-and-auth | 2 | 13 min | 6.5 min |
+| 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 7 min
-- Trend: consistent
+- Last 5 plans: 6 min, 7 min, 45 min
+- Trend: increasing (01-03 was frontend scaffold, larger scope)
 
 *Updated after each plan completion*
 
@@ -54,6 +54,10 @@ Recent decisions affecting current work:
 - [Phase 01-02]: NullPool required for pytest asyncpg test engines to avoid cross-event-loop errors in pytest-asyncio 1.3.0 + anyio 4.12.1
 - [Phase 01-02]: asyncio_mode=auto (pyproject.toml) used instead of @pytest.mark.anyio — avoids anyio TestRunner creating isolated event loops that conflict with fixture teardown
 - [Phase 01-02]: httpx per-request cookies= requires plain dict not httpx.Cookies object (deprecated) — use dict(response.cookies) in tests
+- [Phase 01-03]: jose used in middleware (not jsonwebtoken) — edge runtime requires ESM-compatible crypto
+- [Phase 01-03]: Server Action used for logout — httpOnly cookie deletion requires server-side; client-side fetch cannot clear them
+- [Phase 01-03]: COOKIE_SECURE defaults false — allows local HTTP dev; set COOKIE_SECURE=true in production
+- [Phase 01-03]: Split NEXT_PUBLIC_API_URL (browser) vs INTERNAL_API_URL (server/Docker) — localhost:8000 unreachable inside Docker network for server-side fetches
 
 ### Pending Todos
 
@@ -67,5 +71,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 01-foundation-and-auth/01-02-PLAN.md — auth endpoints (login, me, logout, refresh, admin create user, role change), JWT httpOnly cookie layer, get_current_user + require_admin dependencies, 16-test pytest suite. Ready to execute 01-03 (Next.js frontend).
+Stopped at: Completed 01-foundation-and-auth/01-03-PLAN.md — Next.js 14 App Router frontend, jose middleware auth guard, verifySession() DAL, LoginForm with inline errors, AppSidebar with 7 departments and Server Action logout. All 8 human verification checks passed. Phase 1 complete.
 Resume file: None
