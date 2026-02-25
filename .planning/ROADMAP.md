@@ -66,13 +66,13 @@ Plans:
   3. An AI team member can navigate to any department's intake page and submit a new ticket on behalf of that department, with ROI inputs required
   4. An admin or member can create a ticket template and create a ticket from that template with fields pre-filled and editable before submission
   5. An attachment can be registered on a ticket by specifying filename and file size (no file bytes stored in v1)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Collaboration backend — Comment and Subtask models, CRUD endpoints, subtask position persistence, comment thread on ticket detail
-- [ ] 03-02: Subtasks frontend — drag-and-drop reorder, checklist UI, completion count on Kanban card
-- [ ] 03-03: Department portal — portal section with per-department intake pages, submission form with all ticket fields and ROI inputs, accessible to admin and member roles
-- [ ] 03-04: Templates and attachments — ticket template CRUD, "create from template" flow, attachment metadata stub
+- [ ] 03-01-PLAN.md — Collaboration backend: TicketComment, TicketSubtask, TicketTemplate ORM models, Alembic migration, CRUD endpoints for comments/subtasks/templates, ROI stub columns + attachment stub columns on tickets, GET /api/config
+- [ ] 03-02-PLAN.md — Subtasks and comments frontend: SubtaskSection (dnd-kit/sortable reorder, inline add, checkbox toggle), CommentSection (chronological thread, always-visible input, author/admin delete with confirm), both embedded in TicketDetailModal, KanbanCard subtask count badge
+- [ ] 03-03-PLAN.md — Department portal: Portal sidebar nav, /portal department selection page, /portal/[dept] full-page intake form with all ticket fields + ROI inputs, live ROI calculation via /api/config, zod cross-field validation, success confirmation with "View on board" link
+- [ ] 03-04-PLAN.md — Templates and verification: /settings/templates CRUD page, "create from template" flow in ticket creation form (pre-fill with shouldValidate:true), human E2E verification checkpoint for all Phase 3 features
 
 ### Phase 4: ROI Estimation and Executive Dashboard
 **Goal**: Every ticket has a computed ROI panel visible to all users, and executives have a single dashboard showing throughput, cycle time, bottleneck columns, team workload, and department breakdowns
