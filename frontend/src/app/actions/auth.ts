@@ -7,7 +7,7 @@ export async function logoutAction() {
   const token = cookieStore.get("access_token")?.value;
   // Call FastAPI to clear cookies server-side
   if (token) {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+    await fetch(`${process.env.INTERNAL_API_URL ?? "http://backend:8000"}/api/auth/logout`, {
       method: "POST",
       headers: { Cookie: `access_token=${token}` },
     }).catch(() => {});

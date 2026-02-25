@@ -20,7 +20,7 @@ export const verifySession = cache(async (): Promise<SessionUser> => {
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
+    `${process.env.INTERNAL_API_URL ?? "http://backend:8000"}/api/auth/me`,
     {
       headers: { Cookie: `access_token=${token}` },
       cache: "no-store",
