@@ -10,6 +10,8 @@ import { useTicketDetail } from "@/hooks/useTicketDetail";
 import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
 import { SubtaskSection } from "./SubtaskSection";
+import { DependenciesSection } from "./DependenciesSection";
+import { SprintField } from "./SprintField";
 import { CommentSection } from "./CommentSection";
 import RoiPanel from "./RoiPanel";
 import { cn } from "@/lib/utils";
@@ -415,6 +417,14 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
             placeholder="How do we know this is done?"
             className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none placeholder:text-slate-400"
           />
+        </div>
+
+        {/* Sprint field (ADV-09) — assign ticket to a sprint */}
+        <SprintField ticketId={ticket.id} sprintId={ticket.sprint_id ?? null} />
+
+        {/* Dependencies (ADV-04) — above subtasks per CONTEXT.md */}
+        <div className="border-t border-slate-100 pt-4">
+          <DependenciesSection ticketId={ticket.id} />
         </div>
 
         {/* Subtasks (COLLAB-04/05/06) — between description fields and activity timeline */}

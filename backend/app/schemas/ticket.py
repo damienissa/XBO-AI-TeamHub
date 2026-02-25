@@ -110,6 +110,9 @@ class TicketOut(BaseModel):
     wiki_page_id: Optional[uuid.UUID] = None
     custom_field_values: Optional[dict] = None
 
+    # Phase 5 dependency badge (ADV-04) — computed by board endpoint via batch count query
+    blocked_by_count: int = 0
+
     model_config = ConfigDict(from_attributes=True)
 
 

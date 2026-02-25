@@ -3,7 +3,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
-import { Check } from "lucide-react";
+import { Check, ShieldAlert } from "lucide-react";
 import { useQueryState, parseAsString } from "nuqs";
 import { Ticket } from "@/lib/api/tickets";
 import { cn } from "@/lib/utils";
@@ -203,6 +203,15 @@ export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
           >
             <Check className="h-3 w-3" />
             {ticket.subtasks_done}/{ticket.subtasks_total}
+          </span>
+        </div>
+      )}
+
+      {/* Blocked badge (ADV-04) — subtle, no border color change per CONTEXT.md */}
+      {(ticket.blocked_by_count ?? 0) > 0 && (
+        <div className="mt-1.5">
+          <span className="inline-flex items-center gap-0.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+            <ShieldAlert className="h-3 w-3" /> Blocked
           </span>
         </div>
       )}

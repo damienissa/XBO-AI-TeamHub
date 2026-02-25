@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.dependencies import get_current_user
 from app.models.column_history import ColumnHistory
 from app.models.ticket import Priority, StatusColumn, Ticket
+from app.models.ticket_dependency import ticket_dependencies
 from app.models.ticket_subtask import TicketSubtask
 from app.models.user import User
 from app.schemas.ticket import BoardTicketOut
@@ -143,6 +144,20 @@ async def get_board(
         for row in subtask_counts_result
     }
 
+    # Batch query for blocked_by count per ticket (ADV-04 badge) — single COUNT query
+    blocked_by_counts_result = await db.execute(
+        select(
+            ticket_dependencies.c.blocked_id,
+            func.count(ticket_dependencies.c.blocker_id).label("blocker_count"),
+        )
+        .where(ticket_dependencies.c.blocked_id.in_(ticket_ids))
+        .group_by(ticket_dependencies.c.blocked_id)
+    )
+    blocked_by_counts: dict[uuid.UUID, int] = {
+        row.blocked_id: row.blocker_count
+        for row in blocked_by_counts_result
+    }
+
     output = []
     for ticket in tickets:
         ticket_out = BoardTicketOut.model_validate(ticket)
@@ -153,6 +168,7 @@ async def get_board(
         if counts is not None:
             ticket_out.subtasks_total = counts[0]
             ticket_out.subtasks_done = counts[1]
+        ticket_out.blocked_by_count = blocked_by_counts.get(ticket.id, 0)
         output.append(ticket_out)
 
     return output

@@ -39,6 +39,10 @@ export interface Ticket {
   annual_savings?: number | null;
   dev_cost?: number | null;
   roi?: number | null;
+
+  // Phase 5 fields (ADV-04, ADV-09)
+  sprint_id?: string | null;
+  blocked_by_count?: number;
 }
 
 export interface BoardData {
@@ -64,6 +68,21 @@ export async function createTicket(data: { title: string; department_id: string 
   return res.json();
 }
 
+export interface MoveBlockedError {
+  code: "BLOCKED";
+  blocker_ids: string[];
+  message: string;
+}
+
+export class TicketBlockedError extends Error {
+  code = "BLOCKED" as const;
+  blocker_ids: string[];
+  constructor(detail: MoveBlockedError) {
+    super(detail.message);
+    this.blocker_ids = detail.blocker_ids;
+  }
+}
+
 export async function moveTicket(ticketId: string, targetColumn: StatusColumn, ownerId: string | null): Promise<Ticket> {
   const res = await fetch(`${API}/api/tickets/${ticketId}/move`, {
     method: "PATCH",
@@ -73,7 +92,11 @@ export async function moveTicket(ticketId: string, targetColumn: StatusColumn, o
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error((error as { detail?: string }).detail ?? "Move failed");
+    const detail = (error as { detail?: MoveBlockedError | string }).detail;
+    if (res.status === 409 && detail && typeof detail === "object" && detail.code === "BLOCKED") {
+      throw new TicketBlockedError(detail);
+    }
+    throw new Error(typeof detail === "string" ? detail : "Move failed");
   }
   return res.json();
 }
