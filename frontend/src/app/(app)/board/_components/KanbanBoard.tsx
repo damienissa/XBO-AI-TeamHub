@@ -16,6 +16,7 @@ import { StatusColumn, Ticket } from "@/lib/api/tickets";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanDragOverlay } from "./KanbanDragOverlay";
 import { OwnerModal } from "./OwnerModal";
+import { BoardFilterBar } from "./BoardFilterBar";
 
 const COLUMNS: StatusColumn[] = [
   "Backlog",
@@ -94,26 +95,32 @@ export function KanbanBoard() {
 
   if (isPending) {
     return (
-      <div className="flex gap-4 p-6 overflow-x-auto h-full">
-        {COLUMNS.map((col) => (
-          <div
-            key={col}
-            className="flex-shrink-0 w-72 bg-slate-100 rounded-lg p-3 animate-pulse"
-          >
-            <div className="h-6 bg-slate-200 rounded mb-3 w-3/4" />
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-slate-200 rounded mb-2" />
-            ))}
-          </div>
-        ))}
+      <div className="flex flex-col h-full">
+        <BoardFilterBar />
+        <div className="flex gap-4 p-6 overflow-x-auto flex-1">
+          {COLUMNS.map((col) => (
+            <div
+              key={col}
+              className="flex-shrink-0 w-72 bg-slate-100 rounded-lg p-3 animate-pulse"
+            >
+              <div className="h-6 bg-slate-200 rounded mb-3 w-3/4" />
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-24 bg-slate-200 rounded mb-2" />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center h-full p-6">
-        <p className="text-red-500">Failed to load board. Please refresh.</p>
+      <div className="flex flex-col h-full">
+        <BoardFilterBar />
+        <div className="flex items-center justify-center flex-1 p-6">
+          <p className="text-red-500">Failed to load board. Please refresh.</p>
+        </div>
       </div>
     );
   }
@@ -125,6 +132,9 @@ export function KanbanBoard() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
+      {/* Filter bar above the columns */}
+      <BoardFilterBar />
+
       <div className="flex gap-4 p-6 overflow-x-auto h-full">
         {COLUMNS.map((col, index) => (
           <KanbanColumn

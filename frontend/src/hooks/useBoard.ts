@@ -1,11 +1,31 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryStates, parseAsString, parseAsInteger, parseAsIsoDate } from "nuqs";
 import { fetchBoard, Ticket } from "@/lib/api/tickets";
 
-export function useBoard(filters: Record<string, string | null> = {}) {
+export function useBoard() {
+  const [filters] = useQueryStates({
+    owner:          parseAsString,
+    department:     parseAsString,
+    priority:       parseAsString,
+    min_urgency:    parseAsInteger,
+    max_urgency:    parseAsInteger,
+    due_before:     parseAsIsoDate,
+    due_after:      parseAsIsoDate,
+    created_after:  parseAsIsoDate,
+    created_before: parseAsIsoDate,
+    min_age_days:   parseAsInteger,
+  });
+
+  // Convert filter values to string params for fetchBoard
+  // Date objects are serialized to ISO date string (yyyy-MM-dd); nulls are dropped
+  const filterParams = Object.fromEntries(
+    Object.entries(filters).map(([k, v]) => [k, v != null ? String(v instanceof Date ? v.toISOString().slice(0, 10) : v) : null])
+  );
+
   return useQuery<Ticket[]>({
-    queryKey: ["board", filters],
-    queryFn: () => fetchBoard(filters),
+    queryKey: ["board", filterParams],
+    queryFn: () => fetchBoard(filterParams),
     refetchInterval: 30_000,  // BOARD-07
   });
 }
