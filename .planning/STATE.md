@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Every XBO request has a tracked lifecycle from Backlog to Done — with owner accountability, ROI justification, and zero SaaS subscription cost.
-**Current focus:** Phase 4 — ROI Estimation and Executive Dashboard
+**Current focus:** Phase 5 — Advanced Features
 
 ## Current Position
 
-Phase: 4 of 6 (ROI Estimation and Executive Dashboard)
-Plan: 3 of 3 in current phase — AWAITING CHECKPOINT
-Status: Plan 04-03 tasks complete — GET /api/dashboard endpoint, DashboardOut schema, dashboard page with Recharts charts; awaiting human-verify checkpoint
-Last activity: 2026-02-25 — Completed plans 04-01, 04-02, 04-03 (checkpoint:human-verify pending)
+Phase: 5 of 6 (Advanced Features)
+Plan: 1 of 5 complete — Plan 05-01 backend data layer complete
+Status: Plan 05-01 tasks complete — 5 new ORM models, migration at head, 5 routers, ADV-05 blocker check; ready for 05-02
+Last activity: 2026-02-25 — Completed plan 05-01 (backend data layer for all Phase 5 sub-features)
 
-Progress: [████████████████] 75%
+Progress: [█████████████████] 80%
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [████████████████] 75%
 | Phase 04-roi-estimation-and-executive-dashboard P01 | 3 | 3 tasks | 6 files |
 | Phase 04-roi-estimation-and-executive-dashboard P02 | 2 | 2 tasks | 3 files |
 | Phase 04-roi-estimation-and-executive-dashboard P03 | 2 | 2 tasks | 6 files |
+| Phase 05-advanced-features P01 | 6 | 3 tasks | 21 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,11 @@ Recent decisions affecting current work:
 - [Phase 04-03]: Workload user names fetched via second batch query (SELECT id, full_name WHERE id IN (...)) — Ticket.owner has lazy=raise so selectinload not usable; batch IN query is N=1 total
 - [Phase 04-03]: staleTime 5 min, no refetchInterval on dashboard query — executive metrics don't need 30s board-level freshness
 - [Phase 04-03]: ResponsiveContainer height={220} as pixel value — avoids flex parent zero-height pitfall (RESEARCH.md Pitfall 2)
+- [Phase 05-01]: blocks/blocked_by M2M specify primaryjoin/secondaryjoin/foreign_keys explicitly — SQLAlchemy requires this for self-referential M2M (RESEARCH.md Pitfall 2)
+- [Phase 05-01]: custom_field_values uses MutableDict.as_mutable(JSONB) — auto-detects in-place dict mutation without flag_modified (RESEARCH.md Pattern 3)
+- [Phase 05-01]: wiki parent_id ON DELETE SET NULL — orphaned child pages become top-level, preventing bulk deletion (RESEARCH.md Pitfall 5)
+- [Phase 05-01]: check_not_blocked() in move_ticket service, called on is_backlog_exit=True only — returns HTTP 409 with {code: BLOCKED} (ADV-05)
+- [Phase 05-01]: dependencies router prefix /api/tickets (not /api/tickets/) — forms /api/tickets/{ticket_id}/dependencies correctly
 
 ### Pending Todos
 
@@ -112,5 +118,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 04-roi-estimation-and-executive-dashboard/04-03-PLAN.md — Tasks 1+2 complete. Awaiting checkpoint:human-verify for full Phase 4 verification (ROI panel + portal form + executive dashboard).
+Stopped at: 05-advanced-features/05-01-PLAN.md — All 3 tasks complete. Backend data layer for Phase 5 fully implemented.
 Resume file: None

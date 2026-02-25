@@ -105,10 +105,10 @@
 
 ### Wiki / Docs (WIKI)
 
-- [ ] **WIKI-01**: Wiki pages have: title, content (Tiptap JSON rich text), created_by, created_at, updated_at
-- [ ] **WIKI-02**: Wiki page list shows all pages with title and last updated
-- [ ] **WIKI-03**: Admin and member roles can create and edit wiki pages
-- [ ] **WIKI-04**: All authenticated users (admin/member) can read wiki pages; only admin can delete pages
+- [x] **WIKI-01**: Wiki pages have: title, content (Tiptap JSON rich text), created_by, created_at, updated_at
+- [x] **WIKI-02**: Wiki page list shows all pages with title and last updated
+- [x] **WIKI-03**: Admin and member roles can create and edit wiki pages
+- [x] **WIKI-04**: All authenticated users (admin/member) can read wiki pages; only admin can delete pages
 - [ ] **WIKI-05**: Ticket detail includes a "Linked Pages" section where wiki pages can be linked
 
 ### AI Features (AI) — gated by AI_ENABLED env flag
@@ -123,16 +123,16 @@
 
 ### Advanced Features (ADV)
 
-- [ ] **ADV-01**: Custom field definitions per workspace: admin can define fields (name, type: text/number/select/date, options)
-- [ ] **ADV-02**: Per-ticket custom field values stored as JSONB
+- [x] **ADV-01**: Custom field definitions per workspace: admin can define fields (name, type: text/number/select/date, options)
+- [x] **ADV-02**: Per-ticket custom field values stored as JSONB
 - [ ] **ADV-03**: Custom fields displayed and editable on ticket detail
-- [ ] **ADV-04**: Ticket dependencies: a ticket can block one or more other tickets
-- [ ] **ADV-05**: Moving a blocked ticket out of Backlog is rejected server-side if any blocking dependency is not in Done
+- [x] **ADV-04**: Ticket dependencies: a ticket can block one or more other tickets
+- [x] **ADV-05**: Moving a blocked ticket out of Backlog is rejected server-side if any blocking dependency is not in Done
 - [ ] **ADV-06**: Dependencies shown on ticket detail with link to blocking ticket
-- [ ] **ADV-07**: Saved filters: user can save current board filter state with a name, reload it later
-- [ ] **ADV-08**: Sprints: admin can create a sprint (name, start_date, end_date)
-- [ ] **ADV-09**: Tickets can be assigned to a sprint
-- [ ] **ADV-10**: Sprint board shows tickets in that sprint; basic velocity metric (effort_hours completed vs total)
+- [x] **ADV-07**: Saved filters: user can save current board filter state with a name, reload it later
+- [x] **ADV-08**: Sprints: admin can create a sprint (name, start_date, end_date)
+- [x] **ADV-09**: Tickets can be assigned to a sprint
+- [x] **ADV-10**: Sprint board shows tickets in that sprint; basic velocity metric (effort_hours completed vs total)
 - [ ] **ADV-11**: Simple timeline / Gantt view: read-only, derived from ticket due dates, shows tickets as bars
 
 ---
@@ -241,21 +241,21 @@
 | ROI-04 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-05 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-06 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
-| WIKI-01 | Phase 5 — Advanced Features | Pending |
-| WIKI-02 | Phase 5 — Advanced Features | Pending |
-| WIKI-03 | Phase 5 — Advanced Features | Pending |
-| WIKI-04 | Phase 5 — Advanced Features | Pending |
+| WIKI-01 | Phase 5 — Advanced Features | Complete |
+| WIKI-02 | Phase 5 — Advanced Features | Complete |
+| WIKI-03 | Phase 5 — Advanced Features | Complete |
+| WIKI-04 | Phase 5 — Advanced Features | Complete |
 | WIKI-05 | Phase 5 — Advanced Features | Pending |
-| ADV-01 | Phase 5 — Advanced Features | Pending |
-| ADV-02 | Phase 5 — Advanced Features | Pending |
+| ADV-01 | Phase 5 — Advanced Features | Complete |
+| ADV-02 | Phase 5 — Advanced Features | Complete |
 | ADV-03 | Phase 5 — Advanced Features | Pending |
-| ADV-04 | Phase 5 — Advanced Features | Pending |
-| ADV-05 | Phase 5 — Advanced Features | Pending |
+| ADV-04 | Phase 5 — Advanced Features | Complete |
+| ADV-05 | Phase 5 — Advanced Features | Complete |
 | ADV-06 | Phase 5 — Advanced Features | Pending |
-| ADV-07 | Phase 5 — Advanced Features | Pending |
-| ADV-08 | Phase 5 — Advanced Features | Pending |
-| ADV-09 | Phase 5 — Advanced Features | Pending |
-| ADV-10 | Phase 5 — Advanced Features | Pending |
+| ADV-07 | Phase 5 — Advanced Features | Complete |
+| ADV-08 | Phase 5 — Advanced Features | Complete |
+| ADV-09 | Phase 5 — Advanced Features | Complete |
+| ADV-10 | Phase 5 — Advanced Features | Complete |
 | ADV-11 | Phase 5 — Advanced Features | Pending |
 | AI-01 | Phase 6 — AI Features | Pending |
 | AI-02 | Phase 6 — AI Features | Pending |
