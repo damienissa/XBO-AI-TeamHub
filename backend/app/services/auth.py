@@ -25,7 +25,8 @@ async def authenticate_user(email: str, password: str, db: AsyncSession) -> User
     user = result.scalar_one_or_none()
 
     # Use a single generic error for both "not found" and "wrong password"
-    if user is None or not ph.verify(user.hashed_password, password):
+    # pwdlib API: ph.verify(password, hash) — plaintext first, hash second
+    if user is None or not ph.verify(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",  # Generic — CONTEXT.md locked decision
