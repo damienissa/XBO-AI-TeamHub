@@ -18,7 +18,6 @@ const NAV_ITEMS = [
   { label: "Department Portal", href: "/portal", enabled: true },
   { label: "Templates", href: "/settings/templates", enabled: true },
   { label: "Wiki", href: "/wiki", enabled: true },
-  { label: "Timeline", href: "/timeline", enabled: true },
 ];
 
 const ADMIN_NAV_ITEMS = [
