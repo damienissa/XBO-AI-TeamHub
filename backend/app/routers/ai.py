@@ -163,7 +163,7 @@ async def estimate_effort(
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "hours": {"type": "number", "minimum": 0.5, "maximum": 10000}
+                        "hours": {"type": "number"}
                     },
                     "required": ["hours"],
                     "additionalProperties": False,
