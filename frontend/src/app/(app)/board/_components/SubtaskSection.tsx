@@ -232,6 +232,9 @@ export function SubtaskSection({ ticketId, ticketContext }: SubtaskSectionProps)
   const generateMutation = useMutation({
     mutationFn: () => fetchAiSubtasks({
       title: ticketContext.title,
+      problem_statement: ticketContext.problem_statement as string | null | undefined,
+      business_impact: ticketContext.business_impact,
+      urgency: ticketContext.urgency,
       existing_subtasks: subtasks.map(s => s.title),
     }),
     onSuccess: (data) => {
