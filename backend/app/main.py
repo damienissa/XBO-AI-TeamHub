@@ -14,6 +14,7 @@ from app.routers.subtasks import router as subtasks_router
 from app.routers.templates import router as templates_router
 from app.routers.tickets import router as tickets_router
 from app.routers.wiki import router as wiki_router
+from app.routers.ai import router as ai_router
 
 app = FastAPI(title="XBO TeamHub API", version="0.1.0")
 
@@ -41,6 +42,9 @@ app.include_router(custom_fields_router, prefix="/api/custom-field-defs", tags=[
 app.include_router(saved_filters_router, prefix="/api/saved-filters", tags=["saved_filters"])
 app.include_router(wiki_router, prefix="/api/wiki", tags=["wiki"])
 
+# Phase 6: AI features router
+app.include_router(ai_router, prefix="/api", tags=["ai"])
+
 
 @app.get("/health")
 async def health_check() -> dict:
@@ -49,5 +53,8 @@ async def health_check() -> dict:
 
 @app.get("/api/config")
 async def get_config() -> dict:
-    """Public config endpoint — returns AI team hourly rate for live ROI calculation."""
-    return {"ai_team_hourly_rate": settings.AI_TEAM_HOURLY_RATE}
+    """Public config endpoint — returns AI team hourly rate and AI feature flag."""
+    return {
+        "ai_team_hourly_rate": settings.AI_TEAM_HOURLY_RATE,
+        "ai_enabled": settings.AI_ENABLED,
+    }
