@@ -46,6 +46,7 @@ Progress: [████████████████████] 92%
 | Phase 05-advanced-features P03 | 4 | 2 tasks | 8 files |
 | Phase 05-advanced-features P04 | 3 | 2 tasks | 7 files |
 | Phase 05-advanced-features P05 | 5 | 2 tasks | 2 files |
+| Phase 06-ai-features P06-02 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,10 @@ Recent decisions affecting current work:
 - [Phase 06-01]: All three AI endpoints return HTTP 503 when AI_ENABLED=false — uniform behavior; 503 chosen over 501/404 to signal "service unavailable" not "route missing"
 - [Phase 06-01]: get_db imported from app.core.database (not app.database) — plan comment had wrong path; corrected per existing router pattern in wiki.py
 - [Phase 06-01]: Tiptap JSON extracted server-side in summarize_ticket — frontend sends only ticket_id for AI-03; backend reads problem_statement JSONB and extracts plain text before Claude prompt
+- [Phase 06-02]: useAiEnabled reads queryKey config with staleTime 300_000 — reuses same cache entry as any other config consumer
+- [Phase 06-02]: fetchSubtasks renamed to fetchAiSubtasks at import in SubtaskSection — avoids collision with local fetchSubtasks helper
+- [Phase 06-02]: AiSummarySection uses independent isOpen and summary state — summary text survives collapse/expand cycles
+- [Phase 06-02]: Portal effortSuggestion state fills field directly when empty, shows hint with Use-this when occupied
 
 ### Pending Todos
 
