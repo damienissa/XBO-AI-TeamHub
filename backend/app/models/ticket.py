@@ -78,6 +78,31 @@ class Ticket(Base):
         nullable=False,
     )
 
+    # Phase 3 portal ROI stub inputs (3 fields per CONTEXT.md decision)
+    # Phase 4 will add full ROI-01 computed fields in a separate migration.
+    hours_saved_per_month: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
+    cost_savings_per_month: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
+    revenue_impact: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
+
+    # Phase 3 attachment metadata stub (PORTAL-06)
+    # Actual file storage is deferred to a future phase.
+    attachment_filename: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
+    attachment_size_bytes: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+
     # Relationships — lazy="raise" prevents accidental N+1 queries
     owner = relationship("User", foreign_keys=[owner_id], lazy="raise")
     department = relationship("Department", foreign_keys=[department_id], lazy="raise")
+    comments = relationship(
+        "TicketComment",
+        back_populates="ticket",
+        lazy="raise",
+        order_by="TicketComment.created_at",
+        cascade="all, delete-orphan",
+    )
+    subtasks = relationship(
+        "TicketSubtask",
+        back_populates="ticket",
+        lazy="raise",
+        order_by="TicketSubtask.position",
+        cascade="all, delete-orphan",
+    )
