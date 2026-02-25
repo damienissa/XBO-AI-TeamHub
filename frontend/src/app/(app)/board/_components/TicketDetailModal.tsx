@@ -11,7 +11,6 @@ import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
 import { SubtaskSection } from "./SubtaskSection";
 import { DependenciesSection } from "./DependenciesSection";
-import { SprintField } from "./SprintField";
 import { CommentSection } from "./CommentSection";
 import RoiPanel from "./RoiPanel";
 import { CustomFieldsSection } from "./CustomFieldsSection";
@@ -421,8 +420,6 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
           />
         </div>
 
-        {/* Sprint field (ADV-09) — assign ticket to a sprint */}
-        <SprintField ticketId={ticket.id} sprintId={ticket.sprint_id ?? null} />
 
         {/* Wiki link field (WIKI-05) — link one wiki page to this ticket */}
         <WikiLinkField ticketId={ticket.id} wikiPageId={ticket.wiki_page_id ?? null} />

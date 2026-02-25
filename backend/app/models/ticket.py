@@ -99,10 +99,6 @@ class Ticket(Base):
     attachment_filename: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
     attachment_size_bytes: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
 
-    # Phase 5: Sprint assignment (ADV-08, ADV-09)
-    sprint_id: Mapped[uuid.UUID | None] = mapped_column(
-        sa.Uuid, ForeignKey("sprints.id", ondelete="SET NULL"), nullable=True
-    )
     # Phase 5: Wiki page link — single page per ticket per CONTEXT.md decision (WIKI-05)
     wiki_page_id: Mapped[uuid.UUID | None] = mapped_column(
         sa.Uuid, ForeignKey("wiki_pages.id", ondelete="SET NULL"), nullable=True

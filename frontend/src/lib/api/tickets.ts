@@ -40,8 +40,7 @@ export interface Ticket {
   dev_cost?: number | null;
   roi?: number | null;
 
-  // Phase 5 fields (ADV-04, ADV-09)
-  sprint_id?: string | null;
+  // Phase 5 fields (ADV-04)
   blocked_by_count?: number;
 
   // Phase 5 custom fields (ADV-01, ADV-02, ADV-03)

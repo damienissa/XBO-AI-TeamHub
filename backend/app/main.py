@@ -10,7 +10,6 @@ from app.routers.custom_fields import router as custom_fields_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.dependencies import router as dependencies_router
 from app.routers.saved_filters import router as saved_filters_router
-from app.routers.sprints import router as sprints_router
 from app.routers.subtasks import router as subtasks_router
 from app.routers.templates import router as templates_router
 from app.routers.tickets import router as tickets_router
@@ -38,7 +37,6 @@ app.include_router(templates_router, prefix="/api")
 # Phase 5: Advanced features routers
 # dependencies router path: /api/tickets/{ticket_id}/dependencies (nested under /api/tickets prefix)
 app.include_router(dependencies_router, prefix="/api/tickets", tags=["dependencies"])
-app.include_router(sprints_router, prefix="/api/sprints", tags=["sprints"])
 app.include_router(custom_fields_router, prefix="/api/custom-field-defs", tags=["custom_fields"])
 app.include_router(saved_filters_router, prefix="/api/saved-filters", tags=["saved_filters"])
 app.include_router(wiki_router, prefix="/api/wiki", tags=["wiki"])

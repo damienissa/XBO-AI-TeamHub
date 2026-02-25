@@ -15,7 +15,6 @@ import type { SessionUser } from "@/lib/dal";
 const NAV_ITEMS = [
   { label: "Board", href: "/board", enabled: true },
   { label: "Dashboard", href: "/dashboard", enabled: true },
-  { label: "Sprints", href: "/sprints", enabled: true },
   { label: "Department Portal", href: "/portal", enabled: true },
   { label: "Templates", href: "/settings/templates", enabled: true },
   { label: "Wiki", href: "/wiki", enabled: true },
