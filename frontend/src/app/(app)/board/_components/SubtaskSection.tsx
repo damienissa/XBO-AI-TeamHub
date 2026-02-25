@@ -180,6 +180,7 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
     mutationFn: (title: string) => createSubtask(ticketId, title),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
     },
   });
 
@@ -202,6 +203,7 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
     },
   });
 
@@ -209,6 +211,7 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
     mutationFn: (subtaskId: string) => deleteSubtask(ticketId, subtaskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["board"] });
     },
   });
 
@@ -232,11 +235,14 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
     // Optimistic local update
     queryClient.setQueryData<Subtask[]>(["subtasks", ticketId], reordered);
 
-    // Persist to server
-    reorderSubtasks(ticketId, reordered.map((s) => s.id)).catch(() => {
-      // On failure, refetch to restore server state
-      queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
-    });
+    // Persist to server — always refetch after to confirm saved order
+    reorderSubtasks(ticketId, reordered.map((s) => s.id))
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
+      })
+      .catch(() => {
+        queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
+      });
   }
 
   const doneCount = subtasks.filter((s) => s.done).length;

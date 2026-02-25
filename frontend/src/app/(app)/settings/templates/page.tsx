@@ -384,8 +384,9 @@ export default function TemplatesPage() {
         </div>
       )}
 
-      {/* Create / Edit dialog */}
+      {/* Create / Edit dialog — key forces remount so useForm picks up fresh defaultValues */}
       <TemplateFormDialog
+        key={editTarget?.id ?? "new"}
         open={formOpen}
         onOpenChange={setFormOpen}
         editTarget={editTarget}

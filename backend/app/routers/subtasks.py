@@ -25,6 +25,22 @@ async def _get_ticket_or_404(db: AsyncSession, ticket_id: uuid.UUID) -> None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
 
 
+@router.get("/", response_model=list[SubtaskOut])
+async def list_subtasks(
+    ticket_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> list[SubtaskOut]:
+    """COLLAB-03: List subtasks for a ticket ordered by position."""
+    await _get_ticket_or_404(db, ticket_id)
+    result = await db.execute(
+        select(TicketSubtask)
+        .where(TicketSubtask.ticket_id == ticket_id)
+        .order_by(TicketSubtask.position.asc())
+    )
+    return [SubtaskOut.model_validate(s) for s in result.scalars().all()]
+
+
 @router.post("/", response_model=SubtaskOut, status_code=201)
 async def create_subtask(
     ticket_id: uuid.UUID,
@@ -50,6 +66,36 @@ async def create_subtask(
     await db.commit()
     await db.refresh(subtask)
     return SubtaskOut.model_validate(subtask)
+
+
+@router.patch("/reorder", response_model=list[SubtaskOut])
+async def reorder_subtasks(
+    ticket_id: uuid.UUID,
+    data: SubtaskReorderRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+) -> list[SubtaskOut]:
+    """COLLAB-06: Reorder subtasks atomically. Assigns positions 0..N-1 per ordered_ids."""
+    await _get_ticket_or_404(db, ticket_id)
+
+    result = await db.execute(
+        select(TicketSubtask).where(TicketSubtask.ticket_id == ticket_id)
+    )
+    subtasks = result.scalars().all()
+    subtask_map = {s.id: s for s in subtasks}
+
+    # Validate that all submitted IDs belong to this ticket
+    if set(data.ordered_ids) != set(subtask_map.keys()):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ordered_ids must contain exactly the subtask IDs for this ticket",
+        )
+
+    for i, subtask_id in enumerate(data.ordered_ids):
+        subtask_map[subtask_id].position = i
+
+    await db.commit()
+    return [SubtaskOut.model_validate(s) for s in sorted(subtasks, key=lambda s: s.position)]
 
 
 @router.patch("/{subtask_id}", response_model=SubtaskOut)
@@ -84,7 +130,7 @@ async def delete_subtask(
     db: Annotated[AsyncSession, Depends(get_db)],
     _: Annotated[User, Depends(get_current_user)],
 ) -> None:
-    """Delete a subtask and resequence remaining positions (Pitfall 2 fix: no gaps)."""
+    """Delete a subtask and resequence remaining positions."""
     result = await db.execute(
         select(TicketSubtask).where(
             TicketSubtask.id == subtask_id,
@@ -109,33 +155,3 @@ async def delete_subtask(
         s.position = i
 
     await db.commit()
-
-
-@router.patch("/reorder", response_model=list[SubtaskOut])
-async def reorder_subtasks(
-    ticket_id: uuid.UUID,
-    data: SubtaskReorderRequest,
-    db: Annotated[AsyncSession, Depends(get_db)],
-    _: Annotated[User, Depends(get_current_user)],
-) -> list[SubtaskOut]:
-    """COLLAB-06: Reorder subtasks atomically. Assigns positions 0..N-1 per ordered_ids."""
-    await _get_ticket_or_404(db, ticket_id)
-
-    result = await db.execute(
-        select(TicketSubtask).where(TicketSubtask.ticket_id == ticket_id)
-    )
-    subtasks = result.scalars().all()
-    subtask_map = {s.id: s for s in subtasks}
-
-    # Validate that all submitted IDs belong to this ticket
-    if set(data.ordered_ids) != set(subtask_map.keys()):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="ordered_ids must contain exactly the subtask IDs for this ticket",
-        )
-
-    for i, subtask_id in enumerate(data.ordered_ids):
-        subtask_map[subtask_id].position = i
-
-    await db.commit()
-    return [SubtaskOut.model_validate(s) for s in sorted(subtasks, key=lambda s: s.position)]
