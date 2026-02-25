@@ -5,8 +5,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsString } from "nuqs";
 import { createTicket } from "@/lib/api/tickets";
 import { getDepartments } from "@/lib/api/client";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 interface Department {
   id: string;
@@ -14,9 +16,25 @@ interface Department {
   name: string;
 }
 
+interface Template {
+  id: string;
+  title: string;
+  problem_statement: object | null;
+  default_urgency: number | null;
+  default_effort_estimate: number | null;
+  default_next_step: string | null;
+}
+
+async function fetchTemplates(): Promise<Template[]> {
+  const res = await fetch(`${API}/api/templates`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch templates");
+  return res.json();
+}
+
 export function QuickAddInput() {
   const [title, setTitle] = useState("");
   const [departmentId, setDepartmentId] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +49,40 @@ export function QuickAddInput() {
     queryFn: getDepartments,
     staleTime: 60_000,
   });
+
+  // Fetch templates for the "Use template" selector
+  const { data: templates } = useQuery<Template[]>({
+    queryKey: ["templates"],
+    queryFn: fetchTemplates,
+    staleTime: 30_000,
+  });
+
+  function handleTemplateSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+    const templateId = e.target.value;
+    setSelectedTemplateId(templateId);
+
+    if (!templateId) {
+      // Cleared — reset to blank
+      setTitle("");
+      return;
+    }
+
+    const template = templates?.find((t) => t.id === templateId);
+    if (!template) return;
+
+    // Pre-fill title from template (shouldValidate equivalent — directly set state)
+    if (template.title) {
+      setTitle(template.title);
+    }
+    // Note: other fields (urgency, effort_estimate, next_step, problem_statement) will be
+    // pre-filled in the TicketDetailModal once the ticket is created and the modal opens.
+    // The template_id is client-side only — not sent to the server.
+  }
+
+  function handleClearTemplate() {
+    setSelectedTemplateId("");
+    setTitle("");
+  }
 
   async function handleSubmit() {
     if (!title.trim() || !departmentId) {
@@ -56,6 +108,7 @@ export function QuickAddInput() {
       // Reset inputs
       setTitle("");
       setDepartmentId("");
+      setSelectedTemplateId("");
     } catch {
       setError("Failed to create ticket. Please try again.");
     } finally {
@@ -69,8 +122,40 @@ export function QuickAddInput() {
     }
   }
 
+  const hasTemplates = templates && templates.length > 0;
+
   return (
     <div className="mb-3">
+      {/* Template selector — shown only when templates exist */}
+      {hasTemplates && (
+        <div className="mb-1.5 flex items-center gap-1">
+          <select
+            value={selectedTemplateId}
+            onChange={handleTemplateSelect}
+            disabled={isSubmitting}
+            className="flex-1 text-xs px-2 py-1 rounded border border-slate-200 bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50"
+          >
+            <option value="">Use template (optional)...</option>
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.title}
+              </option>
+            ))}
+          </select>
+          {selectedTemplateId && (
+            <button
+              type="button"
+              onClick={handleClearTemplate}
+              disabled={isSubmitting}
+              className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+              aria-label="Clear template"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex gap-1.5">
         <input
           type="text"
