@@ -99,7 +99,7 @@
   - `roi = (annual_savings − dev_cost) / dev_cost` (NULL if dev_cost = 0)
   - `adjusted_roi = roi × (1 − risk_probability)` (NULL if roi is NULL)
 - [x] **ROI-03**: `internal_ai_team_hourly_rate` is a server-side config value (env var, default 75)
-- [ ] **ROI-04**: ROI panel displayed on ticket detail with computed values
+- [x] **ROI-04**: ROI panel displayed on ticket detail with computed values
 - [x] **ROI-05**: Division-by-zero is handled — roi stored as NULL, displayed as "Insufficient data"
 - [x] **ROI-06**: ROI inputs are required on portal submissions, optional on direct board creation
 
@@ -238,7 +238,7 @@
 | ROI-01 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-02 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-03 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
-| ROI-04 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-04 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-05 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-06 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | WIKI-01 | Phase 5 — Advanced Features | Pending |

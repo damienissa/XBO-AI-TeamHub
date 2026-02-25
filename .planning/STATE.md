@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Every XBO request has a tracked lifecycle from Backlog to Done — with owner accountability, ROI justification, and zero SaaS subscription cost.
-**Current focus:** Phase 3 — Collaboration and Department Portal
+**Current focus:** Phase 4 — ROI Estimation and Executive Dashboard
 
 ## Current Position
 
 Phase: 4 of 6 (ROI Estimation and Executive Dashboard)
-Plan: 1 of 3 in current phase — COMPLETE
-Status: Plan 04-01 complete — Alembic migration f9e6148f9818 applied; compute_roi_fields() service; TicketUpdate/TicketOut extended with ROI fields; portal form updated to ROI-01 field names
-Last activity: 2026-02-25 — Completed plan 04-01 (ROI fields migration + computation service + portal update)
+Plan: 2 of 3 in current phase — COMPLETE
+Status: Plan 04-02 complete — RoiPanel.tsx component; TicketDetailModal extended with always-visible ROI section; Ticket interface updated with 14 ROI fields
+Last activity: 2026-02-25 — Completed plan 04-02 (ROI panel component + ticket detail integration)
 
-Progress: [█████████████] 65%
+Progress: [███████████████] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 10.0 min
-- Total execution time: 1.33 hours
+- Total plans completed: 9
+- Average duration: 9.0 min
+- Total execution time: 1.36 hours
 
 **By Phase:**
 
@@ -30,15 +30,16 @@ Progress: [█████████████] 65%
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
 | 03-collaboration-and-department-portal | 4 | 21 min | 5.25 min |
-| 04-roi-estimation-and-executive-dashboard | 1 | 3 min | 3.0 min |
+| 04-roi-estimation-and-executive-dashboard | 2 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 4 min, 1 min, 3 min, 3 min
+- Last 5 plans: 4 min, 1 min, 3 min, 3 min, 2 min
 - Trend: fast
 
 *Updated after each plan completion*
 | Phase 03-collaboration-and-department-portal P04 | 3 | 2 tasks | 3 files |
 | Phase 04-roi-estimation-and-executive-dashboard P01 | 3 | 3 tasks | 6 files |
+| Phase 04-roi-estimation-and-executive-dashboard P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 04-01]: ROI-05 guard: dev_cost==0 yields roi=NULL via explicit check before division (not try/except ZeroDivisionError)
 - [Phase 04-01]: Portal .refine() requires all three Row 1 ROI fields together (hours/employees/avg_hourly_cost) per ROI-06 — partial group submission not allowed
 - [Phase 04-01]: effort_estimate included in _ROI_INPUT_FIELDS trigger set — dev_cost formula depends on it; ROI recomputes when effort changes
+- [Phase 04-02]: RoiPanel always-visible in TicketDetailModal — no accordion, no conditional render, placed between SubtaskSection and Activity Timeline
+- [Phase 04-02]: Live preview uses draft state for weekly/yearly/annual costs; ROI and adjusted_roi are display-only from server (require effort_estimate outside RoiPanel scope)
+- [Phase 04-02]: draft resets via useEffect([ticket]) after PATCH completes — server values replace local draft preventing stale display
 
 ### Pending Todos
 
@@ -103,5 +107,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 04-roi-estimation-and-executive-dashboard/04-01-PLAN.md — COMPLETE. ROI migration, computation service, and portal form update done.
+Stopped at: 04-roi-estimation-and-executive-dashboard/04-02-PLAN.md — COMPLETE. RoiPanel component and TicketDetailModal integration done.
 Resume file: None
