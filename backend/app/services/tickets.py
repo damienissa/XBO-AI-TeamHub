@@ -12,8 +12,34 @@ from sqlalchemy.orm import selectinload
 
 from app.models.column_history import ColumnHistory
 from app.models.ticket import StatusColumn, Ticket
+from app.models.ticket_dependency import ticket_dependencies
 from app.models.ticket_event import TicketEvent
 from app.schemas.ticket import TicketCreate, TicketMoveRequest
+
+
+async def check_not_blocked(db: AsyncSession, ticket_id: uuid.UUID) -> None:
+    """ADV-05: Raise 409 if ticket has any blocking dependency not in Done.
+
+    Queries blockers (tickets in ticket_dependencies.blocker_id) for this ticket
+    and rejects the move if any blocker is not in the Done status column.
+    """
+    result = await db.execute(
+        select(Ticket)
+        .join(ticket_dependencies, ticket_dependencies.c.blocker_id == Ticket.id)
+        .where(ticket_dependencies.c.blocked_id == ticket_id)
+        .where(Ticket.status_column != StatusColumn.Done)
+    )
+    blockers = result.scalars().all()
+    if blockers:
+        ids = ", ".join(str(b.id)[:8] for b in blockers)
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "BLOCKED",
+                "blocker_ids": [str(b.id) for b in blockers],
+                "message": f"Blocked by {ids} — resolve first",
+            },
+        )
 
 
 async def create_ticket(db: AsyncSession, data: TicketCreate, actor_id: uuid.UUID) -> Ticket:
@@ -93,16 +119,19 @@ async def move_ticket(
         )
 
     # TICKET-08: Moving out of Backlog requires owner_id unless ticket already has one
-    if (
+    is_backlog_exit = (
         ticket.status_column == StatusColumn.Backlog
         and data.target_column != StatusColumn.Backlog
-        and ticket.owner_id is None
-        and data.owner_id is None
-    ):
+    )
+    if is_backlog_exit and ticket.owner_id is None and data.owner_id is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="owner_id required when moving out of Backlog",
         )
+
+    # ADV-05: Reject Backlog exit if any blocking dependency is not in Done
+    if is_backlog_exit:
+        await check_not_blocked(db, ticket_id)
 
     now = datetime.now(timezone.utc)
 
