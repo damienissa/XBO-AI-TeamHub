@@ -102,14 +102,14 @@ Plans:
   4. A user can save their current board filter state with a name and reload it from a saved filter picker
   5. A read-only timeline view renders all tickets as date bars derived from their due dates
   6. Any user can read wiki pages linked to tickets; admin and member roles can create and edit wiki pages with rich text content
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: Ticket dependencies — TicketDependency model, server-side move rejection for blocked tickets, dependency display on ticket detail
-- [ ] 05-02: Sprints — Sprint and SprintTicket models, sprint CRUD, ticket assignment to sprint, sprint board with velocity metrics
-- [ ] 05-03: Custom fields and saved filters — CustomFieldDefinition model, JSONB per-ticket values, field display on ticket detail, saved filter presets on User model
-- [ ] 05-04: Wiki — WikiPage model with Tiptap JSON content, CRUD endpoints, page list view, link from ticket detail, role-based write access
-- [ ] 05-05: Timeline view — read-only Gantt-style view derived from ticket due dates
+- [ ] 05-01-PLAN.md — Backend data layer: all 5 new ORM models (ticket_dependency, sprint, custom_field_def, saved_filter, wiki_page), single Alembic migration, Ticket model extensions (sprint_id/wiki_page_id/custom_field_values), all new routers + schemas, move_ticket extended with ADV-05 blocker check
+- [ ] 05-02-PLAN.md — Dependencies + sprints frontend: DependenciesSection on ticket detail, blocked badge on KanbanCard, 409 BLOCKED toast in drag handler, Sprints sidebar nav, sprint list + board pages with velocity header, SprintField combobox picker on ticket detail
+- [ ] 05-03-PLAN.md — Custom fields + saved filters frontend: CustomFieldsSection on ticket detail (workspace + personal, type-aware inputs, inline add personal field), Workspace Settings admin page, SavedFilterDropdown in BoardFilterBar
+- [ ] 05-04-PLAN.md — Wiki frontend: sidebar nav, hierarchical tree list page with collapsible parent-child nodes, wiki page view/edit with Tiptap editor, WikiLinkField combobox picker on ticket detail
+- [ ] 05-05-PLAN.md — Timeline view + human verification: read-only Recharts horizontal BarChart Gantt view at /timeline, sidebar nav, end-to-end Phase 5 checkpoint
 
 ### Phase 6: AI Features
 **Goal**: Admin and member users can invoke AI assistance directly from ticket creation and detail views to generate subtask lists, estimate effort, and summarize ticket progress — all gated by an environment flag with no impact on users when disabled
