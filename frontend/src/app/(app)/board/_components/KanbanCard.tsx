@@ -3,6 +3,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { format, parseISO } from "date-fns";
+import { useQueryState, parseAsString } from "nuqs";
 import { Ticket } from "@/lib/api/tickets";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,9 @@ export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [, setTicketId] = isOverlay ? [null, () => {}] : useQueryState("ticket", parseAsString);
+
   const style = transform
     ? { transform: CSS.Transform.toString(transform) }
     : undefined;
@@ -88,6 +92,9 @@ export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
       style={style}
       {...(isOverlay ? {} : attributes)}
       {...(isOverlay ? {} : listeners)}
+      onClick={() => {
+        if (!isOverlay) setTicketId(ticket.id);
+      }}
       className={cn(
         "bg-white rounded-md shadow-sm border border-slate-200 border-l-4 p-3 cursor-grab active:cursor-grabbing select-none",
         urgencyBorderClass,

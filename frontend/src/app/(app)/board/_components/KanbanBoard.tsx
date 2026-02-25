@@ -17,6 +17,7 @@ import { KanbanColumn } from "./KanbanColumn";
 import { KanbanDragOverlay } from "./KanbanDragOverlay";
 import { OwnerModal } from "./OwnerModal";
 import { BoardFilterBar } from "./BoardFilterBar";
+import { TicketDetailModal } from "./TicketDetailModal";
 
 const COLUMNS: StatusColumn[] = [
   "Backlog",
@@ -167,6 +168,9 @@ export function KanbanBoard() {
           }}
         />
       )}
+
+      {/* Ticket detail modal — mounted once; uses nuqs ?ticket= URL state */}
+      <TicketDetailModal />
     </DndContext>
   );
 }

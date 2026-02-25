@@ -77,3 +77,39 @@ export async function fetchUsers(): Promise<{ id: string; full_name: string; ema
   if (!res.ok) throw new Error("Failed to fetch users");
   return res.json();
 }
+
+export async function fetchTicket(ticketId: string): Promise<Ticket> {
+  const res = await fetch(`${API}/api/tickets/${ticketId}`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch ticket");
+  return res.json();
+}
+
+export interface TicketEvent {
+  id: string;
+  ticket_id: string;
+  event_type: "created" | "moved" | "assigned" | "edited";
+  payload: Record<string, unknown>;
+  actor_id: string | null;
+  created_at: string;
+}
+
+export interface ColumnHistoryEntry {
+  id: string;
+  ticket_id: string;
+  column: string;
+  entered_at: string;
+  exited_at: string | null;
+  time_spent: string | null;
+}
+
+export async function fetchTicketEvents(ticketId: string): Promise<TicketEvent[]> {
+  const res = await fetch(`${API}/api/tickets/${ticketId}/events`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch events");
+  return res.json();
+}
+
+export async function fetchTicketHistory(ticketId: string): Promise<ColumnHistoryEntry[]> {
+  const res = await fetch(`${API}/api/tickets/${ticketId}/history`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to fetch history");
+  return res.json();
+}
