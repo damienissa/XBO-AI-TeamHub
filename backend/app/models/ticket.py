@@ -3,7 +3,7 @@ import enum
 from datetime import date, datetime
 
 import sqlalchemy as sa
-from sqlalchemy import CheckConstraint, ForeignKey, func
+from sqlalchemy import CheckConstraint, Float, ForeignKey, Integer, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -78,11 +78,23 @@ class Ticket(Base):
         nullable=False,
     )
 
-    # Phase 3 portal ROI stub inputs (3 fields per CONTEXT.md decision)
-    # Phase 4 will add full ROI-01 computed fields in a separate migration.
-    hours_saved_per_month: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
-    cost_savings_per_month: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
-    revenue_impact: Mapped[float | None] = mapped_column(sa.Float, nullable=True)
+    # Phase 4 ROI input fields (ROI-01) — full field set replaces Phase 3 stubs
+    current_time_cost_hours_per_week: Mapped[float | None] = mapped_column(Float, nullable=True)
+    employees_affected: Mapped[float | None] = mapped_column(Float, nullable=True)
+    avg_hourly_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
+    current_error_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    revenue_blocked: Mapped[float | None] = mapped_column(Float, nullable=True)
+    strategic_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    expected_savings_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    risk_probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    # Phase 4 computed/persisted ROI output fields (ROI-02)
+    weekly_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
+    yearly_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
+    annual_savings: Mapped[float | None] = mapped_column(Float, nullable=True)
+    dev_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
+    roi: Mapped[float | None] = mapped_column(Float, nullable=True)
+    adjusted_roi: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Phase 3 attachment metadata stub (PORTAL-06)
     # Actual file storage is deferred to a future phase.
