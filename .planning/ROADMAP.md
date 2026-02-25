@@ -48,13 +48,13 @@ Plans:
   3. The board filter bar narrows visible cards by owner, department, priority, date range, and aging; applied filters are reflected in the URL so the view is shareable
   4. A ticket card shows department badge, owner initials, due date, urgency, effort estimate, and time in current column at a glance
   5. Clicking a card opens a detail view with Tiptap rich text editing, a full activity timeline, and the complete column history
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Ticket and event models — Ticket, ColumnHistory, TicketEvent ORM models, indexes, Alembic migration, ticket CRUD endpoints with move_ticket() service
-- [ ] 02-02: Kanban board frontend — 5-column board, dnd-kit drag-and-drop with optimistic update and rollback, owner-assignment modal, 30s polling via TanStack Query
-- [ ] 02-03: Board filters and ticket detail — filter bar with URL persistence, ticket detail modal with Tiptap rich text, activity timeline, column history section
-- [ ] 02-04: Ticket card display — card metadata display (badges, owner initials, time in column, effort estimate), board single-endpoint eager loading
+- [ ] 02-01-PLAN.md — Backend data layer: Ticket/ColumnHistory/TicketEvent ORM models, Alembic migration, ticket CRUD + move endpoint, GET /api/board eager-load, GET /api/auth/users
+- [ ] 02-02-PLAN.md — Kanban board frontend: TanStack Query + NuqsAdapter providers, 5-column board with dnd-kit drag-and-drop, optimistic updates, owner modal, QuickAddInput, full card metadata display, 30s polling
+- [ ] 02-03-PLAN.md — Board filters + ticket detail: nuqs filter bar with URL persistence, Tiptap detail modal with auto-save, inline editing, activity timeline, column history
+- [ ] 02-04-PLAN.md — End-to-end human verification checkpoint for complete Phase 2 workflow
 
 ### Phase 3: Collaboration and Department Portal
 **Goal**: AI team members can collaborate on tickets via comments and subtasks, and can log intake tickets on behalf of any department using a structured portal form
@@ -135,7 +135,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Auth | 3/3 | Complete    | 2026-02-25 |
-| 2. Kanban Core | 0/4 | Not started | - |
+| 2. Kanban Core | 0/4 | Planned      | - |
 | 3. Collaboration and Department Portal | 0/4 | Not started | - |
 | 4. ROI Estimation and Executive Dashboard | 0/3 | Not started | - |
 | 5. Advanced Features | 0/5 | Not started | - |
