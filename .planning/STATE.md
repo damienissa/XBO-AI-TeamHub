@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 5 of 6 (Advanced Features)
-Plan: 1 of 5 complete — Plan 05-01 backend data layer complete
-Status: Plan 05-01 tasks complete — 5 new ORM models, migration at head, 5 routers, ADV-05 blocker check; ready for 05-02
-Last activity: 2026-02-25 — Completed plan 05-01 (backend data layer for all Phase 5 sub-features)
+Plan: 2 of 5 complete — Plan 05-02 frontend dependencies + sprints UI complete
+Status: Plan 05-02 tasks complete — DependenciesSection, blocked badge, 409 toast, sprint pages, SprintField; ready for 05-03
+Last activity: 2026-02-25 — Completed plan 05-02 (frontend UI for ticket dependencies and sprints)
 
 Progress: [█████████████████] 80%
 
@@ -42,6 +42,7 @@ Progress: [█████████████████] 80%
 | Phase 04-roi-estimation-and-executive-dashboard P02 | 2 | 2 tasks | 3 files |
 | Phase 04-roi-estimation-and-executive-dashboard P03 | 2 | 2 tasks | 6 files |
 | Phase 05-advanced-features P01 | 6 | 3 tasks | 21 files |
+| Phase 05-advanced-features P02 | 4 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,10 @@ Recent decisions affecting current work:
 - [Phase 05-01]: wiki parent_id ON DELETE SET NULL — orphaned child pages become top-level, preventing bulk deletion (RESEARCH.md Pitfall 5)
 - [Phase 05-01]: check_not_blocked() in move_ticket service, called on is_backlog_exit=True only — returns HTTP 409 with {code: BLOCKED} (ADV-05)
 - [Phase 05-01]: dependencies router prefix /api/tickets (not /api/tickets/) — forms /api/tickets/{ticket_id}/dependencies correctly
+- [Phase 05-02]: blocked_by_count computed via batch COUNT query on ticket_dependencies in board endpoint — same N=1 query pattern as subtask_counts
+- [Phase 05-02]: TicketBlockedError extends Error with blocker_ids — typed structured 409 BLOCKED errors from moveTicket; instanceof check in useMoveTicket onError
+- [Phase 05-02]: Used existing shadcn useToast (not sonner) for 409 BLOCKED toast — sonner not installed; Toaster added to Providers component to make toasts visible
+- [Phase 05-02]: Sprint board page is display-only (no dnd-kit) per RESEARCH.md Pitfall 4 — sprint board is a reporting view not a workflow tool
 
 ### Pending Todos
 
@@ -118,5 +123,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 05-advanced-features/05-01-PLAN.md — All 3 tasks complete. Backend data layer for Phase 5 fully implemented.
+Stopped at: 05-advanced-features/05-02-PLAN.md — All 2 tasks complete. Frontend for dependencies + sprints fully implemented.
 Resume file: None
