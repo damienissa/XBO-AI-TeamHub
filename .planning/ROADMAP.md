@@ -72,7 +72,7 @@ Plans:
 - [ ] 03-01-PLAN.md — Collaboration backend: TicketComment, TicketSubtask, TicketTemplate ORM models, Alembic migration, CRUD endpoints for comments/subtasks/templates, ROI stub columns + attachment stub columns on tickets, GET /api/config
 - [ ] 03-02-PLAN.md — Subtasks and comments frontend: SubtaskSection (dnd-kit/sortable reorder, inline add, checkbox toggle), CommentSection (chronological thread, always-visible input, author/admin delete with confirm), both embedded in TicketDetailModal, KanbanCard subtask count badge
 - [ ] 03-03-PLAN.md — Department portal: Portal sidebar nav, /portal department selection page, /portal/[dept] full-page intake form with all ticket fields + ROI inputs, live ROI calculation via /api/config, zod cross-field validation, success confirmation with "View on board" link
-- [ ] 03-04-PLAN.md — Templates and verification: /settings/templates CRUD page, "create from template" flow in ticket creation form (pre-fill with shouldValidate:true), human E2E verification checkpoint for all Phase 3 features
+- [x] 03-04-PLAN.md — Templates and verification: /settings/templates CRUD page, "create from template" flow in ticket creation form (pre-fill with shouldValidate:true), human E2E verification checkpoint for all Phase 3 features (completed 2026-02-25)
 
 ### Phase 4: ROI Estimation and Executive Dashboard
 **Goal**: Every ticket has a computed ROI panel visible to all users, and executives have a single dashboard showing throughput, cycle time, bottleneck columns, team workload, and department breakdowns
