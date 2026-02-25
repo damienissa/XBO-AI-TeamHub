@@ -18,13 +18,13 @@ interface WikiPageNode {
 function buildTree(pages: WikiPageNode[]): WikiPageNode[] {
   const map = new Map(pages.map(p => [p.id, { ...p, children: [] as WikiPageNode[] }]));
   const roots: WikiPageNode[] = [];
-  for (const page of map.values()) {
+  Array.from(map.values()).forEach((page) => {
     if (page.parent_id && map.has(page.parent_id)) {
       map.get(page.parent_id)!.children!.push(page);
     } else {
       roots.push(page);
     }
-  }
+  });
   return roots;
 }
 
