@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 3 of 6 (Collaboration and Department Portal)
-Plan: 1 of 4 in current phase
-Status: Plan 03-01 complete — collaboration backend (comments, subtasks, templates) with migration
-Last activity: 2026-02-25 — Completed plan 03-01 (3 new ORM models, 3 new routers, Alembic migration 93dab7e5b92c applied at head)
+Plan: 2 of 4 in current phase
+Status: Plan 03-02 complete — subtask and comment UI (SubtaskSection, CommentSection, KanbanCard badge)
+Last activity: 2026-02-25 — Completed plan 03-02 (SubtaskSection with nested DnD, CommentSection with AlertDialog confirm, board subtask counts via batch subquery)
 
-Progress: [████████░░] 40%
+Progress: [█████████░] 45%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 9.9 min
-- Total execution time: 1.18 hours
+- Total plans completed: 8
+- Average duration: 10.0 min
+- Total execution time: 1.33 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████████░░] 40%
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
-| 03-collaboration-and-department-portal | 1 | 3 min | 3.0 min |
+| 03-collaboration-and-department-portal | 2 | 12 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 45 min, 6 min, 4 min, 1 min, 3 min
+- Last 5 plans: 6 min, 4 min, 1 min, 3 min, 9 min
 - Trend: fast
 
 *Updated after each plan completion*
@@ -75,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 03-01]: ROI stub columns only (hours_saved_per_month, cost_savings_per_month, revenue_impact) — Phase 4 adds full ROI-01 computed fields in separate migration per CONTEXT.md
 - [Phase 03-01]: GET /api/config (no auth) exposes AI_TEAM_HOURLY_RATE for frontend live ROI calculation; added in Phase 3 alongside comment/subtask/template routers
 - [Phase 03-01]: Subtask delete resequences positions 0..N-1 in same transaction — prevents gaps that cause off-by-one errors on subsequent reorders (RESEARCH.md Pitfall 2)
+- [Phase 03-02]: Nested DndContext for subtask drag in SubtaskSection — completely isolated from Kanban board DndContext; no stopPropagation needed (RESEARCH.md Pitfall 1 fix)
+- [Phase 03-02]: Board subtask counts via batch GROUP BY subquery — single query for all ticket_ids, no selectinload full rows (RESEARCH.md Pitfall 3 fix)
+- [Phase 03-02]: fetchMe() in CommentSection via useQuery(['me'], staleTime 60s) — avoids prop-drilling current user down from TicketDetailModal; clean separation of concerns
+- [Phase 03-02]: @radix-ui/react-alert-dialog installed; alert-dialog.tsx created as shadcn wrapper — used for comment delete confirm; available for future destructive actions
 
 ### Pending Todos
 
@@ -88,5 +92,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 03-collaboration-and-department-portal/03-01-PLAN.md — collaboration backend: 3 ORM models, 3 routers, Alembic migration 93dab7e5b92c. Ready for Plan 03-02.
+Stopped at: Completed 03-collaboration-and-department-portal/03-02-PLAN.md — subtask UI (SubtaskSection with nested DnD), comment UI (CommentSection with AlertDialog confirm), KanbanCard badge, board subtask counts. Ready for Plan 03-03.
 Resume file: None

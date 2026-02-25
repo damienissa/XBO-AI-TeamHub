@@ -65,7 +65,7 @@
 - [x] **COLLAB-04**: User can add subtasks to a ticket (title, done boolean, position integer)
 - [x] **COLLAB-05**: Subtasks are displayed as a checklist and can be checked/unchecked
 - [x] **COLLAB-06**: Subtasks can be reordered via drag-and-drop (position persisted server-side)
-- [ ] **COLLAB-07**: Card on Kanban shows subtask completion count (e.g., "2/5 subtasks")
+- [x] **COLLAB-07**: Card on Kanban shows subtask completion count (e.g., "2/5 subtasks")
 
 ### Department Portal (PORTAL)
 
@@ -219,7 +219,7 @@
 | COLLAB-04 | Phase 3 — Collaboration and Department Portal | Complete |
 | COLLAB-05 | Phase 3 — Collaboration and Department Portal | Complete |
 | COLLAB-06 | Phase 3 — Collaboration and Department Portal | Complete |
-| COLLAB-07 | Phase 3 — Collaboration and Department Portal | Pending |
+| COLLAB-07 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-01 | Phase 3 — Collaboration and Department Portal | Pending |
 | PORTAL-02 | Phase 3 — Collaboration and Department Portal | Pending |
 | PORTAL-03 | Phase 3 — Collaboration and Department Portal | Pending |
