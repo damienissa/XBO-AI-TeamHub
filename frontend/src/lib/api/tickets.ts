@@ -22,6 +22,9 @@ export interface Ticket {
   owner: { id: string; full_name: string; email: string } | null;
   department: { id: string; slug: string; name: string };
   time_in_column: string | null;
+  // Subtask counts from board endpoint (COLLAB-07)
+  subtasks_total: number;
+  subtasks_done: number;
 }
 
 export interface BoardData {
@@ -111,5 +114,19 @@ export async function fetchTicketEvents(ticketId: string): Promise<TicketEvent[]
 export async function fetchTicketHistory(ticketId: string): Promise<ColumnHistoryEntry[]> {
   const res = await fetch(`${API}/api/tickets/${ticketId}/history`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch history");
+  return res.json();
+}
+
+export interface CurrentUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: "admin" | "member";
+  is_active: boolean;
+}
+
+export async function fetchMe(): Promise<CurrentUser> {
+  const res = await fetch(`${API}/api/auth/me`, { credentials: "include" });
+  if (!res.ok) throw new Error("Not authenticated");
   return res.json();
 }

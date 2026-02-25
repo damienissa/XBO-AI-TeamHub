@@ -75,6 +75,9 @@ class TicketOut(BaseModel):
     owner: Optional[UserOut] = None
     department: Optional[DepartmentOut] = None
     time_in_column: Optional[str] = None
+    # Subtask counts — computed by board endpoint via subquery (Pitfall 3 avoidance)
+    subtasks_total: int = 0
+    subtasks_done: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 

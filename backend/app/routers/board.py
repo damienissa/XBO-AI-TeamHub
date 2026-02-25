@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.dependencies import get_current_user
 from app.models.column_history import ColumnHistory
 from app.models.ticket import Priority, StatusColumn, Ticket
+from app.models.ticket_subtask import TicketSubtask
 from app.models.user import User
 from app.schemas.ticket import BoardTicketOut
 
@@ -127,12 +128,31 @@ async def get_board(
     )
     open_rows_by_ticket = {row.ticket_id: row for row in open_rows_result.scalars().all()}
 
+    # Batch query for subtask counts per ticket — single query, no selectinload (Pitfall 3 fix)
+    subtask_counts_result = await db.execute(
+        select(
+            TicketSubtask.ticket_id,
+            func.count(TicketSubtask.id).label("total"),
+            func.sum(case((TicketSubtask.done == True, 1), else_=0)).label("done"),  # noqa: E712
+        )
+        .where(TicketSubtask.ticket_id.in_(ticket_ids))
+        .group_by(TicketSubtask.ticket_id)
+    )
+    subtask_counts_by_ticket: dict[uuid.UUID, tuple[int, int]] = {
+        row.ticket_id: (row.total, row.done)
+        for row in subtask_counts_result
+    }
+
     output = []
     for ticket in tickets:
         ticket_out = BoardTicketOut.model_validate(ticket)
         open_row = open_rows_by_ticket.get(ticket.id)
         if open_row is not None:
             ticket_out.time_in_column = _format_time_in_column(open_row.entered_at)
+        counts = subtask_counts_by_ticket.get(ticket.id)
+        if counts is not None:
+            ticket_out.subtasks_total = counts[0]
+            ticket_out.subtasks_done = counts[1]
         output.append(ticket_out)
 
     return output

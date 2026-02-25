@@ -9,6 +9,8 @@ import { X } from "lucide-react";
 import { useTicketDetail } from "@/hooks/useTicketDetail";
 import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
+import { SubtaskSection } from "./SubtaskSection";
+import { CommentSection } from "./CommentSection";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -414,6 +416,9 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
           />
         </div>
 
+        {/* Subtasks (COLLAB-04/05/06) — between description fields and activity timeline */}
+        <SubtaskSection ticketId={ticket.id} />
+
         {/* Activity Timeline (DETAIL-05) */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-slate-700">Activity Timeline</h3>
@@ -502,6 +507,9 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
             <p className="text-sm text-slate-400">No column history yet.</p>
           )}
         </div>
+
+        {/* Comments (COLLAB-01/02/03) — below column history */}
+        <CommentSection ticketId={ticket.id} />
 
         {/* Save indicator */}
         {updateMutation.isPending && (

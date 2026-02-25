@@ -2,7 +2,8 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInCalendarDays } from "date-fns";
+import { Check } from "lucide-react";
 import { useQueryState, parseAsString } from "nuqs";
 import { Ticket } from "@/lib/api/tickets";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,14 @@ function formatEffort(hours: number | null): string | null {
   if (hours === null) return null;
   if (hours >= 8) return `${Math.round(hours / 8)}d`;
   return `${hours}h`;
+}
+
+// Format days remaining relative to today
+function formatDaysRemaining(dueDateStr: string): { text: string; className: string } {
+  const diff = differenceInCalendarDays(parseISO(dueDateStr), new Date());
+  if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, className: "text-red-500 font-medium" };
+  if (diff === 0) return { text: "Due today", className: "text-orange-500 font-medium" };
+  return { text: `${diff}d remaining`, className: "text-slate-400" };
 }
 
 // Get owner initials from full name
@@ -156,17 +165,18 @@ export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
             <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 flex-shrink-0" />
           )}
 
-          {/* Due date */}
-          {ticket.due_date && (
-            <span
-              className={cn(
-                "text-xs",
-                isPastDue ? "text-red-500 font-medium" : "text-slate-500"
-              )}
-            >
-              {format(parseISO(ticket.due_date), "MMM d")}
-            </span>
-          )}
+          {/* Due date + days remaining */}
+          {ticket.due_date && (() => {
+            const { text, className } = formatDaysRemaining(ticket.due_date);
+            return (
+              <span className="flex items-center gap-1">
+                <span className={cn("text-xs", isPastDue ? "text-red-500 font-medium" : "text-slate-500")}>
+                  {format(parseISO(ticket.due_date), "MMM d")}
+                </span>
+                <span className={cn("text-xs", className)}>· {text}</span>
+              </span>
+            );
+          })()}
 
           {/* Effort estimate */}
           {effortText && (
@@ -178,6 +188,23 @@ export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
       {/* Time in column (BOARD-04) */}
       {ticket.time_in_column && (
         <p className="text-xs text-slate-400 mt-1.5">{ticket.time_in_column}</p>
+      )}
+
+      {/* Subtask count badge (COLLAB-07) — hidden when no subtasks */}
+      {ticket.subtasks_total > 0 && (
+        <div className="mt-1.5">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded font-medium",
+              ticket.subtasks_done === ticket.subtasks_total
+                ? "bg-green-100 text-green-700"
+                : "bg-slate-100 text-slate-600"
+            )}
+          >
+            <Check className="h-3 w-3" />
+            {ticket.subtasks_done}/{ticket.subtasks_total}
+          </span>
+        </div>
       )}
     </div>
   );
