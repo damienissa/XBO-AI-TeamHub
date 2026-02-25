@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     COOKIE_SAMESITE: str = "strict"
     COOKIE_SECURE: bool = False
     DB_ECHO: bool = False
+    AI_TEAM_HOURLY_RATE: float = 75.0
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
