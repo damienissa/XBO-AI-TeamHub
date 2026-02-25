@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Every XBO request has a tracked lifecycle from Backlog to Done — with owner accountability, ROI justification, and zero SaaS subscription cost.
-**Current focus:** Phase 5 — Advanced Features
+**Current focus:** Phase 6 — AI Features
 
 ## Current Position
 
-Phase: 5 of 6 (Advanced Features)
-Plan: 5 of 5 complete — Plan 05-05 timeline Gantt view + Phase 5 end-to-end verification
-Status: Phase 5 complete — all 5 plans executed; dependencies, custom fields, saved filters, wiki verified end-to-end; timeline built then removed at user request; ready for Phase 6
-Last activity: 2026-02-25 — Completed plan 05-05 (timeline Gantt + Phase 5 human verification approved)
+Phase: 6 of 6 (AI Features)
+Plan: 1 of 2 complete — Plan 06-01 AI backend endpoints (subtask generation, effort estimation, progress summarization)
+Status: Phase 6 in progress — Plan 06-01 complete; three Anthropic Claude endpoints with AI_ENABLED feature flag, AsyncAnthropic singleton, structured JSON output, /api/config extended
+Last activity: 2026-02-25 — Completed plan 06-01 (AI backend: 3 endpoints + settings extension + schemas)
 
-Progress: [████████████████████] 88%
+Progress: [████████████████████] 92%
 
 ## Performance Metrics
 
@@ -121,6 +121,11 @@ Recent decisions affecting current work:
 - [Phase 05-04]: Delete 403 handled client-side with useToast destructive toast — server enforces admin role; button visible to all users, 403 caught in onError
 - [Phase 05-05]: isAnimationActive=false on both stacked Recharts BarChart bars — required for correct Gantt stacking; animation breaks visual positioning in stacked layout
 - [Phase 05-05]: Timeline feature removed post-verification at user request (commit 590c505) — built and verified as ADV-11, then cleanly removed from sidebar and filesystem
+- [Phase 06-01]: AI_ENABLED: bool = False and ANTHROPIC_API_KEY: str = "" as pydantic-settings defaults — app starts without Anthropic credentials; ValidationError prevented by empty-string default
+- [Phase 06-01]: Module-level AsyncAnthropic singleton with timeout=60.0 — overrides 10-min SDK default; reuses httpx connection pool across requests
+- [Phase 06-01]: All three AI endpoints return HTTP 503 when AI_ENABLED=false — uniform behavior; 503 chosen over 501/404 to signal "service unavailable" not "route missing"
+- [Phase 06-01]: get_db imported from app.core.database (not app.database) — plan comment had wrong path; corrected per existing router pattern in wiki.py
+- [Phase 06-01]: Tiptap JSON extracted server-side in summarize_ticket — frontend sends only ticket_id for AI-03; backend reads problem_statement JSONB and extracts plain text before Claude prompt
 
 ### Pending Todos
 
@@ -134,5 +139,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 05-advanced-features/05-05-PLAN.md — All 2 tasks complete. Phase 5 fully verified: dependencies, custom fields, saved filters, wiki confirmed end-to-end. Timeline built (ADV-11) then removed at user request.
+Stopped at: 06-ai-features/06-01-PLAN.md — All 2 tasks complete. AI backend: 3 Anthropic Claude endpoints with AI_ENABLED feature flag, AsyncAnthropic singleton, structured JSON output, /api/config extended. Ready for Plan 06-02 frontend.
 Resume file: None

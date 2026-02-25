@@ -113,9 +113,9 @@
 
 ### AI Features (AI) — gated by AI_ENABLED env flag
 
-- [ ] **AI-01**: `POST /api/ai/subtasks` — accepts ticket fields, returns a proposed subtask list; 503 if AI_ENABLED=false
-- [ ] **AI-02**: `POST /api/ai/effort_estimate` — accepts ticket fields, returns estimated effort hours; 503 if AI_ENABLED=false
-- [ ] **AI-03**: `POST /api/ai/summary` — accepts ticket_id, reads comments + subtasks + events, returns a progress summary; 503 if AI_ENABLED=false
+- [x] **AI-01**: `POST /api/ai/subtasks` — accepts ticket fields, returns a proposed subtask list; 503 if AI_ENABLED=false
+- [x] **AI-02**: `POST /api/ai/effort_estimate` — accepts ticket fields, returns estimated effort hours; 503 if AI_ENABLED=false
+- [x] **AI-03**: `POST /api/ai/summary` — accepts ticket_id, reads comments + subtasks + events, returns a progress summary; 503 if AI_ENABLED=false
 - [ ] **AI-04**: Ticket detail has "Generate subtasks with AI" button (calls AI-01, populates subtask list for review)
 - [ ] **AI-05**: Ticket creation form has "Estimate effort with AI" button (calls AI-02, pre-fills effort field)
 - [ ] **AI-06**: Ticket detail has "Summarize progress" button (calls AI-03, shows summary in a panel)
@@ -257,9 +257,9 @@
 | ADV-09 | Phase 5 — Advanced Features | Complete |
 | ADV-10 | Phase 5 — Advanced Features | Complete |
 | ADV-11 | Phase 5 — Advanced Features | Complete |
-| AI-01 | Phase 6 — AI Features | Pending |
-| AI-02 | Phase 6 — AI Features | Pending |
-| AI-03 | Phase 6 — AI Features | Pending |
+| AI-01 | Phase 6 — AI Features | Complete |
+| AI-02 | Phase 6 — AI Features | Complete |
+| AI-03 | Phase 6 — AI Features | Complete |
 | AI-04 | Phase 6 — AI Features | Pending |
 | AI-05 | Phase 6 — AI Features | Pending |
 | AI-06 | Phase 6 — AI Features | Pending |
