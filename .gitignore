@@ -179,3 +179,7 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Frontend Next.js source directories — must not be excluded by Python lib/ pattern above
+!frontend/src/lib/
+!frontend/src/lib/**

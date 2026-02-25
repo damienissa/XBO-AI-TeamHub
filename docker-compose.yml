@@ -30,14 +30,18 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
   frontend:
-    image: alpine:3.19
-    command: tail -f /dev/null
+    build: ./frontend
+    command: npm run dev
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     environment:
       NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_SESSION_SECRET: ${SECRET_KEY}
 
 volumes:
   postgres_data:
