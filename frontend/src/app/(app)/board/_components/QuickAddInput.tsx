@@ -70,13 +70,9 @@ export function QuickAddInput() {
     const template = templates?.find((t) => t.id === templateId);
     if (!template) return;
 
-    // Pre-fill title from template (shouldValidate equivalent — directly set state)
     if (template.title) {
       setTitle(template.title);
     }
-    // Note: other fields (urgency, effort_estimate, next_step, problem_statement) will be
-    // pre-filled in the TicketDetailModal once the ticket is created and the modal opens.
-    // The template_id is client-side only — not sent to the server.
   }
 
   function handleClearTemplate() {
@@ -94,9 +90,19 @@ export function QuickAddInput() {
     setIsSubmitting(true);
 
     try {
+      const template = selectedTemplateId
+        ? templates?.find((t) => t.id === selectedTemplateId)
+        : undefined;
+
       const newTicket = await createTicket({
         title: title.trim(),
         department_id: departmentId,
+        ...(template && {
+          problem_statement: template.problem_statement,
+          urgency: template.default_urgency,
+          effort_estimate: template.default_effort_estimate,
+          next_step: template.default_next_step,
+        }),
       });
 
       // Refresh the board to show the new ticket

@@ -62,7 +62,14 @@ export async function fetchBoard(filters: Record<string, string | null> = {}): P
   return res.json();
 }
 
-export async function createTicket(data: { title: string; department_id: string }): Promise<Ticket> {
+export async function createTicket(data: {
+  title: string;
+  department_id: string;
+  problem_statement?: object | null;
+  urgency?: number | null;
+  effort_estimate?: number | null;
+  next_step?: string | null;
+}): Promise<Ticket> {
   const res = await fetch(`${API}/api/tickets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
