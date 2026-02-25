@@ -121,11 +121,11 @@ Plans:
   3. Clicking "Summarize progress" on a ticket detail returns a text summary of comments, subtasks, and events in a visible panel
   4. All AI buttons show a loading state while the request is in flight; any error produces a visible user-facing message instead of silent failure
   5. When AI_ENABLED=false, all AI endpoints return 503 and the AI buttons either hide or show a clear "not available" state — no broken UI
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: AI backend — AI_ENABLED feature flag, POST /api/ai/subtasks, POST /api/ai/effort_estimate, POST /api/ai/summary with Claude API integration and 503 guard
-- [ ] 06-02: AI frontend — "Generate subtasks with AI", "Estimate effort with AI", "Summarize progress" buttons with loading states, error handling, and disabled states when AI is off
+- [ ] 06-01-PLAN.md — AI backend: extend Settings with AI_ENABLED/ANTHROPIC_API_KEY/AI_MODEL, add anthropic>=0.50 to requirements, create app/schemas/ai.py + app/routers/ai.py with 3 endpoints (subtasks/effort_estimate/summary) and 503 guard, extend /api/config to return ai_enabled
+- [ ] 06-02-PLAN.md — AI frontend: useAiEnabled hook, lib/api/ai.ts fetch functions, SubtaskAiModal (editable list → append to ticket), AiSummarySection (collapsible, ephemeral), effort estimate button in portal form, wire all into TicketDetailModal + SubtaskSection; human verification checkpoint
 
 ## Progress
 
