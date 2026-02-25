@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 4 of 6 (ROI Estimation and Executive Dashboard)
-Plan: 2 of 3 in current phase — COMPLETE
-Status: Plan 04-02 complete — RoiPanel.tsx component; TicketDetailModal extended with always-visible ROI section; Ticket interface updated with 14 ROI fields
-Last activity: 2026-02-25 — Completed plan 04-02 (ROI panel component + ticket detail integration)
+Plan: 3 of 3 in current phase — AWAITING CHECKPOINT
+Status: Plan 04-03 tasks complete — GET /api/dashboard endpoint, DashboardOut schema, dashboard page with Recharts charts; awaiting human-verify checkpoint
+Last activity: 2026-02-25 — Completed plans 04-01, 04-02, 04-03 (checkpoint:human-verify pending)
 
-Progress: [███████████████] 70%
+Progress: [████████████████] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 9.0 min
-- Total execution time: 1.36 hours
+- Total plans completed: 10
+- Average duration: 8.5 min
+- Total execution time: 1.39 hours
 
 **By Phase:**
 
@@ -30,16 +30,17 @@ Progress: [███████████████] 70%
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
 | 03-collaboration-and-department-portal | 4 | 21 min | 5.25 min |
-| 04-roi-estimation-and-executive-dashboard | 2 | 5 min | 2.5 min |
+| 04-roi-estimation-and-executive-dashboard | 3 | 7 min | 2.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 1 min, 3 min, 3 min, 2 min
+- Last 5 plans: 1 min, 3 min, 3 min, 2 min, 2 min
 - Trend: fast
 
 *Updated after each plan completion*
 | Phase 03-collaboration-and-department-portal P04 | 3 | 2 tasks | 3 files |
 | Phase 04-roi-estimation-and-executive-dashboard P01 | 3 | 3 tasks | 6 files |
 | Phase 04-roi-estimation-and-executive-dashboard P02 | 2 | 2 tasks | 3 files |
+| Phase 04-roi-estimation-and-executive-dashboard P03 | 2 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,10 @@ Recent decisions affecting current work:
 - [Phase 04-02]: RoiPanel always-visible in TicketDetailModal — no accordion, no conditional render, placed between SubtaskSection and Activity Timeline
 - [Phase 04-02]: Live preview uses draft state for weekly/yearly/annual costs; ROI and adjusted_roi are display-only from server (require effort_estimate outside RoiPanel scope)
 - [Phase 04-02]: draft resets via useEffect([ticket]) after PATCH completes — server values replace local draft preventing stale display
+- [Phase 04-03]: Dashboard endpoint uses aliased(ColumnHistory) twice (done_ch for cycle time KPI, dept_done_ch for dept breakdown) — avoids SQLAlchemy ambiguous join errors
+- [Phase 04-03]: Workload user names fetched via second batch query (SELECT id, full_name WHERE id IN (...)) — Ticket.owner has lazy=raise so selectinload not usable; batch IN query is N=1 total
+- [Phase 04-03]: staleTime 5 min, no refetchInterval on dashboard query — executive metrics don't need 30s board-level freshness
+- [Phase 04-03]: ResponsiveContainer height={220} as pixel value — avoids flex parent zero-height pitfall (RESEARCH.md Pitfall 2)
 
 ### Pending Todos
 
@@ -107,5 +112,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 04-roi-estimation-and-executive-dashboard/04-02-PLAN.md — COMPLETE. RoiPanel component and TicketDetailModal integration done.
+Stopped at: 04-roi-estimation-and-executive-dashboard/04-03-PLAN.md — Tasks 1+2 complete. Awaiting checkpoint:human-verify for full Phase 4 verification (ROI panel + portal form + executive dashboard).
 Resume file: None

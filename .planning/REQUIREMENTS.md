@@ -80,13 +80,13 @@
 
 ### Executive Dashboard (DASH)
 
-- [ ] **DASH-01**: Dashboard page shows KPI cards: open ticket count, throughput (done per week), avg cycle time (created→done), overdue count
-- [ ] **DASH-02**: Avg time per column — for each of the 5 columns, show the average time tickets spent in that column
-- [ ] **DASH-03**: Bottleneck column — the column with the highest avg time is highlighted
-- [ ] **DASH-04**: Workload per user — bar chart showing sum of effort_hours on active tickets per team member
-- [ ] **DASH-05**: Department breakdown table — ticket counts and avg cycle time per department
-- [ ] **DASH-06**: Dashboard data served from a single aggregation endpoint using PostgreSQL window functions
-- [ ] **DASH-07**: KPI charts use Recharts (BarChart for workload, LineChart or AreaChart for throughput trend)
+- [x] **DASH-01**: Dashboard page shows KPI cards: open ticket count, throughput (done per week), avg cycle time (created→done), overdue count
+- [x] **DASH-02**: Avg time per column — for each of the 5 columns, show the average time tickets spent in that column
+- [x] **DASH-03**: Bottleneck column — the column with the highest avg time is highlighted
+- [x] **DASH-04**: Workload per user — bar chart showing sum of effort_hours on active tickets per team member
+- [x] **DASH-05**: Department breakdown table — ticket counts and avg cycle time per department
+- [x] **DASH-06**: Dashboard data served from a single aggregation endpoint using PostgreSQL window functions
+- [x] **DASH-07**: KPI charts use Recharts (BarChart for workload, LineChart or AreaChart for throughput trend)
 
 ### ROI Estimation (ROI)
 
@@ -228,13 +228,13 @@
 | PORTAL-06 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-07 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-08 | Phase 3 — Collaboration and Department Portal | Complete |
-| DASH-01 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-02 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-03 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-04 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-05 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-06 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| DASH-07 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| DASH-01 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-02 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-03 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-04 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-05 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-06 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| DASH-07 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-01 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-02 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-03 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
