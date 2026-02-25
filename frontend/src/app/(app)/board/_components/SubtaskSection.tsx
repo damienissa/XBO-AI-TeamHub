@@ -18,8 +18,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GripVertical, X } from "lucide-react";
+import { GripVertical, Loader2, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
+import { fetchSubtasks as fetchAiSubtasks } from "@/lib/api/ai";
+import { useToast } from "@/hooks/use-toast";
+import { SubtaskAiModal } from "./SubtaskAiModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,6 +37,12 @@ export interface Subtask {
 
 interface SubtaskSectionProps {
   ticketId: string;
+  ticketContext: {
+    title: string;
+    problem_statement?: string | null;
+    business_impact?: string | null;
+    urgency?: number | null;
+  };
 }
 
 // ---- API helpers -----------------------------------------------------------
@@ -160,10 +170,14 @@ function SortableSubtaskItem({ subtask, onToggle, onDelete }: SortableSubtaskIte
 
 // ---- SubtaskSection --------------------------------------------------------
 
-export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
+export function SubtaskSection({ ticketId, ticketContext }: SubtaskSectionProps) {
   const queryClient = useQueryClient();
   const [newTitle, setNewTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiSubtasks, setAiSubtasks] = useState<string[]>([]);
+  const aiEnabled = useAiEnabled();
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -212,6 +226,24 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subtasks", ticketId] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
+    },
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: () => fetchAiSubtasks({
+      title: ticketContext.title,
+      existing_subtasks: subtasks.map(s => s.title),
+    }),
+    onSuccess: (data) => {
+      setAiSubtasks(data.subtasks);
+      setAiModalOpen(true);
+    },
+    onError: (err) => {
+      toast({
+        title: "AI request failed",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -264,6 +296,19 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
             {doneCount}/{totalCount}
           </span>
         )}
+        {aiEnabled && (
+          <button
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
+            className="ml-auto flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 disabled:opacity-50"
+          >
+            {generateMutation.isPending ? (
+              <><Loader2 className="h-3 w-3 animate-spin" /> Generating…</>
+            ) : (
+              <><Sparkles className="h-3 w-3" /> Generate with AI</>
+            )}
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -306,6 +351,13 @@ export function SubtaskSection({ ticketId }: SubtaskSectionProps) {
         placeholder="Add a subtask… (press Enter)"
         className="w-full text-sm border border-slate-200 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400"
         disabled={addMutation.isPending}
+      />
+
+      <SubtaskAiModal
+        ticketId={ticketId}
+        open={aiModalOpen}
+        initialSubtasks={aiSubtasks}
+        onClose={() => setAiModalOpen(false)}
       />
     </div>
   );

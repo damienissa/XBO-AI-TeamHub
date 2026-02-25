@@ -429,7 +429,15 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
         </div>
 
         {/* Subtasks (COLLAB-04/05/06) — between description fields and activity timeline */}
-        <SubtaskSection ticketId={ticket.id} />
+        <SubtaskSection
+          ticketId={ticket.id}
+          ticketContext={{
+            title: ticket.title,
+            problem_statement: ticket.problem_statement as string | null | undefined,
+            business_impact: ticket.business_impact,
+            urgency: ticket.urgency,
+          }}
+        />
 
         {/* Custom Fields (ADV-01/02/03) — workspace + personal fields with type-aware inline editing */}
         <div className="border-t border-slate-100 pt-4">
