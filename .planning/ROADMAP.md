@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Kanban Core** - Full ticket lifecycle on a drag-and-drop board with column time tracking and ticket detail (completed 2026-02-25)
 - [x] **Phase 3: Collaboration and Department Portal** - Comment threads, subtasks, and structured department intake with templates (completed 2026-02-25)
 - [x] **Phase 4: ROI Estimation and Executive Dashboard** - ROI panel on every ticket and KPI analytics for leadership (completed 2026-02-25)
-- [ ] **Phase 5: Advanced Features** - Ticket dependencies, sprints, custom fields, saved filters, and wiki
+- [x] **Phase 5: Advanced Features** - Ticket dependencies, sprints, custom fields, saved filters, and wiki
 - [ ] **Phase 6: AI Features** - AI-assisted subtask generation, effort estimation, and ticket summarization behind a feature flag
 
 ## Phase Details
@@ -138,5 +138,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Kanban Core | 4/4 | Complete   | 2026-02-25 |
 | 3. Collaboration and Department Portal | 4/4 | Complete   | 2026-02-25 |
 | 4. ROI Estimation and Executive Dashboard | 3/3 | Complete   | 2026-02-25 |
-| 5. Advanced Features | 4/5 | In Progress|  |
+| 5. Advanced Features | 5/5 | Complete   | 2026-02-25 |
 | 6. AI Features | 0/2 | Not started | - |
