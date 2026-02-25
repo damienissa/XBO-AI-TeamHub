@@ -90,18 +90,18 @@
 
 ### ROI Estimation (ROI)
 
-- [ ] **ROI-01**: ROI fields stored on ticket: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate, revenue_blocked, strategic_value, expected_savings_rate, risk_probability
-- [ ] **ROI-02**: Computed fields (persisted): weekly_cost, yearly_cost, annual_savings, dev_cost, roi, adjusted_roi
+- [x] **ROI-01**: ROI fields stored on ticket: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate, revenue_blocked, strategic_value, expected_savings_rate, risk_probability
+- [x] **ROI-02**: Computed fields (persisted): weekly_cost, yearly_cost, annual_savings, dev_cost, roi, adjusted_roi
   - `weekly_cost = current_time_cost_hours_per_week × employees_affected × avg_hourly_cost`
   - `yearly_cost = weekly_cost × 52`
   - `annual_savings = yearly_cost × expected_savings_rate`
   - `dev_cost = effort_estimate × internal_ai_team_hourly_rate`
   - `roi = (annual_savings − dev_cost) / dev_cost` (NULL if dev_cost = 0)
   - `adjusted_roi = roi × (1 − risk_probability)` (NULL if roi is NULL)
-- [ ] **ROI-03**: `internal_ai_team_hourly_rate` is a server-side config value (env var, default 75)
+- [x] **ROI-03**: `internal_ai_team_hourly_rate` is a server-side config value (env var, default 75)
 - [ ] **ROI-04**: ROI panel displayed on ticket detail with computed values
-- [ ] **ROI-05**: Division-by-zero is handled — roi stored as NULL, displayed as "Insufficient data"
-- [ ] **ROI-06**: ROI inputs are required on portal submissions, optional on direct board creation
+- [x] **ROI-05**: Division-by-zero is handled — roi stored as NULL, displayed as "Insufficient data"
+- [x] **ROI-06**: ROI inputs are required on portal submissions, optional on direct board creation
 
 ### Wiki / Docs (WIKI)
 
@@ -235,12 +235,12 @@
 | DASH-05 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
 | DASH-06 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
 | DASH-07 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| ROI-01 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| ROI-02 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| ROI-03 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-01 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| ROI-02 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| ROI-03 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | ROI-04 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| ROI-05 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
-| ROI-06 | Phase 4 — ROI Estimation and Executive Dashboard | Pending |
+| ROI-05 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
+| ROI-06 | Phase 4 — ROI Estimation and Executive Dashboard | Complete |
 | WIKI-01 | Phase 5 — Advanced Features | Pending |
 | WIKI-02 | Phase 5 — Advanced Features | Pending |
 | WIKI-03 | Phase 5 — Advanced Features | Pending |

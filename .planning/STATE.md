@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 
 ## Current Position
 
-Phase: 3 of 6 (Collaboration and Department Portal)
-Plan: 4 of 4 in current phase — COMPLETE (Phase 3 fully complete)
-Status: Plan 03-04 complete — Templates settings page, template selector in QuickAddInput; Phase 3 E2E human verification passed (all 22 steps approved)
-Last activity: 2026-02-25 — Completed plan 03-04 (Templates CRUD + create-from-template); Phase 3 human verification approved; Phase 3 fully complete
+Phase: 4 of 6 (ROI Estimation and Executive Dashboard)
+Plan: 1 of 3 in current phase — COMPLETE
+Status: Plan 04-01 complete — Alembic migration f9e6148f9818 applied; compute_roi_fields() service; TicketUpdate/TicketOut extended with ROI fields; portal form updated to ROI-01 field names
+Last activity: 2026-02-25 — Completed plan 04-01 (ROI fields migration + computation service + portal update)
 
-Progress: [████████████] 60%
+Progress: [█████████████] 65%
 
 ## Performance Metrics
 
@@ -30,13 +30,15 @@ Progress: [████████████] 60%
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
 | 03-collaboration-and-department-portal | 4 | 21 min | 5.25 min |
+| 04-roi-estimation-and-executive-dashboard | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 6 min, 4 min, 1 min, 3 min
+- Last 5 plans: 6 min, 4 min, 1 min, 3 min, 3 min
 - Trend: fast
 
 *Updated after each plan completion*
 | Phase 03-collaboration-and-department-portal P04 | 3 | 2 tasks | 3 files |
+| Phase 04-roi-estimation-and-executive-dashboard P01 | 3 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -84,6 +86,10 @@ Recent decisions affecting current work:
 - [Phase 03]: problem_statement typed as z.unknown().optional(): Tiptap outputs arbitrary JSON; z.record() requires explicit key/value types
 - [Phase 03-04]: TiptapEditor uses initialContent/onSave props not content/onChange — named export from board subdirectory (auto-fixed Rule 1 during Task 1 build)
 - [Phase 03-04]: Template selector in QuickAddInput conditionally rendered (hasTemplates guard); pre-fills title via React state (no react-hook-form in QuickAddInput)
+- [Phase 04-01]: compute_roi_fields() is a pure Python function (no ORM dependency) — fully testable in isolation; called from PATCH handler via _ROI_INPUT_FIELDS frozenset intersection check
+- [Phase 04-01]: ROI-05 guard: dev_cost==0 yields roi=NULL via explicit check before division (not try/except ZeroDivisionError)
+- [Phase 04-01]: Portal .refine() requires all three Row 1 ROI fields together (hours/employees/avg_hourly_cost) per ROI-06 — partial group submission not allowed
+- [Phase 04-01]: effort_estimate included in _ROI_INPUT_FIELDS trigger set — dev_cost formula depends on it; ROI recomputes when effort changes
 
 ### Pending Todos
 
@@ -97,5 +103,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 03-collaboration-and-department-portal/03-04-PLAN.md — COMPLETE. Phase 3 E2E human verification approved (all 22 steps passed). Phase 3 fully done.
+Stopped at: 04-roi-estimation-and-executive-dashboard/04-01-PLAN.md — COMPLETE. ROI migration, computation service, and portal form update done.
 Resume file: None
