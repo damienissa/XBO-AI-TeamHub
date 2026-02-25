@@ -13,6 +13,7 @@ import { SubtaskSection } from "./SubtaskSection";
 import { DependenciesSection } from "./DependenciesSection";
 import { CommentSection } from "./CommentSection";
 import { CustomFieldsSection } from "./CustomFieldsSection";
+import { AiSummarySection } from "./AiSummarySection";
 import { WikiLinkField } from "./WikiLinkField";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
@@ -446,6 +447,9 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
             customFieldValues={(ticket.custom_field_values as Record<string, unknown> | null | undefined) ?? null}
           />
         </div>
+
+        {/* AI Progress Summary (AI-06) — renders nothing when AI_ENABLED=false */}
+        <AiSummarySection ticketId={ticket.id} />
 
         {/* Activity Timeline (DETAIL-05) */}
         <div className="space-y-3">

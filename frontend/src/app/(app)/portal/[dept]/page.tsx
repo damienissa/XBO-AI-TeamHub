@@ -6,8 +6,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
+import { fetchEffortEstimate } from "@/lib/api/ai";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,6 +159,7 @@ export default function PortalDeptPage() {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<PortalFormValues>({
     resolver: zodResolver(portalSchema),
@@ -172,6 +176,37 @@ export default function PortalDeptPage() {
   const liveWeeklyCost = hoursPerWeek * employeesAffected * avgHourlyCost;
   const liveYearlyCost = liveWeeklyCost * 52;
   const liveAnnualSavings = liveYearlyCost;
+
+  const aiEnabled = useAiEnabled();
+  const { toast } = useToast();
+  const [effortSuggestion, setEffortSuggestion] = useState<number | null>(null);
+
+  const effortMutation = useMutation({
+    mutationFn: () => fetchEffortEstimate({
+      title: watch("title") ?? "",
+      business_impact: watch("business_impact") ?? undefined,
+      success_criteria: watch("success_criteria") ?? undefined,
+      urgency: watch("urgency") ?? undefined,
+    }),
+    onSuccess: (data) => {
+      const currentEffort = watch("effort_estimate");
+      if (!currentEffort || isNaN(currentEffort as number)) {
+        // Field empty — fill directly
+        setValue("effort_estimate", data.hours, { shouldValidate: true });
+        setEffortSuggestion(null);
+      } else {
+        // Field has value — show suggestion hint
+        setEffortSuggestion(data.hours);
+      }
+    },
+    onError: (err) => {
+      toast({
+        title: "Effort estimate failed",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const submitMutation = useMutation({
     mutationFn: async (data: PortalFormValues) => {
@@ -324,14 +359,55 @@ export default function PortalDeptPage() {
             </FieldRow>
 
             <FieldRow label="Effort Estimate (hours)" htmlFor="effort_estimate" error={errors.effort_estimate?.message}>
-              <Input
-                id="effort_estimate"
-                type="number"
-                min={0}
-                step={0.5}
-                placeholder="e.g. 8"
-                {...register("effort_estimate", { valueAsNumber: true })}
-              />
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="effort_estimate"
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    placeholder="e.g. 8"
+                    {...register("effort_estimate", { valueAsNumber: true })}
+                    className="flex-1"
+                  />
+                  {aiEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => effortMutation.mutate()}
+                      disabled={effortMutation.isPending}
+                      className="flex-shrink-0 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded px-2 py-1.5 disabled:opacity-50"
+                    >
+                      {effortMutation.isPending ? (
+                        <><Loader2 className="h-3 w-3 animate-spin" /> Estimating…</>
+                      ) : (
+                        <><Sparkles className="h-3 w-3" /> Estimate with AI</>
+                      )}
+                    </button>
+                  )}
+                </div>
+                {effortSuggestion !== null && (
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span>AI suggests: <strong>{effortSuggestion}h</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setValue("effort_estimate", effortSuggestion, { shouldValidate: true });
+                        setEffortSuggestion(null);
+                      }}
+                      className="text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Use this
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEffortSuggestion(null)}
+                      className="text-slate-400 hover:text-slate-600"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
             </FieldRow>
           </div>
         </FormSection>
