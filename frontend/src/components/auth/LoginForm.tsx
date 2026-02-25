@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "@/lib/api/client";
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("reason") === "expired";
 
@@ -17,9 +16,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
@@ -27,17 +26,16 @@ export function LoginForm() {
     if (!email) { setError("Email is required"); return; }
     if (!password) { setError("Password is required"); return; }
 
-    startTransition(async () => {
-      try {
-        await login({ email, password });
-        // Successful login: no toast, just redirect to /board (CONTEXT.md locked decision)
-        router.push("/board");
-        router.refresh();
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Invalid email or password";
-        setError(msg);  // Inline under form, not toast
-      }
-    });
+    setIsPending(true);
+    try {
+      await login({ email, password });
+      // Hard navigation so the browser sends the fresh cookie to the Next.js server
+      window.location.href = "/board";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Invalid email or password";
+      setError(msg);  // Inline under form, not toast
+      setIsPending(false);
+    }
   }
 
   return (
