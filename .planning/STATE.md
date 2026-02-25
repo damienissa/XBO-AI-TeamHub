@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 2 of 6 (Kanban Core)
-Plan: 1 of 5 in current phase
-Status: Plan 02-01 complete
-Last activity: 2026-02-25 — Completed plan 02-01 (Ticket/ColumnHistory/TicketEvent models, migration, CRUD endpoints, board endpoint, 29 tests pass)
+Plan: 2 of 5 in current phase
+Status: Plan 02-02 complete
+Last activity: 2026-02-25 — Completed plan 02-02 (Kanban board with dnd-kit, owner modal, optimistic UI, 30s polling, full BOARD-04 card metadata, QuickAddInput with nuqs URL state)
 
-Progress: [████░░░░░░] 23%
+Progress: [████░░░░░░] 27%
 
 ## Performance Metrics
 
@@ -28,11 +28,11 @@ Progress: [████░░░░░░] 23%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
-| 02-kanban-core | 1 | 6 min | 6.0 min |
+| 02-kanban-core | 2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 7 min, 45 min, 6 min
-- Trend: stable (02-01 was focused backend API, well-scoped)
+- Last 5 plans: 5 min, 6 min, 7 min, 45 min, 6 min
+- Trend: fast (02-02 was well-specified frontend build with zero TS errors)
 
 *Updated after each plan completion*
 
@@ -62,6 +62,10 @@ Recent decisions affecting current work:
 - [Phase 02-01]: values_callable on SQLAlchemy sa.Enum forces .value storage ("In Progress"/"Review/QA") not .name ("InProgress"/"ReviewQA") — critical for correct DB storage and frontend compatibility
 - [Phase 02-01]: lazy="raise" on Ticket.owner and Ticket.department — forces explicit selectinload on all callers; prevents silent N+1 regressions
 - [Phase 02-01]: db.flush() in create_ticket before ColumnHistory/TicketEvent INSERT — gets ticket.id without committing so all three writes are in one transaction
+- [Phase 02-02]: DragOverlay always mounted unconditionally; children null when no active drag (RESEARCH.md anti-pattern guard)
+- [Phase 02-02]: pendingMove state for Backlog->other unowned drags; no optimistic update before owner confirmation; cancel = zero state reset needed
+- [Phase 02-02]: useDraggable skipped when isOverlay=true on KanbanCard to prevent infinite re-render in DragOverlay
+- [Phase 02-02]: dialog.tsx, popover.tsx, command.tsx created as missing shadcn UI primitives required by OwnerModal
 
 ### Pending Todos
 
@@ -75,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 02-kanban-core/02-01-PLAN.md — Ticket/ColumnHistory/TicketEvent ORM models, phase2_kanban_core Alembic migration, ticket CRUD + move service with TICKET-07/08 enforcement, selectinload board endpoint (BOARD-08), GET /api/auth/users, 13 ticket tests + 16 auth tests = 29 total passing.
+Stopped at: Completed 02-kanban-core/02-02-PLAN.md — Kanban board with dnd-kit DnD (KanbanBoard/Column/Card/DragOverlay), owner modal (OwnerModal with Radix Dialog + Combobox), QuickAddInput, TanStack Query providers, nuqs NuqsAdapter, useBoard 30s polling, useMoveTicket optimistic rollback, full BOARD-04 card metadata.
 Resume file: None

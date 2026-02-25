@@ -39,13 +39,13 @@
 
 ### Kanban Board (BOARD)
 
-- [ ] **BOARD-01**: Kanban board page shows 5 columns: Backlog, Discovery, In Progress, Review/QA, Done
-- [ ] **BOARD-02**: Ticket cards can be dragged between columns with optimistic UI update and explicit rollback on rejection
-- [ ] **BOARD-03**: Dragging a ticket out of Backlog opens an owner-assignment modal before committing the move
-- [ ] **BOARD-04**: Card displays: department badge, title, owner initials/avatar, due date, time in current column, next_step, urgency badge, priority, business_impact snippet, effort estimate
+- [x] **BOARD-01**: Kanban board page shows 5 columns: Backlog, Discovery, In Progress, Review/QA, Done
+- [x] **BOARD-02**: Ticket cards can be dragged between columns with optimistic UI update and explicit rollback on rejection
+- [x] **BOARD-03**: Dragging a ticket out of Backlog opens an owner-assignment modal before committing the move
+- [x] **BOARD-04**: Card displays: department badge, title, owner initials/avatar, due date, time in current column, next_step, urgency badge, priority, business_impact snippet, effort estimate
 - [ ] **BOARD-05**: Board filter bar supports: owner, department, created date range, due date range, priority/urgency, aging (time in column threshold)
 - [ ] **BOARD-06**: Applied filters persist in URL query params (shareable filter state)
-- [ ] **BOARD-07**: Board data polls every 30 seconds via TanStack Query refetchInterval
+- [x] **BOARD-07**: Board data polls every 30 seconds via TanStack Query refetchInterval
 - [x] **BOARD-08**: Board loads via a single API endpoint with eager loading (no N+1 queries)
 
 ### Ticket Detail (DETAIL)
@@ -199,13 +199,13 @@
 | TICKET-08 | Phase 2 — Kanban Core | Complete |
 | TICKET-09 | Phase 2 — Kanban Core | Complete |
 | TICKET-10 | Phase 2 — Kanban Core | Complete |
-| BOARD-01 | Phase 2 — Kanban Core | Pending |
-| BOARD-02 | Phase 2 — Kanban Core | Pending |
-| BOARD-03 | Phase 2 — Kanban Core | Pending |
-| BOARD-04 | Phase 2 — Kanban Core | Pending |
+| BOARD-01 | Phase 2 — Kanban Core | Complete |
+| BOARD-02 | Phase 2 — Kanban Core | Complete |
+| BOARD-03 | Phase 2 — Kanban Core | Complete |
+| BOARD-04 | Phase 2 — Kanban Core | Complete |
 | BOARD-05 | Phase 2 — Kanban Core | Pending |
 | BOARD-06 | Phase 2 — Kanban Core | Pending |
-| BOARD-07 | Phase 2 — Kanban Core | Pending |
+| BOARD-07 | Phase 2 — Kanban Core | Complete |
 | BOARD-08 | Phase 2 — Kanban Core | Complete |
 | DETAIL-01 | Phase 2 — Kanban Core | Pending |
 | DETAIL-02 | Phase 2 — Kanban Core | Pending |
