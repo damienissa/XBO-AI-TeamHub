@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 3 of 6 (Collaboration and Department Portal)
-Plan: 3 of 4 in current phase
-Status: Plan 03-03 complete — Department Portal frontend (department grid, intake form with live ROI calculation)
-Last activity: 2026-02-25 — Completed plan 03-03 (/portal department selection grid, /portal/[dept] intake form with react-hook-form + zod v4 + live ROI)
+Plan: 4 of 4 in current phase — AWAITING HUMAN VERIFICATION
+Status: Plan 03-04 auto tasks complete — Templates settings page, template selector in QuickAddInput; awaiting Phase 3 E2E human verification checkpoint
+Last activity: 2026-02-25 — Completed plan 03-04 auto tasks (/settings/templates CRUD, QuickAddInput template selector); human verification checkpoint pending
 
-Progress: [█████████░] 50%
+Progress: [██████████] 55%
 
 ## Performance Metrics
 
@@ -29,13 +29,14 @@ Progress: [█████████░] 50%
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
-| 03-collaboration-and-department-portal | 3 | 18 min | 6.0 min |
+| 03-collaboration-and-department-portal | 4 | 21 min | 5.25 min |
 
 **Recent Trend:**
 - Last 5 plans: 6 min, 6 min, 4 min, 1 min, 3 min
 - Trend: fast
 
 *Updated after each plan completion*
+| Phase 03-collaboration-and-department-portal P04 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 03-02]: @radix-ui/react-alert-dialog installed; alert-dialog.tsx created as shadcn wrapper — used for comment delete confirm; available for future destructive actions
 - [Phase 03]: valueAsNumber instead of z.coerce for number inputs: zod v4 coerce outputs unknown in resolver generics; valueAsNumber keeps field types as number natively
 - [Phase 03]: problem_statement typed as z.unknown().optional(): Tiptap outputs arbitrary JSON; z.record() requires explicit key/value types
+- [Phase 03-04]: TiptapEditor uses initialContent/onSave props not content/onChange — named export from board subdirectory (auto-fixed Rule 1 during Task 1 build)
+- [Phase 03-04]: Template selector in QuickAddInput conditionally rendered (hasTemplates guard); pre-fills title via React state (no react-hook-form in QuickAddInput)
 
 ### Pending Todos
 
@@ -94,5 +97,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 03-collaboration-and-department-portal/03-03-PLAN.md — portal department grid (/portal), intake form with live ROI (/portal/[dept]), sidebar Portal nav enabled. Ready for Plan 03-04.
+Stopped at: 03-collaboration-and-department-portal/03-04-PLAN.md — Task 2 complete (template selector in QuickAddInput); paused at checkpoint:human-verify for Phase 3 E2E verification (22 steps)
 Resume file: None
