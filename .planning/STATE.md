@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 5 of 6 (Advanced Features)
-Plan: 3 of 5 complete — Plan 05-03 custom fields UI + saved filters UI complete
-Status: Plan 05-03 tasks complete — CustomFieldsSection, workspace settings page, SavedFilterDropdown; ready for 05-04
-Last activity: 2026-02-25 — Completed plan 05-03 (custom fields inline editing and saved filter presets)
+Plan: 4 of 5 complete — Plan 05-04 wiki frontend complete
+Status: Plan 05-04 tasks complete — /wiki list, /wiki/[pageId] edit, WikiLinkField on ticket detail; ready for 05-05
+Last activity: 2026-02-25 — Completed plan 05-04 (wiki frontend with TiptapEditor and ticket linking)
 
-Progress: [█████████████████] 80%
+Progress: [████████████████████] 84%
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [█████████████████] 80%
 | Phase 05-advanced-features P01 | 6 | 3 tasks | 21 files |
 | Phase 05-advanced-features P02 | 4 | 2 tasks | 12 files |
 | Phase 05-advanced-features P03 | 4 | 2 tasks | 8 files |
+| Phase 05-advanced-features P04 | 3 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Recent decisions affecting current work:
 - [Phase 05-03]: PATCH /api/tickets/{id}/custom-fields added as a separate narrow endpoint (not via TicketUpdate) — avoids mixing full ticket PATCH flow with custom field JSONB replacement
 - [Phase 05-03]: Admin Custom Fields sidebar link uses user.role==='admin' guard in AppSidebar — consistent with existing role check pattern in sidebar footer
 - [Phase 05-03]: SavedFilterDropdown onApply passes savedState directly to setFilters from nuqs useQueryStates — nuqs silently ignores unknown keys so JSONB roundtrip is safe
+- [Phase 05-04]: buildTree uses Array.from(map.values()) — TypeScript tsconfig target below ES2015 forbids for..of Map iterator without downlevelIteration
+- [Phase 05-04]: WikiLinkField uses shared wiki-pages queryKey (staleTime 60s) with /wiki list page — no double-fetch in same session
+- [Phase 05-04]: Delete 403 handled client-side with useToast destructive toast — server enforces admin role; button visible to all users, 403 caught in onError
 
 ### Pending Todos
 
@@ -127,5 +131,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 05-advanced-features/05-03-PLAN.md — All 2 tasks complete. Custom fields UI and saved filter presets fully implemented.
+Stopped at: 05-advanced-features/05-04-PLAN.md — All 2 tasks complete. Wiki frontend fully implemented: /wiki list, /wiki/[pageId] edit with Tiptap, WikiLinkField on ticket detail.
 Resume file: None

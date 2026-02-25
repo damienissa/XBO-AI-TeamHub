@@ -109,7 +109,7 @@
 - [x] **WIKI-02**: Wiki page list shows all pages with title and last updated
 - [x] **WIKI-03**: Admin and member roles can create and edit wiki pages
 - [x] **WIKI-04**: All authenticated users (admin/member) can read wiki pages; only admin can delete pages
-- [ ] **WIKI-05**: Ticket detail includes a "Linked Pages" section where wiki pages can be linked
+- [x] **WIKI-05**: Ticket detail includes a "Linked Pages" section where wiki pages can be linked
 
 ### AI Features (AI) — gated by AI_ENABLED env flag
 
@@ -245,7 +245,7 @@
 | WIKI-02 | Phase 5 — Advanced Features | Complete |
 | WIKI-03 | Phase 5 — Advanced Features | Complete |
 | WIKI-04 | Phase 5 — Advanced Features | Complete |
-| WIKI-05 | Phase 5 — Advanced Features | Pending |
+| WIKI-05 | Phase 5 — Advanced Features | Complete |
 | ADV-01 | Phase 5 — Advanced Features | Complete |
 | ADV-02 | Phase 5 — Advanced Features | Complete |
 | ADV-03 | Phase 5 — Advanced Features | Complete |
