@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 5 of 6 (Advanced Features)
-Plan: 2 of 5 complete — Plan 05-02 frontend dependencies + sprints UI complete
-Status: Plan 05-02 tasks complete — DependenciesSection, blocked badge, 409 toast, sprint pages, SprintField; ready for 05-03
-Last activity: 2026-02-25 — Completed plan 05-02 (frontend UI for ticket dependencies and sprints)
+Plan: 3 of 5 complete — Plan 05-03 custom fields UI + saved filters UI complete
+Status: Plan 05-03 tasks complete — CustomFieldsSection, workspace settings page, SavedFilterDropdown; ready for 05-04
+Last activity: 2026-02-25 — Completed plan 05-03 (custom fields inline editing and saved filter presets)
 
 Progress: [█████████████████] 80%
 
@@ -43,6 +43,7 @@ Progress: [█████████████████] 80%
 | Phase 04-roi-estimation-and-executive-dashboard P03 | 2 | 2 tasks | 6 files |
 | Phase 05-advanced-features P01 | 6 | 3 tasks | 21 files |
 | Phase 05-advanced-features P02 | 4 | 2 tasks | 12 files |
+| Phase 05-advanced-features P03 | 4 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,9 @@ Recent decisions affecting current work:
 - [Phase 05-02]: TicketBlockedError extends Error with blocker_ids — typed structured 409 BLOCKED errors from moveTicket; instanceof check in useMoveTicket onError
 - [Phase 05-02]: Used existing shadcn useToast (not sonner) for 409 BLOCKED toast — sonner not installed; Toaster added to Providers component to make toasts visible
 - [Phase 05-02]: Sprint board page is display-only (no dnd-kit) per RESEARCH.md Pitfall 4 — sprint board is a reporting view not a workflow tool
+- [Phase 05-03]: PATCH /api/tickets/{id}/custom-fields added as a separate narrow endpoint (not via TicketUpdate) — avoids mixing full ticket PATCH flow with custom field JSONB replacement
+- [Phase 05-03]: Admin Custom Fields sidebar link uses user.role==='admin' guard in AppSidebar — consistent with existing role check pattern in sidebar footer
+- [Phase 05-03]: SavedFilterDropdown onApply passes savedState directly to setFilters from nuqs useQueryStates — nuqs silently ignores unknown keys so JSONB roundtrip is safe
 
 ### Pending Todos
 
@@ -123,5 +127,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 05-advanced-features/05-02-PLAN.md — All 2 tasks complete. Frontend for dependencies + sprints fully implemented.
+Stopped at: 05-advanced-features/05-03-PLAN.md — All 2 tasks complete. Custom fields UI and saved filter presets fully implemented.
 Resume file: None

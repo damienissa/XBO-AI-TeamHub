@@ -125,10 +125,10 @@
 
 - [x] **ADV-01**: Custom field definitions per workspace: admin can define fields (name, type: text/number/select/date, options)
 - [x] **ADV-02**: Per-ticket custom field values stored as JSONB
-- [ ] **ADV-03**: Custom fields displayed and editable on ticket detail
+- [x] **ADV-03**: Custom fields displayed and editable on ticket detail
 - [x] **ADV-04**: Ticket dependencies: a ticket can block one or more other tickets
 - [x] **ADV-05**: Moving a blocked ticket out of Backlog is rejected server-side if any blocking dependency is not in Done
-- [ ] **ADV-06**: Dependencies shown on ticket detail with link to blocking ticket
+- [x] **ADV-06**: Dependencies shown on ticket detail with link to blocking ticket
 - [x] **ADV-07**: Saved filters: user can save current board filter state with a name, reload it later
 - [x] **ADV-08**: Sprints: admin can create a sprint (name, start_date, end_date)
 - [x] **ADV-09**: Tickets can be assigned to a sprint
@@ -248,10 +248,10 @@
 | WIKI-05 | Phase 5 — Advanced Features | Pending |
 | ADV-01 | Phase 5 — Advanced Features | Complete |
 | ADV-02 | Phase 5 — Advanced Features | Complete |
-| ADV-03 | Phase 5 — Advanced Features | Pending |
+| ADV-03 | Phase 5 — Advanced Features | Complete |
 | ADV-04 | Phase 5 — Advanced Features | Complete |
 | ADV-05 | Phase 5 — Advanced Features | Complete |
-| ADV-06 | Phase 5 — Advanced Features | Pending |
+| ADV-06 | Phase 5 — Advanced Features | Complete |
 | ADV-07 | Phase 5 — Advanced Features | Complete |
 | ADV-08 | Phase 5 — Advanced Features | Complete |
 | ADV-09 | Phase 5 — Advanced Features | Complete |
