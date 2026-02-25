@@ -133,7 +133,7 @@
 - [x] **ADV-08**: Sprints: admin can create a sprint (name, start_date, end_date)
 - [x] **ADV-09**: Tickets can be assigned to a sprint
 - [x] **ADV-10**: Sprint board shows tickets in that sprint; basic velocity metric (effort_hours completed vs total)
-- [ ] **ADV-11**: Simple timeline / Gantt view: read-only, derived from ticket due dates, shows tickets as bars
+- [x] **ADV-11**: Simple timeline / Gantt view: read-only, derived from ticket due dates, shows tickets as bars
 
 ---
 
@@ -256,7 +256,7 @@
 | ADV-08 | Phase 5 — Advanced Features | Complete |
 | ADV-09 | Phase 5 — Advanced Features | Complete |
 | ADV-10 | Phase 5 — Advanced Features | Complete |
-| ADV-11 | Phase 5 — Advanced Features | Pending |
+| ADV-11 | Phase 5 — Advanced Features | Complete |
 | AI-01 | Phase 6 — AI Features | Pending |
 | AI-02 | Phase 6 — AI Features | Pending |
 | AI-03 | Phase 6 — AI Features | Pending |

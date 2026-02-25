@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 5 of 6 (Advanced Features)
-Plan: 4 of 5 complete — Plan 05-04 wiki frontend complete
-Status: Plan 05-04 tasks complete — /wiki list, /wiki/[pageId] edit, WikiLinkField on ticket detail; ready for 05-05
-Last activity: 2026-02-25 — Completed plan 05-04 (wiki frontend with TiptapEditor and ticket linking)
+Plan: 5 of 5 complete — Plan 05-05 timeline Gantt view + Phase 5 end-to-end verification
+Status: Phase 5 complete — all 5 plans executed; dependencies, custom fields, saved filters, wiki verified end-to-end; timeline built then removed at user request; ready for Phase 6
+Last activity: 2026-02-25 — Completed plan 05-05 (timeline Gantt + Phase 5 human verification approved)
 
-Progress: [████████████████████] 84%
+Progress: [████████████████████] 88%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [████████████████████] 84%
 | Phase 05-advanced-features P02 | 4 | 2 tasks | 12 files |
 | Phase 05-advanced-features P03 | 4 | 2 tasks | 8 files |
 | Phase 05-advanced-features P04 | 3 | 2 tasks | 7 files |
+| Phase 05-advanced-features P05 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,8 @@ Recent decisions affecting current work:
 - [Phase 05-04]: buildTree uses Array.from(map.values()) — TypeScript tsconfig target below ES2015 forbids for..of Map iterator without downlevelIteration
 - [Phase 05-04]: WikiLinkField uses shared wiki-pages queryKey (staleTime 60s) with /wiki list page — no double-fetch in same session
 - [Phase 05-04]: Delete 403 handled client-side with useToast destructive toast — server enforces admin role; button visible to all users, 403 caught in onError
+- [Phase 05-05]: isAnimationActive=false on both stacked Recharts BarChart bars — required for correct Gantt stacking; animation breaks visual positioning in stacked layout
+- [Phase 05-05]: Timeline feature removed post-verification at user request (commit 590c505) — built and verified as ADV-11, then cleanly removed from sidebar and filesystem
 
 ### Pending Todos
 
@@ -131,5 +134,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: 05-advanced-features/05-04-PLAN.md — All 2 tasks complete. Wiki frontend fully implemented: /wiki list, /wiki/[pageId] edit with Tiptap, WikiLinkField on ticket detail.
+Stopped at: 05-advanced-features/05-05-PLAN.md — All 2 tasks complete. Phase 5 fully verified: dependencies, custom fields, saved filters, wiki confirmed end-to-end. Timeline built (ADV-11) then removed at user request.
 Resume file: None
