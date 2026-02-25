@@ -25,6 +25,24 @@ export interface Ticket {
   // Subtask counts from board endpoint (COLLAB-07)
   subtasks_total: number;
   subtasks_done: number;
+
+  // Phase 4 ROI input fields (ROI-01)
+  current_time_cost_hours_per_week?: number | null;
+  employees_affected?: number | null;
+  avg_hourly_cost?: number | null;
+  current_error_rate?: number | null;
+  revenue_blocked?: number | null;
+  strategic_value?: number | null;
+  expected_savings_rate?: number | null;
+  risk_probability?: number | null;
+
+  // Phase 4 computed ROI output fields (ROI-02)
+  weekly_cost?: number | null;
+  yearly_cost?: number | null;
+  annual_savings?: number | null;
+  dev_cost?: number | null;
+  roi?: number | null;
+  adjusted_roi?: number | null;
 }
 
 export interface BoardData {
