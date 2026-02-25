@@ -84,12 +84,12 @@ Plans:
   3. The dashboard highlights the bottleneck column (the one with highest average time) and shows average time spent per column across all tickets
   4. A bar chart shows each team member's active workload in effort hours, and a table shows ticket counts and average cycle time per department
   5. All dashboard data is served from a single aggregation endpoint using PostgreSQL window functions with no N+1 queries
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: ROI model and computation — ROI fields on Ticket model (migration), compute_roi() utility, division-by-zero guards, ROI panel on ticket detail
-- [ ] 04-02: Dashboard aggregation endpoint — single GET /api/dashboard/kpis with window functions, bottleneck detection, per-column avg times, per-user workload
-- [ ] 04-03: Dashboard frontend — KPI cards, Recharts BarChart for workload, AreaChart for throughput trend, department breakdown table
+- [ ] 04-01-PLAN.md — ROI backend: Alembic migration replacing Phase 3 stub columns with full 14-column ROI field set, compute_roi_fields() service, TicketUpdate schema extended, PATCH handler triggers recompute, portal form updated to ROI-01 field names
+- [ ] 04-02-PLAN.md — ROI panel frontend: RoiPanel component (hero stats, supporting grid, inline editable inputs, live preview, blur-to-save), embedded as always-visible section in TicketDetailModal
+- [ ] 04-03-PLAN.md — Dashboard aggregation + frontend: GET /api/dashboard single endpoint (KPIs, column times, workload, dept breakdown, throughput trend), dashboard page at /dashboard with KPI cards, Recharts BarChart + AreaChart, bottleneck highlight, dept table, sidebar nav enabled
 
 ### Phase 5: Advanced Features
 **Goal**: Power users can manage ticket dependencies, organize work into sprints, define custom fields per workspace, save filter presets, view a timeline, and read or write wiki pages linked to tickets
