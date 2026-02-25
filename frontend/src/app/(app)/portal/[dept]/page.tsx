@@ -24,10 +24,6 @@ interface Department {
   name: string;
 }
 
-interface AppConfig {
-  ai_team_hourly_rate: number;
-}
-
 // ---- Zod Schema -------------------------------------------------------------
 // Using z.number() (not coerce) since react-hook-form valueAsNumber handles conversion.
 // This keeps output types clean for the zodResolver generic.
@@ -85,12 +81,6 @@ type PortalFormValues = z.infer<typeof portalSchema>;
 async function fetchDepartments(): Promise<Department[]> {
   const res = await fetch(`${API}/api/departments`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch departments");
-  return res.json();
-}
-
-async function fetchConfig(): Promise<AppConfig> {
-  const res = await fetch(`${API}/api/config`);
-  if (!res.ok) throw new Error("Failed to fetch config");
   return res.json();
 }
 
@@ -157,14 +147,6 @@ export default function PortalDeptPage() {
     queryFn: fetchDepartments,
     staleTime: 300_000,
   });
-
-  const { data: config } = useQuery({
-    queryKey: ["config"],
-    queryFn: fetchConfig,
-    staleTime: 300_000,
-  });
-
-  const hourlyRate = config?.ai_team_hourly_rate ?? 75;
 
   const dept = departments?.find((d) => d.slug === deptSlug);
   const deptName = dept?.name ?? deptSlug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

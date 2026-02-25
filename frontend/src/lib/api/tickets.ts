@@ -46,6 +46,9 @@ export interface Ticket {
 
   // Phase 5 custom fields (ADV-01, ADV-02, ADV-03)
   custom_field_values?: Record<string, unknown> | null;
+
+  // Phase 5 wiki link (WIKI-05)
+  wiki_page_id?: string | null;
 }
 
 export interface BoardData {

@@ -15,6 +15,7 @@ import { SprintField } from "./SprintField";
 import { CommentSection } from "./CommentSection";
 import RoiPanel from "./RoiPanel";
 import { CustomFieldsSection } from "./CustomFieldsSection";
+import { WikiLinkField } from "./WikiLinkField";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -422,6 +423,9 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
 
         {/* Sprint field (ADV-09) — assign ticket to a sprint */}
         <SprintField ticketId={ticket.id} sprintId={ticket.sprint_id ?? null} />
+
+        {/* Wiki link field (WIKI-05) — link one wiki page to this ticket */}
+        <WikiLinkField ticketId={ticket.id} wikiPageId={ticket.wiki_page_id ?? null} />
 
         {/* Dependencies (ADV-04) — above subtasks per CONTEXT.md */}
         <div className="border-t border-slate-100 pt-4">
