@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 3 of 6 (Collaboration and Department Portal)
-Plan: 2 of 4 in current phase
-Status: Plan 03-02 complete — subtask and comment UI (SubtaskSection, CommentSection, KanbanCard badge)
-Last activity: 2026-02-25 — Completed plan 03-02 (SubtaskSection with nested DnD, CommentSection with AlertDialog confirm, board subtask counts via batch subquery)
+Plan: 3 of 4 in current phase
+Status: Plan 03-03 complete — Department Portal frontend (department grid, intake form with live ROI calculation)
+Last activity: 2026-02-25 — Completed plan 03-03 (/portal department selection grid, /portal/[dept] intake form with react-hook-form + zod v4 + live ROI)
 
-Progress: [█████████░] 45%
+Progress: [█████████░] 50%
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [█████████░] 45%
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
 | 02-kanban-core | 4 | 16 min | 4.0 min |
-| 03-collaboration-and-department-portal | 2 | 12 min | 6.0 min |
+| 03-collaboration-and-department-portal | 3 | 18 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 4 min, 1 min, 3 min, 9 min
+- Last 5 plans: 6 min, 6 min, 4 min, 1 min, 3 min
 - Trend: fast
 
 *Updated after each plan completion*
@@ -79,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Board subtask counts via batch GROUP BY subquery — single query for all ticket_ids, no selectinload full rows (RESEARCH.md Pitfall 3 fix)
 - [Phase 03-02]: fetchMe() in CommentSection via useQuery(['me'], staleTime 60s) — avoids prop-drilling current user down from TicketDetailModal; clean separation of concerns
 - [Phase 03-02]: @radix-ui/react-alert-dialog installed; alert-dialog.tsx created as shadcn wrapper — used for comment delete confirm; available for future destructive actions
+- [Phase 03]: valueAsNumber instead of z.coerce for number inputs: zod v4 coerce outputs unknown in resolver generics; valueAsNumber keeps field types as number natively
+- [Phase 03]: problem_statement typed as z.unknown().optional(): Tiptap outputs arbitrary JSON; z.record() requires explicit key/value types
 
 ### Pending Todos
 
@@ -92,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 03-collaboration-and-department-portal/03-02-PLAN.md — subtask UI (SubtaskSection with nested DnD), comment UI (CommentSection with AlertDialog confirm), KanbanCard badge, board subtask counts. Ready for Plan 03-03.
+Stopped at: Completed 03-collaboration-and-department-portal/03-03-PLAN.md — portal department grid (/portal), intake form with live ROI (/portal/[dept]), sidebar Portal nav enabled. Ready for Plan 03-04.
 Resume file: None

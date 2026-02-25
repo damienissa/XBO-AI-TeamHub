@@ -69,11 +69,11 @@
 
 ### Department Portal (PORTAL)
 
-- [ ] **PORTAL-01**: Department portal section lists all 7 departments
-- [ ] **PORTAL-02**: Each department page has a "Submit New Request" button
-- [ ] **PORTAL-03**: Ticket creation form includes all ticket fields plus ROI inputs (ROI inputs required for portal submissions)
+- [x] **PORTAL-01**: Department portal section lists all 7 departments
+- [x] **PORTAL-02**: Each department page has a "Submit New Request" button
+- [x] **PORTAL-03**: Ticket creation form includes all ticket fields plus ROI inputs (ROI inputs required for portal submissions)
 - [x] **PORTAL-04**: ROI inputs: current_time_cost_hours_per_week, employees_affected, avg_hourly_cost, current_error_rate (optional), revenue_blocked (optional), strategic_value (1–5)
-- [ ] **PORTAL-05**: Any AI team member (admin/member) can submit an intake form for any department on behalf of that department's employees
+- [x] **PORTAL-05**: Any AI team member (admin/member) can submit an intake form for any department on behalf of that department's employees
 - [x] **PORTAL-06**: Attachment metadata stub: user can specify attachment filename + file size; actual file bytes are not stored in v1
 - [x] **PORTAL-07**: Ticket templates can be created (title, problem_statement template, default fields)
 - [x] **PORTAL-08**: User can create a ticket from a template (fields pre-filled, editable before submit)
@@ -220,11 +220,11 @@
 | COLLAB-05 | Phase 3 — Collaboration and Department Portal | Complete |
 | COLLAB-06 | Phase 3 — Collaboration and Department Portal | Complete |
 | COLLAB-07 | Phase 3 — Collaboration and Department Portal | Complete |
-| PORTAL-01 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-02 | Phase 3 — Collaboration and Department Portal | Pending |
-| PORTAL-03 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-01 | Phase 3 — Collaboration and Department Portal | Complete |
+| PORTAL-02 | Phase 3 — Collaboration and Department Portal | Complete |
+| PORTAL-03 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-04 | Phase 3 — Collaboration and Department Portal | Complete |
-| PORTAL-05 | Phase 3 — Collaboration and Department Portal | Pending |
+| PORTAL-05 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-06 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-07 | Phase 3 — Collaboration and Department Portal | Complete |
 | PORTAL-08 | Phase 3 — Collaboration and Department Portal | Complete |
