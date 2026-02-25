@@ -13,7 +13,7 @@ XBO AI TeamHub is built in six progressive phases, each leaving the application 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation and Auth** - Runnable stack with user authentication, role enforcement, and seeded departments (completed 2026-02-25)
-- [ ] **Phase 2: Kanban Core** - Full ticket lifecycle on a drag-and-drop board with column time tracking and ticket detail
+- [x] **Phase 2: Kanban Core** - Full ticket lifecycle on a drag-and-drop board with column time tracking and ticket detail (completed 2026-02-25)
 - [ ] **Phase 3: Collaboration and Department Portal** - Comment threads, subtasks, and structured department intake with templates
 - [ ] **Phase 4: ROI Estimation and Executive Dashboard** - ROI panel on every ticket and KPI analytics for leadership
 - [ ] **Phase 5: Advanced Features** - Ticket dependencies, sprints, custom fields, saved filters, and wiki
@@ -51,10 +51,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Backend data layer: Ticket/ColumnHistory/TicketEvent ORM models, Alembic migration, ticket CRUD + move endpoint, GET /api/board eager-load, GET /api/auth/users
-- [ ] 02-02-PLAN.md — Kanban board frontend: TanStack Query + NuqsAdapter providers, 5-column board with dnd-kit drag-and-drop, optimistic updates, owner modal, QuickAddInput, full card metadata display, 30s polling
-- [ ] 02-03-PLAN.md — Board filters + ticket detail: nuqs filter bar with URL persistence, Tiptap detail modal with auto-save, inline editing, activity timeline, column history
-- [ ] 02-04-PLAN.md — End-to-end human verification checkpoint for complete Phase 2 workflow
+- [x] 02-01-PLAN.md — Backend data layer: Ticket/ColumnHistory/TicketEvent ORM models, Alembic migration, ticket CRUD + move endpoint, GET /api/board eager-load, GET /api/auth/users
+- [x] 02-02-PLAN.md — Kanban board frontend: TanStack Query + NuqsAdapter providers, 5-column board with dnd-kit drag-and-drop, optimistic updates, owner modal, QuickAddInput, full card metadata display, 30s polling
+- [x] 02-03-PLAN.md — Board filters + ticket detail: nuqs filter bar with URL persistence, Tiptap detail modal with auto-save, inline editing, activity timeline, column history
+- [x] 02-04-PLAN.md — End-to-end human verification checkpoint for complete Phase 2 workflow
 
 ### Phase 3: Collaboration and Department Portal
 **Goal**: AI team members can collaborate on tickets via comments and subtasks, and can log intake tickets on behalf of any department using a structured portal form
@@ -135,7 +135,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Auth | 3/3 | Complete    | 2026-02-25 |
-| 2. Kanban Core | 3/4 | In Progress|  |
+| 2. Kanban Core | 4/4 | Complete   | 2026-02-25 |
 | 3. Collaboration and Department Portal | 0/4 | Not started | - |
 | 4. ROI Estimation and Executive Dashboard | 0/3 | Not started | - |
 | 5. Advanced Features | 0/5 | Not started | - |
