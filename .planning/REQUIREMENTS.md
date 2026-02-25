@@ -43,19 +43,19 @@
 - [x] **BOARD-02**: Ticket cards can be dragged between columns with optimistic UI update and explicit rollback on rejection
 - [x] **BOARD-03**: Dragging a ticket out of Backlog opens an owner-assignment modal before committing the move
 - [x] **BOARD-04**: Card displays: department badge, title, owner initials/avatar, due date, time in current column, next_step, urgency badge, priority, business_impact snippet, effort estimate
-- [ ] **BOARD-05**: Board filter bar supports: owner, department, created date range, due date range, priority/urgency, aging (time in column threshold)
-- [ ] **BOARD-06**: Applied filters persist in URL query params (shareable filter state)
+- [x] **BOARD-05**: Board filter bar supports: owner, department, created date range, due date range, priority/urgency, aging (time in column threshold)
+- [x] **BOARD-06**: Applied filters persist in URL query params (shareable filter state)
 - [x] **BOARD-07**: Board data polls every 30 seconds via TanStack Query refetchInterval
 - [x] **BOARD-08**: Board loads via a single API endpoint with eager loading (no N+1 queries)
 
 ### Ticket Detail (DETAIL)
 
-- [ ] **DETAIL-01**: Clicking a card opens a ticket detail modal/page
-- [ ] **DETAIL-02**: Detail view shows all ticket fields: title, rich text problem statement, urgency, business impact, success criteria, effort estimate, due date, next step, status column, department, owner, priority
-- [ ] **DETAIL-03**: Rich text editor (Tiptap) for problem_statement — stored as JSON, never HTML
-- [ ] **DETAIL-04**: User (admin/member) can edit ticket fields inline
-- [ ] **DETAIL-05**: Activity timeline renders all TicketEvents (created, moved, assigned, edited) in chronological order
-- [ ] **DETAIL-06**: Column history section shows all columns the ticket passed through with enter/exit timestamps and time spent
+- [x] **DETAIL-01**: Clicking a card opens a ticket detail modal/page
+- [x] **DETAIL-02**: Detail view shows all ticket fields: title, rich text problem statement, urgency, business impact, success criteria, effort estimate, due date, next step, status column, department, owner, priority
+- [x] **DETAIL-03**: Rich text editor (Tiptap) for problem_statement — stored as JSON, never HTML
+- [x] **DETAIL-04**: User (admin/member) can edit ticket fields inline
+- [x] **DETAIL-05**: Activity timeline renders all TicketEvents (created, moved, assigned, edited) in chronological order
+- [x] **DETAIL-06**: Column history section shows all columns the ticket passed through with enter/exit timestamps and time spent
 
 ### Collaboration (COLLAB)
 
@@ -203,16 +203,16 @@
 | BOARD-02 | Phase 2 — Kanban Core | Complete |
 | BOARD-03 | Phase 2 — Kanban Core | Complete |
 | BOARD-04 | Phase 2 — Kanban Core | Complete |
-| BOARD-05 | Phase 2 — Kanban Core | Pending |
-| BOARD-06 | Phase 2 — Kanban Core | Pending |
+| BOARD-05 | Phase 2 — Kanban Core | Complete |
+| BOARD-06 | Phase 2 — Kanban Core | Complete |
 | BOARD-07 | Phase 2 — Kanban Core | Complete |
 | BOARD-08 | Phase 2 — Kanban Core | Complete |
-| DETAIL-01 | Phase 2 — Kanban Core | Pending |
-| DETAIL-02 | Phase 2 — Kanban Core | Pending |
-| DETAIL-03 | Phase 2 — Kanban Core | Pending |
-| DETAIL-04 | Phase 2 — Kanban Core | Pending |
-| DETAIL-05 | Phase 2 — Kanban Core | Pending |
-| DETAIL-06 | Phase 2 — Kanban Core | Pending |
+| DETAIL-01 | Phase 2 — Kanban Core | Complete |
+| DETAIL-02 | Phase 2 — Kanban Core | Complete |
+| DETAIL-03 | Phase 2 — Kanban Core | Complete |
+| DETAIL-04 | Phase 2 — Kanban Core | Complete |
+| DETAIL-05 | Phase 2 — Kanban Core | Complete |
+| DETAIL-06 | Phase 2 — Kanban Core | Complete |
 | COLLAB-01 | Phase 3 — Collaboration and Department Portal | Pending |
 | COLLAB-02 | Phase 3 — Collaboration and Department Portal | Pending |
 | COLLAB-03 | Phase 3 — Collaboration and Department Portal | Pending |

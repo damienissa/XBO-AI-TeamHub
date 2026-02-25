@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 2 of 6 (Kanban Core)
-Plan: 2 of 5 in current phase
-Status: Plan 02-02 complete
-Last activity: 2026-02-25 — Completed plan 02-02 (Kanban board with dnd-kit, owner modal, optimistic UI, 30s polling, full BOARD-04 card metadata, QuickAddInput with nuqs URL state)
+Plan: 3 of 5 in current phase
+Status: Plan 02-03 complete
+Last activity: 2026-02-25 — Completed plan 02-03 (URL-persisted board filter bar with nuqs, ticket detail modal with Tiptap auto-save, inline metadata editing, activity timeline, column history)
 
-Progress: [████░░░░░░] 27%
+Progress: [█████░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 15.5 min
-- Total execution time: 1.05 hours
+- Total plans completed: 5
+- Average duration: 13.4 min
+- Total execution time: 1.12 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-and-auth | 3 | 58 min | 19.3 min |
-| 02-kanban-core | 2 | 11 min | 5.5 min |
+| 02-kanban-core | 3 | 15 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 6 min, 7 min, 45 min, 6 min
-- Trend: fast (02-02 was well-specified frontend build with zero TS errors)
+- Last 5 plans: 6 min, 7 min, 45 min, 6 min, 4 min
+- Trend: fast (02-03 well-specified with all deps installed, zero TS errors)
 
 *Updated after each plan completion*
 
@@ -66,6 +66,10 @@ Recent decisions affecting current work:
 - [Phase 02-02]: pendingMove state for Backlog->other unowned drags; no optimistic update before owner confirmation; cancel = zero state reset needed
 - [Phase 02-02]: useDraggable skipped when isOverlay=true on KanbanCard to prevent infinite re-render in DragOverlay
 - [Phase 02-02]: dialog.tsx, popover.tsx, command.tsx created as missing shadcn UI primitives required by OwnerModal
+- [Phase 02-03]: useBoard owns filter state via useQueryStates internally — no filter props needed; queryKey includes filterParams for reactive re-fetch
+- [Phase 02-03]: TicketDetailModal mounted once in KanbanBoard, not per-card — single Dialog.Root controlled by nuqs ?ticket= param
+- [Phase 02-03]: TiptapEditor immediatelyRender: false — required for Next.js 14 SSR; prevents hydration mismatch (RESEARCH.md Pattern 6)
+- [Phase 02-03]: KanbanCard useQueryState hook applied via ternary when isOverlay=true — matches existing useDraggable pattern in same file
 
 ### Pending Todos
 
@@ -79,5 +83,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 02-kanban-core/02-02-PLAN.md — Kanban board with dnd-kit DnD (KanbanBoard/Column/Card/DragOverlay), owner modal (OwnerModal with Radix Dialog + Combobox), QuickAddInput, TanStack Query providers, nuqs NuqsAdapter, useBoard 30s polling, useMoveTicket optimistic rollback, full BOARD-04 card metadata.
+Stopped at: Completed 02-kanban-core/02-03-PLAN.md — URL-persisted board filter bar (BoardFilterBar with nuqs useQueryStates, 10 params), ticket detail modal (TicketDetailModal Radix Dialog right-drawer, TiptapEditor auto-save, inline field editing, activity timeline DETAIL-05, column history DETAIL-06), all BOARD-05/06 and DETAIL-01..06 requirements fulfilled.
 Resume file: None
