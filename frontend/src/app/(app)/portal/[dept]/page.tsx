@@ -51,9 +51,6 @@ const portalSchema = z
     current_time_cost_hours_per_week: z.number().positive().optional(),
     employees_affected: z.number().positive().optional(),
     avg_hourly_cost: z.number().positive().optional(),
-    expected_savings_rate: z.number().min(0).max(1).optional(),
-    risk_probability: z.number().min(0).max(1).optional(),
-    strategic_value: z.number().int().min(1).max(5).optional(),
     // Attachment stub
     attachment_filename: z.string().optional(),
     attachment_size_bytes: z.number().int().min(0).optional(),
@@ -190,11 +187,9 @@ export default function PortalDeptPage() {
   const hoursPerWeek = watch("current_time_cost_hours_per_week") ?? 0;
   const employeesAffected = watch("employees_affected") ?? 0;
   const avgHourlyCost = watch("avg_hourly_cost") ?? 0;
-  const expectedSavingsRate = watch("expected_savings_rate") ?? 0;
-
   const liveWeeklyCost = hoursPerWeek * employeesAffected * avgHourlyCost;
   const liveYearlyCost = liveWeeklyCost * 52;
-  const liveAnnualSavings = liveYearlyCost * expectedSavingsRate;
+  const liveAnnualSavings = liveYearlyCost;
 
   const submitMutation = useMutation({
     mutationFn: async (data: PortalFormValues) => {
@@ -215,9 +210,6 @@ export default function PortalDeptPage() {
         current_time_cost_hours_per_week: data.current_time_cost_hours_per_week ?? null,
         employees_affected: data.employees_affected ?? null,
         avg_hourly_cost: data.avg_hourly_cost ?? null,
-        expected_savings_rate: data.expected_savings_rate ?? null,
-        risk_probability: data.risk_probability ?? null,
-        strategic_value: data.strategic_value ?? null,
         attachment_filename: data.attachment_filename || null,
         attachment_size_bytes: data.attachment_size_bytes ?? null,
       };
@@ -484,57 +476,6 @@ export default function PortalDeptPage() {
                 placeholder="e.g. 50"
                 {...register("avg_hourly_cost", { valueAsNumber: true })}
                 className={cn(errors.avg_hourly_cost && "border-red-400 focus-visible:ring-red-400")}
-              />
-            </FieldRow>
-          </div>
-
-          {/* Row 2: Adjustment factors */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FieldRow
-              label="Expected savings rate (0–1)"
-              htmlFor="expected_savings_rate"
-              error={errors.expected_savings_rate?.message}
-            >
-              <Input
-                id="expected_savings_rate"
-                type="number"
-                min={0}
-                max={1}
-                step={0.01}
-                placeholder="e.g. 0.8"
-                {...register("expected_savings_rate", { valueAsNumber: true })}
-              />
-            </FieldRow>
-
-            <FieldRow
-              label="Risk probability (0–1)"
-              htmlFor="risk_probability"
-              error={errors.risk_probability?.message}
-            >
-              <Input
-                id="risk_probability"
-                type="number"
-                min={0}
-                max={1}
-                step={0.01}
-                placeholder="e.g. 0.2"
-                {...register("risk_probability", { valueAsNumber: true })}
-              />
-            </FieldRow>
-
-            <FieldRow
-              label="Strategic value (1–5)"
-              htmlFor="strategic_value"
-              error={errors.strategic_value?.message}
-            >
-              <Input
-                id="strategic_value"
-                type="number"
-                min={1}
-                max={5}
-                step={1}
-                placeholder="e.g. 3"
-                {...register("strategic_value", { valueAsNumber: true })}
               />
             </FieldRow>
           </div>

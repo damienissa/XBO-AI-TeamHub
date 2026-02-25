@@ -8,6 +8,8 @@ import {
   LayoutGrid,
   TrendingUp,
 } from "lucide-react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 import {
   AreaChart,
   Area,
@@ -45,6 +47,25 @@ interface ThroughputPointOut {
   count: number;
 }
 
+interface StatusBreakdownItemOut {
+  status: string;
+  count: number;
+}
+
+interface OwnerTicketCountOut {
+  user_id: string;
+  user_name: string;
+  ticket_count: number;
+}
+
+interface UpcomingReleaseOut {
+  ticket_id: string;
+  title: string;
+  due_date: string;
+  status: string;
+  owner_name: string | null;
+}
+
 interface DashboardOut {
   open_ticket_count: number;
   overdue_count: number;
@@ -54,6 +75,9 @@ interface DashboardOut {
   workload: WorkloadItemOut[];
   dept_breakdown: DeptBreakdownItemOut[];
   throughput_trend: ThroughputPointOut[];
+  status_breakdown: StatusBreakdownItemOut[];
+  tickets_by_owner: OwnerTicketCountOut[];
+  upcoming_releases: UpcomingReleaseOut[];
 }
 
 // ----- Helpers ---------------------------------------------------------------
@@ -62,6 +86,16 @@ function formatHours(h: number | null | undefined): string {
   if (h === null || h === undefined) return "—";
   return `${h.toFixed(1)}h`;
 }
+
+const STATUS_COLORS: Record<string, string> = {
+  Backlog: "bg-slate-100 text-slate-600",
+  Discovery: "bg-purple-100 text-purple-700",
+  "In Progress": "bg-blue-100 text-blue-700",
+  "Review/QA": "bg-yellow-100 text-yellow-700",
+  Done: "bg-green-100 text-green-700",
+};
+
+const STATUS_ORDER = ["Backlog", "Discovery", "In Progress", "Review/QA", "Done"];
 
 // ----- Loading skeleton ------------------------------------------------------
 
@@ -91,7 +125,10 @@ function LoadingSkeleton() {
 export default function DashboardPage() {
   const { data, isLoading, isError } = useQuery<DashboardOut>({
     queryKey: ["dashboard"],
-    queryFn: () => fetch("/api/dashboard").then((r) => r.json()),
+    queryFn: () =>
+      fetch(`${API_BASE}/api/dashboard`, { credentials: "include" }).then((r) =>
+        r.json()
+      ),
     staleTime: 5 * 60 * 1000, // 5 minutes — no auto-refresh (RESEARCH.md Open Question 3)
   });
 
@@ -160,7 +197,7 @@ export default function DashboardPage() {
             <p className="text-2xl font-bold text-slate-800">
               {data.throughput_last_week}
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">Throughput (last 7d)</p>
+            <p className="text-xs text-slate-500 mt-0.5">Delivered (last 7d)</p>
           </div>
         </div>
 
@@ -194,47 +231,71 @@ export default function DashboardPage() {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Row 2 — Workload BarChart + Department Breakdown Table              */}
+      {/* Row 2 — Upcoming Due Dates + Department Breakdown Table             */}
       {/* ------------------------------------------------------------------ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Workload BarChart */}
+        {/* Upcoming Due Dates */}
         <div className="rounded-xl border bg-white p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-slate-700 mb-3">
-            Active Effort Hours
+            Upcoming Due Dates
           </h2>
-          {workloadChartData.length === 0 ? (
+          {data.upcoming_releases.length === 0 ? (
             <p className="text-sm text-slate-400 py-12 text-center">
-              No active tickets with effort estimates set.
+              No tickets with due dates set.
             </p>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={workloadChartData}
-                margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: "#94a3b8" }}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#94a3b8" }}
-                  label={{
-                    value: "hours",
-                    angle: -90,
-                    position: "insideLeft",
-                    fontSize: 10,
-                  }}
-                />
-                <Tooltip />
-                <Bar
-                  dataKey="hours"
-                  fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={48}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="pb-2 text-xs font-semibold text-slate-500">
+                      Ticket
+                    </th>
+                    <th className="pb-2 text-xs font-semibold text-slate-500">
+                      Status
+                    </th>
+                    <th className="pb-2 text-xs font-semibold text-slate-500">
+                      Owner
+                    </th>
+                    <th className="pb-2 text-xs font-semibold text-slate-500 text-right">
+                      Due Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.upcoming_releases.map((r) => {
+                    const isOverdue = r.due_date < new Date().toISOString().slice(0, 10);
+                    return (
+                      <tr key={r.ticket_id} className="border-b last:border-0">
+                        <td className="py-2 text-slate-700 max-w-xs truncate pr-4">
+                          {r.title}
+                        </td>
+                        <td className="py-2">
+                          <span
+                            className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                              STATUS_COLORS[r.status] ??
+                              "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                        </td>
+                        <td className="py-2 text-slate-500">
+                          {r.owner_name ?? "—"}
+                        </td>
+                        <td
+                          className={`py-2 text-right font-medium ${
+                            isOverdue ? "text-red-600" : "text-slate-700"
+                          }`}
+                        >
+                          {r.due_date}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -328,7 +389,7 @@ export default function DashboardPage() {
       {/* ------------------------------------------------------------------ */}
       <div className="rounded-xl border bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-700 mb-3">
-          Throughput (Last 8 Weeks)
+          Delivered (Last 8 Weeks)
         </h2>
         {throughputChartData.length === 0 ? (
           <p className="text-sm text-slate-400">
@@ -358,6 +419,118 @@ export default function DashboardPage() {
                 strokeWidth={2}
               />
             </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Row 5 — Tickets by Status                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">
+          Tickets by Status
+        </h2>
+        {data.status_breakdown.length === 0 ? (
+          <p className="text-sm text-slate-400">No tickets yet.</p>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            {STATUS_ORDER.map((status) => {
+              const item = data.status_breakdown.find(
+                (s) => s.status === status
+              );
+              const count = item?.count ?? 0;
+              const colorClass =
+                STATUS_COLORS[status] ?? "bg-slate-100 text-slate-600";
+              return (
+                <div
+                  key={status}
+                  className={`flex items-center gap-2 rounded-lg px-4 py-3 ${colorClass}`}
+                >
+                  <span className="text-2xl font-bold">{count}</span>
+                  <span className="text-xs font-medium">{status}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Row 6 — Tickets by Owner                                            */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">
+          Tickets by Owner
+        </h2>
+        {data.tickets_by_owner.length === 0 ? (
+          <p className="text-sm text-slate-400">No assigned tickets yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="pb-2 text-xs font-semibold text-slate-500">
+                    Owner
+                  </th>
+                  <th className="pb-2 text-xs font-semibold text-slate-500 text-right">
+                    Tickets
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.tickets_by_owner.map((o) => (
+                  <tr key={o.user_id} className="border-b last:border-0">
+                    <td className="py-2 text-slate-700">{o.user_name}</td>
+                    <td className="py-2 text-right font-semibold text-slate-800">
+                      {o.ticket_count}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Row 7 — Active Effort Hours BarChart                                */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="rounded-xl border bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">
+          Active Effort Hours
+        </h2>
+        {workloadChartData.length === 0 ? (
+          <p className="text-sm text-slate-400">
+            No active tickets with effort estimates set.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={workloadChartData}
+              margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 11, fill: "#94a3b8" }}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                label={{
+                  value: "hours",
+                  angle: -90,
+                  position: "insideLeft",
+                  fontSize: 10,
+                }}
+              />
+              <Tooltip />
+              <Bar
+                dataKey="hours"
+                fill="#3b82f6"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={48}
+              />
+            </BarChart>
           </ResponsiveContainer>
         )}
       </div>

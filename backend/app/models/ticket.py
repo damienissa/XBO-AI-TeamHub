@@ -84,9 +84,6 @@ class Ticket(Base):
     avg_hourly_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
     current_error_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     revenue_blocked: Mapped[float | None] = mapped_column(Float, nullable=True)
-    strategic_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    expected_savings_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
-    risk_probability: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Phase 4 computed/persisted ROI output fields (ROI-02)
     weekly_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -94,7 +91,6 @@ class Ticket(Base):
     annual_savings: Mapped[float | None] = mapped_column(Float, nullable=True)
     dev_cost: Mapped[float | None] = mapped_column(Float, nullable=True)
     roi: Mapped[float | None] = mapped_column(Float, nullable=True)
-    adjusted_roi: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Phase 3 attachment metadata stub (PORTAL-06)
     # Actual file storage is deferred to a future phase.

@@ -30,6 +30,25 @@ class ThroughputPointOut(BaseModel):
     count: int
 
 
+class StatusBreakdownItemOut(BaseModel):
+    status: str
+    count: int
+
+
+class OwnerTicketCountOut(BaseModel):
+    user_id: str
+    user_name: str
+    ticket_count: int
+
+
+class UpcomingReleaseOut(BaseModel):
+    ticket_id: str
+    title: str
+    due_date: str  # ISO date string
+    status: str
+    owner_name: Optional[str] = None
+
+
 class DashboardOut(BaseModel):
     open_ticket_count: int
     overdue_count: int
@@ -39,3 +58,6 @@ class DashboardOut(BaseModel):
     workload: list[WorkloadItemOut]
     dept_breakdown: list[DeptBreakdownItemOut]
     throughput_trend: list[ThroughputPointOut]
+    status_breakdown: list[StatusBreakdownItemOut]
+    tickets_by_owner: list[OwnerTicketCountOut]
+    upcoming_releases: list[UpcomingReleaseOut]

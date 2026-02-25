@@ -29,8 +29,6 @@ _ROI_INPUT_FIELDS = frozenset({
     "current_time_cost_hours_per_week",
     "employees_affected",
     "avg_hourly_cost",
-    "expected_savings_rate",
-    "risk_probability",
     "effort_estimate",
 })
 
@@ -134,8 +132,6 @@ async def update_ticket(
             current_time_cost_hours_per_week=ticket.current_time_cost_hours_per_week,
             employees_affected=ticket.employees_affected,
             avg_hourly_cost=ticket.avg_hourly_cost,
-            expected_savings_rate=ticket.expected_savings_rate,
-            risk_probability=ticket.risk_probability,
             effort_estimate=ticket.effort_estimate,
             ai_team_hourly_rate=settings.AI_TEAM_HOURLY_RATE,
         )

@@ -32,9 +32,6 @@ export interface Ticket {
   avg_hourly_cost?: number | null;
   current_error_rate?: number | null;
   revenue_blocked?: number | null;
-  strategic_value?: number | null;
-  expected_savings_rate?: number | null;
-  risk_probability?: number | null;
 
   // Phase 4 computed ROI output fields (ROI-02)
   weekly_cost?: number | null;
@@ -42,7 +39,6 @@ export interface Ticket {
   annual_savings?: number | null;
   dev_cost?: number | null;
   roi?: number | null;
-  adjusted_roi?: number | null;
 }
 
 export interface BoardData {

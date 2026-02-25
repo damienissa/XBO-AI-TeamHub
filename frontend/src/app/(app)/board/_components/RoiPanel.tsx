@@ -100,9 +100,6 @@ export default function RoiPanel({ ticket, onUpdate }: RoiPanelProps) {
     current_time_cost_hours_per_week: ticket.current_time_cost_hours_per_week ?? null,
     employees_affected: ticket.employees_affected ?? null,
     avg_hourly_cost: ticket.avg_hourly_cost ?? null,
-    expected_savings_rate: ticket.expected_savings_rate ?? null,
-    risk_probability: ticket.risk_probability ?? null,
-    strategic_value: ticket.strategic_value ?? null,
     current_error_rate: ticket.current_error_rate ?? null,
     revenue_blocked: ticket.revenue_blocked ?? null,
   });
@@ -113,9 +110,6 @@ export default function RoiPanel({ ticket, onUpdate }: RoiPanelProps) {
       current_time_cost_hours_per_week: ticket.current_time_cost_hours_per_week ?? null,
       employees_affected: ticket.employees_affected ?? null,
       avg_hourly_cost: ticket.avg_hourly_cost ?? null,
-      expected_savings_rate: ticket.expected_savings_rate ?? null,
-      risk_probability: ticket.risk_probability ?? null,
-      strategic_value: ticket.strategic_value ?? null,
       current_error_rate: ticket.current_error_rate ?? null,
       revenue_blocked: ticket.revenue_blocked ?? null,
     });
@@ -135,10 +129,7 @@ export default function RoiPanel({ ticket, onUpdate }: RoiPanelProps) {
 
   const liveYearlyCost = liveWeeklyCost != null ? liveWeeklyCost * 52 : null;
 
-  const liveAnnualSavings =
-    liveYearlyCost != null && draft.expected_savings_rate != null
-      ? liveYearlyCost * draft.expected_savings_rate
-      : null;
+  const liveAnnualSavings = liveYearlyCost;
 
   // Ghost state — show prompt when no row-1 inputs filled
   const hasAnyRoiInput = !!(
@@ -186,12 +177,11 @@ export default function RoiPanel({ ticket, onUpdate }: RoiPanelProps) {
         </p>
       )}
 
-      {/* Supporting 4-cell grid */}
-      <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-md">
+      {/* Supporting 3-cell grid */}
+      <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-md">
         <StatCell label="Weekly Cost" value={fmt$(displayWeeklyCost)} />
         <StatCell label="Yearly Cost" value={fmt$(displayYearlyCost)} />
         <StatCell label="Dev Cost" value={fmt$(ticket.dev_cost)} />
-        <StatCell label="Adjusted ROI" value={fmtPct(ticket.adjusted_roi)} />
       </div>
 
       {/* ROI Inputs section */}
@@ -223,40 +213,6 @@ export default function RoiPanel({ ticket, onUpdate }: RoiPanelProps) {
             field="avg_hourly_cost"
             value={draft.avg_hourly_cost}
             min={0}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-        </div>
-
-        {/* Row 2: Expected Savings Rate, Risk Probability, Strategic Value */}
-        <div className="grid grid-cols-3 gap-3">
-          <RoiInput
-            label="Savings Rate (0-1)"
-            field="expected_savings_rate"
-            value={draft.expected_savings_rate}
-            min={0}
-            max={1}
-            step={0.01}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-          <RoiInput
-            label="Risk Probability (0-1)"
-            field="risk_probability"
-            value={draft.risk_probability}
-            min={0}
-            max={1}
-            step={0.01}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-          <RoiInput
-            label="Strategic Value (1-5)"
-            field="strategic_value"
-            value={draft.strategic_value}
-            min={1}
-            max={5}
-            step={1}
             onChange={handleChange}
             onBlur={handleBlur}
           />

@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
@@ -22,7 +22,10 @@ from app.schemas.dashboard import (
     ColumnTimeOut,
     DashboardOut,
     DeptBreakdownItemOut,
+    OwnerTicketCountOut,
+    StatusBreakdownItemOut,
     ThroughputPointOut,
+    UpcomingReleaseOut,
     WorkloadItemOut,
 )
 
@@ -80,6 +83,7 @@ async def get_dashboard(
                 func.extract("epoch", done_ch.entered_at - Ticket.created_at)
             )
         )
+        .select_from(Ticket)
         .join(done_ch, (done_ch.ticket_id == Ticket.id) & (done_ch.column == "Done"))
         .where(Ticket.status_column == StatusColumn.Done)
     )
@@ -115,18 +119,19 @@ async def get_dashboard(
     # 6. Throughput trend — last 8 weeks bucketed by week                 #
     # ------------------------------------------------------------------ #
     eight_weeks_ago = now_utc - timedelta(weeks=8)
+    week_trunc = func.date_trunc(text("'week'"), ColumnHistory.entered_at)
     throughput_rows = (
         await db.execute(
             select(
-                func.date_trunc("week", ColumnHistory.entered_at).label("week_start"),
+                week_trunc.label("week_start"),
                 func.count(ColumnHistory.ticket_id).label("count"),
             )
             .where(
                 ColumnHistory.column == "Done",
                 ColumnHistory.entered_at >= eight_weeks_ago,
             )
-            .group_by(func.date_trunc("week", ColumnHistory.entered_at))
-            .order_by(func.date_trunc("week", ColumnHistory.entered_at))
+            .group_by(week_trunc)
+            .order_by(week_trunc)
         )
     ).all()
 
@@ -193,6 +198,7 @@ async def get_dashboard(
                     func.extract("epoch", dept_done_ch.entered_at - Ticket.created_at)
                 ).label("avg_cycle_seconds"),
             )
+            .select_from(Ticket)
             .outerjoin(
                 dept_done_ch,
                 (dept_done_ch.ticket_id == Ticket.id) & (dept_done_ch.column == "Done"),
@@ -227,6 +233,94 @@ async def get_dashboard(
                 )
             )
 
+    # ------------------------------------------------------------------ #
+    # 9. Ticket count per status column                                   #
+    # ------------------------------------------------------------------ #
+    status_rows = (
+        await db.execute(
+            select(Ticket.status_column, func.count(Ticket.id).label("count"))
+            .group_by(Ticket.status_column)
+        )
+    ).all()
+
+    status_breakdown = [
+        StatusBreakdownItemOut(status=row.status_column, count=row.count)
+        for row in status_rows
+    ]
+
+    # ------------------------------------------------------------------ #
+    # 10. Ticket count per owner (all non-unassigned tickets)             #
+    # ------------------------------------------------------------------ #
+    owner_count_rows = (
+        await db.execute(
+            select(Ticket.owner_id, func.count(Ticket.id).label("count"))
+            .where(Ticket.owner_id.is_not(None))
+            .group_by(Ticket.owner_id)
+            .order_by(func.count(Ticket.id).desc())
+        )
+    ).all()
+
+    tickets_by_owner: list[OwnerTicketCountOut] = []
+    if owner_count_rows:
+        oid_list = [row.owner_id for row in owner_count_rows]
+        owner_user_rows = (
+            await db.execute(
+                select(User.id, User.full_name).where(User.id.in_(oid_list))
+            )
+        ).all()
+        uname_by_id = {str(u.id): u.full_name for u in owner_user_rows}
+        tickets_by_owner = [
+            OwnerTicketCountOut(
+                user_id=str(row.owner_id),
+                user_name=uname_by_id.get(str(row.owner_id), "Unknown"),
+                ticket_count=row.count,
+            )
+            for row in owner_count_rows
+        ]
+
+    # ------------------------------------------------------------------ #
+    # 11. Upcoming releases — tickets with due_date, not Done, asc order  #
+    # ------------------------------------------------------------------ #
+    release_rows = (
+        await db.execute(
+            select(
+                Ticket.id,
+                Ticket.title,
+                Ticket.due_date,
+                Ticket.status_column,
+                Ticket.owner_id,
+            )
+            .where(
+                Ticket.due_date.is_not(None),
+                Ticket.status_column != StatusColumn.Done,
+            )
+            .order_by(Ticket.due_date.asc())
+            .limit(20)
+        )
+    ).all()
+
+    upcoming_releases: list[UpcomingReleaseOut] = []
+    if release_rows:
+        rel_owner_ids = list({row.owner_id for row in release_rows if row.owner_id})
+        rel_uname: dict[str, str] = {}
+        if rel_owner_ids:
+            rel_user_rows = (
+                await db.execute(
+                    select(User.id, User.full_name).where(User.id.in_(rel_owner_ids))
+                )
+            ).all()
+            rel_uname = {str(u.id): u.full_name for u in rel_user_rows}
+        upcoming_releases = [
+            UpcomingReleaseOut(
+                ticket_id=str(row.id),
+                title=row.title,
+                due_date=row.due_date.isoformat(),
+                status=row.status_column,
+                owner_name=rel_uname.get(str(row.owner_id)) if row.owner_id else None,
+            )
+            for row in release_rows
+        ]
+
     return DashboardOut(
         open_ticket_count=open_ticket_count,
         overdue_count=overdue_count,
@@ -236,4 +330,7 @@ async def get_dashboard(
         workload=workload,
         dept_breakdown=dept_breakdown,
         throughput_trend=throughput_trend,
+        status_breakdown=status_breakdown,
+        tickets_by_owner=tickets_by_owner,
+        upcoming_releases=upcoming_releases,
     )

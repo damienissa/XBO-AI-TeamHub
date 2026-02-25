@@ -52,9 +52,6 @@ class TicketUpdate(BaseModel):
     avg_hourly_cost: Optional[float] = None
     current_error_rate: Optional[float] = None
     revenue_blocked: Optional[float] = None
-    strategic_value: Optional[int] = None
-    expected_savings_rate: Optional[float] = None
-    risk_probability: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -95,9 +92,6 @@ class TicketOut(BaseModel):
     avg_hourly_cost: Optional[float] = None
     current_error_rate: Optional[float] = None
     revenue_blocked: Optional[float] = None
-    strategic_value: Optional[int] = None
-    expected_savings_rate: Optional[float] = None
-    risk_probability: Optional[float] = None
 
     # Phase 4 computed/persisted ROI output fields (ROI-02)
     weekly_cost: Optional[float] = None
@@ -105,7 +99,6 @@ class TicketOut(BaseModel):
     annual_savings: Optional[float] = None
     dev_cost: Optional[float] = None
     roi: Optional[float] = None
-    adjusted_roi: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -17,10 +17,14 @@ export function useBoard() {
     min_age_days:   parseAsInteger,
   });
 
-  // Convert filter values to string params for fetchBoard
-  // Date objects are serialized to ISO date string (yyyy-MM-dd); nulls are dropped
+  // Convert filter values to string params for fetchBoard.
+  // Remap frontend URL param names to backend query param names where they differ.
+  const KEY_MAP: Record<string, string> = { owner: "owner_id", department: "department_id" };
   const filterParams = Object.fromEntries(
-    Object.entries(filters).map(([k, v]) => [k, v != null ? String(v instanceof Date ? v.toISOString().slice(0, 10) : v) : null])
+    Object.entries(filters).map(([k, v]) => [
+      KEY_MAP[k] ?? k,
+      v != null ? String(v instanceof Date ? v.toISOString().slice(0, 10) : v) : null,
+    ])
   );
 
   return useQuery<Ticket[]>({
