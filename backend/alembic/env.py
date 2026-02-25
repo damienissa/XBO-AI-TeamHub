@@ -10,7 +10,12 @@ from app.models.base import Base
 # CRITICAL: Import ALL models so autogenerate detects them
 from app.models.user import User  # noqa: F401
 from app.models.department import Department  # noqa: F401
-from app.models.ticket import Ticket  # noqa: F401
+from app.models.ticket_dependency import ticket_dependencies  # noqa: F401 — Phase 5 association table
+from app.models.sprint import Sprint  # noqa: F401 — Phase 5
+from app.models.custom_field import CustomFieldDef  # noqa: F401 — Phase 5
+from app.models.saved_filter import SavedFilter  # noqa: F401 — Phase 5
+from app.models.wiki_page import WikiPage  # noqa: F401 — Phase 5
+from app.models.ticket import Ticket  # noqa: F401 — Import AFTER Phase 5 models (ticket imports ticket_dependency)
 from app.models.column_history import ColumnHistory  # noqa: F401
 from app.models.ticket_event import TicketEvent  # noqa: F401
 

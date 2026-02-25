@@ -5,9 +5,11 @@ from datetime import date, datetime
 import sqlalchemy as sa
 from sqlalchemy import CheckConstraint, Float, ForeignKey, Integer, func
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.ticket_dependency import ticket_dependencies
 
 
 class StatusColumn(str, enum.Enum):
@@ -97,6 +99,19 @@ class Ticket(Base):
     attachment_filename: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
     attachment_size_bytes: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
 
+    # Phase 5: Sprint assignment (ADV-08, ADV-09)
+    sprint_id: Mapped[uuid.UUID | None] = mapped_column(
+        sa.Uuid, ForeignKey("sprints.id", ondelete="SET NULL"), nullable=True
+    )
+    # Phase 5: Wiki page link — single page per ticket per CONTEXT.md decision (WIKI-05)
+    wiki_page_id: Mapped[uuid.UUID | None] = mapped_column(
+        sa.Uuid, ForeignKey("wiki_pages.id", ondelete="SET NULL"), nullable=True
+    )
+    # Phase 5: Custom field values — JSONB dict keyed by CustomFieldDef.id as string (ADV-02)
+    custom_field_values: Mapped[dict | None] = mapped_column(
+        MutableDict.as_mutable(JSONB), nullable=True, default=None
+    )
+
     # Relationships — lazy="raise" prevents accidental N+1 queries
     owner = relationship("User", foreign_keys=[owner_id], lazy="raise")
     department = relationship("Department", foreign_keys=[department_id], lazy="raise")
@@ -114,3 +129,26 @@ class Ticket(Base):
         order_by="TicketSubtask.position",
         cascade="all, delete-orphan",
     )
+
+    # Phase 5: Self-referential M2M dependency relationships (ADV-04)
+    # CRITICAL: primaryjoin/secondaryjoin/foreign_keys must be explicit — SQLAlchemy
+    # cannot resolve ambiguous M2M join automatically when both FKs point to the same table.
+    # M2M self-referential: tickets this ticket blocks
+    blocks = relationship(
+        "Ticket",
+        secondary=ticket_dependencies,
+        primaryjoin="Ticket.id == ticket_dependencies.c.blocker_id",
+        secondaryjoin="Ticket.id == ticket_dependencies.c.blocked_id",
+        foreign_keys=[ticket_dependencies.c.blocker_id, ticket_dependencies.c.blocked_id],
+        lazy="raise",
+    )
+    # M2M self-referential: tickets that block this ticket
+    blocked_by = relationship(
+        "Ticket",
+        secondary=ticket_dependencies,
+        primaryjoin="Ticket.id == ticket_dependencies.c.blocked_id",
+        secondaryjoin="Ticket.id == ticket_dependencies.c.blocker_id",
+        foreign_keys=[ticket_dependencies.c.blocker_id, ticket_dependencies.c.blocked_id],
+        lazy="raise",
+    )
+

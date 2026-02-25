@@ -53,6 +53,11 @@ class TicketUpdate(BaseModel):
     current_error_rate: Optional[float] = None
     revenue_blocked: Optional[float] = None
 
+    # Phase 5 fields (ADV-09, WIKI-05, ADV-02)
+    sprint_id: Optional[uuid.UUID] = None
+    wiki_page_id: Optional[uuid.UUID] = None
+    custom_field_values: Optional[dict] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -99,6 +104,11 @@ class TicketOut(BaseModel):
     annual_savings: Optional[float] = None
     dev_cost: Optional[float] = None
     roi: Optional[float] = None
+
+    # Phase 5 fields (ADV-09, WIKI-05, ADV-02)
+    sprint_id: Optional[uuid.UUID] = None
+    wiki_page_id: Optional[uuid.UUID] = None
+    custom_field_values: Optional[dict] = None
 
     model_config = ConfigDict(from_attributes=True)
 
