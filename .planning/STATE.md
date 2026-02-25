@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-24)
 ## Current Position
 
 Phase: 1 of 6 (Foundation and Auth)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-25 — Completed plan 01-01 (monorepo scaffold, Alembic migration, departments endpoint, seed)
+Last activity: 2026-02-25 — Completed plan 01-02 (auth endpoints, security layer, 16 pytest tests)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 11%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 6 min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 6.5 min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-and-auth | 1 | 6 min | 6 min |
+| 01-foundation-and-auth | 2 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min
-- Trend: baseline established
+- Last 5 plans: 6 min, 7 min
+- Trend: consistent
 
 *Updated after each plan completion*
 
@@ -50,6 +50,10 @@ Recent decisions affecting current work:
 - [Phase 01-01]: pwdlib uses PasswordHash.recommended() not PasswordHasher() — the plan sample code had the wrong class name; corrected during seed execution
 - [Phase 01-01]: Frontend placeholder uses alpine:tail -f /dev/null so docker compose up succeeds before plan 01-03 builds the real Next.js frontend
 - [Phase 01-01]: DATABASE_URL set via Docker Compose environment block (not just env_file) so correct asyncpg URL is available inside backend container
+- [Phase 01-02]: pwdlib ph.verify() takes (password, hash) order — plan sample had them swapped; auto-fixed during Task 2 test run
+- [Phase 01-02]: NullPool required for pytest asyncpg test engines to avoid cross-event-loop errors in pytest-asyncio 1.3.0 + anyio 4.12.1
+- [Phase 01-02]: asyncio_mode=auto (pyproject.toml) used instead of @pytest.mark.anyio — avoids anyio TestRunner creating isolated event loops that conflict with fixture teardown
+- [Phase 01-02]: httpx per-request cookies= requires plain dict not httpx.Cookies object (deprecated) — use dict(response.cookies) in tests
 
 ### Pending Todos
 
@@ -63,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 01-foundation-and-auth/01-01-PLAN.md — monorepo scaffold, Alembic initial_schema migration, GET /api/departments, idempotent seed script (7 departments + admin@xbo.com). Ready to execute 01-02 (auth endpoints).
+Stopped at: Completed 01-foundation-and-auth/01-02-PLAN.md — auth endpoints (login, me, logout, refresh, admin create user, role change), JWT httpOnly cookie layer, get_current_user + require_admin dependencies, 16-test pytest suite. Ready to execute 01-03 (Next.js frontend).
 Resume file: None

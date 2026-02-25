@@ -9,14 +9,14 @@
 
 ### Authentication (AUTH)
 
-- [ ] **AUTH-01**: User can register with email and password
-- [ ] **AUTH-02**: User can log in with email and password and receive a session (JWT in httpOnly cookie)
-- [ ] **AUTH-03**: User session persists across browser refresh
-- [ ] **AUTH-04**: User can log out and cookie is cleared
-- [ ] **AUTH-05**: Two roles exist: `admin`, `member` (platform is AI dev team only)
-- [ ] **AUTH-06**: Admin can assign and change user roles
-- [ ] **AUTH-07**: Protected routes redirect unauthenticated users to login
-- [ ] **AUTH-08**: Token is invalidated within one TTL cycle when user is deactivated (token versioning)
+- [x] **AUTH-01**: User can register with email and password
+- [x] **AUTH-02**: User can log in with email and password and receive a session (JWT in httpOnly cookie)
+- [x] **AUTH-03**: User session persists across browser refresh
+- [x] **AUTH-04**: User can log out and cookie is cleared
+- [x] **AUTH-05**: Two roles exist: `admin`, `member` (platform is AI dev team only)
+- [x] **AUTH-06**: Admin can assign and change user roles
+- [x] **AUTH-07**: Protected routes redirect unauthenticated users to login
+- [x] **AUTH-08**: Token is invalidated within one TTL cycle when user is deactivated (token versioning)
 
 ### Departments (DEPT)
 
