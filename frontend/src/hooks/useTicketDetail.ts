@@ -35,6 +35,7 @@ export function useTicketDetail(ticketId: string | null) {
       queryClient.setQueryData(["ticket", ticketId], updated);
       queryClient.invalidateQueries({ queryKey: ["board"] });
       queryClient.invalidateQueries({ queryKey: ["ticket-events", ticketId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 

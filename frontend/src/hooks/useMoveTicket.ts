@@ -39,6 +39,7 @@ export function useMoveTicket() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["board"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

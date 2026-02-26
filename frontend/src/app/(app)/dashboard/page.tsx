@@ -129,7 +129,8 @@ export default function DashboardPage() {
       fetch(`${API_BASE}/api/dashboard`, { credentials: "include" }).then((r) =>
         r.json()
       ),
-    staleTime: 5 * 60 * 1000, // 5 minutes — no auto-refresh (RESEARCH.md Open Question 3)
+    staleTime: 0,
+    refetchInterval: 30_000,
   });
 
   if (isLoading) return <LoadingSkeleton />;

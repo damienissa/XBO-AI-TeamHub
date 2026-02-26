@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -144,6 +144,7 @@ export default function PortalDeptPage() {
   const deptSlug = params.dept;
 
   const [submitted, setSubmitted] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: departments } = useQuery({
     queryKey: ["departments"],
@@ -246,6 +247,8 @@ export default function PortalDeptPage() {
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["board"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setSubmitted(true);
     },
   });
