@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,8 +30,12 @@ export function SubtaskAiModal({ ticketId, open, initialSubtasks, onClose }: Sub
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Reset items when modal opens with new data
-  // (controlled by parent — parent sets initialSubtasks before opening)
+  // Sync items whenever the modal opens with fresh AI subtasks
+  useEffect(() => {
+    if (open) {
+      setItems(initialSubtasks);
+    }
+  }, [open, initialSubtasks]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {

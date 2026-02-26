@@ -142,15 +142,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Compute bottleneck column (highest avg_hours)
-  const bottleneck =
-    data.column_times.length > 0
-      ? data.column_times.reduce(
-          (max, ct) => (ct.avg_hours > max.avg_hours ? ct : max),
-          data.column_times[0]
-        )
-      : null;
-
   // Prepare workload chart data
   const workloadChartData = data.workload.map((w) => ({
     name: w.user_name.split(" ")[0],
@@ -346,42 +337,6 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Row 3 — Column Time Breakdown with bottleneck highlight             */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">
-          Time Per Column
-        </h2>
-        {data.column_times.length === 0 ? (
-          <p className="text-sm text-slate-400">No column data yet.</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {data.column_times.map((ct) => {
-              const isBottleneck =
-                bottleneck !== null && ct.column === bottleneck.column;
-              return (
-                <div
-                  key={ct.column}
-                  className={`rounded-lg border p-3 bg-white ${
-                    isBottleneck
-                      ? "border-orange-400 border-2"
-                      : "border-slate-200"
-                  }`}
-                >
-                  <p className="text-xs font-medium text-slate-500 truncate">
-                    {ct.column}
-                  </p>
-                  <p className="text-lg font-bold text-slate-800 mt-1">
-                    {ct.avg_hours.toFixed(1)}h
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* ------------------------------------------------------------------ */}

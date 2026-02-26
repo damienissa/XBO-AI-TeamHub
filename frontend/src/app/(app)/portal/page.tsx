@@ -5,12 +5,28 @@ import { useRouter } from "next/navigation";
 import {
   Building2,
   CreditCard,
-  Wallet,
-  Camera,
-  Megaphone,
-  Code2,
-  Scale,
+  Microscope,
+  Briefcase,
+  Landmark,
+  BarChart2,
+  TrendingUp,
+  ShieldCheck,
+  FileText,
+  Palette,
+  Pen,
+  Headphones,
+  ArrowLeftRight,
+  Server,
+  DollarSign,
+  UserPlus,
   Users,
+  Scale,
+  UserCheck,
+  Package,
+  Trophy,
+  Wrench,
+  BookOpen,
+  Monitor,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,33 +41,97 @@ interface Department {
 
 // Map slugs to icons and descriptions
 const DEPT_META: Record<string, { icon: React.ElementType; description: string }> = {
+  rnd: {
+    icon: Microscope,
+    description: "Research and development initiatives",
+  },
+  back_office: {
+    icon: Briefcase,
+    description: "Back office operations and administration",
+  },
+  banking: {
+    icon: Landmark,
+    description: "Banking operations and financial services",
+  },
+  bi: {
+    icon: BarChart2,
+    description: "Business intelligence and data analytics",
+  },
+  bizdev_sales: {
+    icon: TrendingUp,
+    description: "Business development and sales strategy",
+  },
   cashier: {
     icon: CreditCard,
     description: "Point-of-sale operations and cashier systems",
   },
-  fintech360: {
-    icon: Wallet,
-    description: "Financial technology and payment processing",
+  compliance: {
+    icon: ShieldCheck,
+    description: "Regulatory compliance and risk management",
   },
-  xbo_studio: {
-    icon: Camera,
+  content: {
+    icon: FileText,
+    description: "Content creation and editorial management",
+  },
+  creative_studio: {
+    icon: Palette,
     description: "Creative production and media studio",
   },
-  xbo_marketing: {
-    icon: Megaphone,
-    description: "Marketing campaigns and brand strategy",
+  design: {
+    icon: Pen,
+    description: "Visual design and brand identity",
   },
-  xbo_dev: {
-    icon: Code2,
-    description: "Software development and engineering",
+  customer_support: {
+    icon: Headphones,
+    description: "Customer support and client relations",
   },
-  xbo_legal: {
-    icon: Scale,
-    description: "Legal affairs and compliance",
+  dealing: {
+    icon: ArrowLeftRight,
+    description: "Trading and dealing desk operations",
   },
-  xbo_hr: {
+  devops_it: {
+    icon: Server,
+    description: "DevOps, infrastructure and IT operations",
+  },
+  finance: {
+    icon: DollarSign,
+    description: "Financial planning and accounting",
+  },
+  hr_recruitment_cy: {
+    icon: UserPlus,
+    description: "Human resources and recruitment (Cyprus)",
+  },
+  hr_recruitment_ukr: {
     icon: Users,
-    description: "Human resources and people operations",
+    description: "Human resources and recruitment (Ukraine)",
+  },
+  legal: {
+    icon: Scale,
+    description: "Legal affairs and contract management",
+  },
+  onboarding: {
+    icon: UserCheck,
+    description: "Client and employee onboarding processes",
+  },
+  product_xbo: {
+    icon: Package,
+    description: "Product management and roadmap",
+  },
+  success: {
+    icon: Trophy,
+    description: "Customer success and account management",
+  },
+  technical_support: {
+    icon: Wrench,
+    description: "Technical support and troubleshooting",
+  },
+  technical_writers: {
+    icon: BookOpen,
+    description: "Technical documentation and writing",
+  },
+  ui_ux: {
+    icon: Monitor,
+    description: "User interface and experience design",
   },
 };
 
@@ -72,15 +152,15 @@ export default function PortalPage() {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Department Portal</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Project creation</h1>
         <p className="text-slate-500 mt-1">
-          Submit a new request on behalf of any department.
+          Select a department to submit a new project request.
         </p>
       </div>
 
       {isPending && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 7 }).map((_, i) => (
+          {Array.from({ length: 23 }).map((_, i) => (
             <Skeleton key={i} className="h-36 rounded-xl" />
           ))}
         </div>

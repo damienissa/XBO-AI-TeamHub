@@ -21,13 +21,29 @@ TEST_DATABASE_URL = os.getenv(
 
 # Departments data — mirrors seed.py
 DEPARTMENTS = [
+    {"slug": "rnd", "name": "R&D"},
+    {"slug": "back_office", "name": "Back office"},
+    {"slug": "banking", "name": "Banking"},
+    {"slug": "bi", "name": "BI"},
+    {"slug": "bizdev_sales", "name": "Bizdev & Sales"},
     {"slug": "cashier", "name": "Cashier"},
-    {"slug": "fintech360", "name": "Fintech360"},
-    {"slug": "xbo_studio", "name": "XBO Studio"},
-    {"slug": "xbo_marketing", "name": "XBO Marketing"},
-    {"slug": "xbo_dev", "name": "XBO Dev"},
-    {"slug": "xbo_legal", "name": "XBO Legal"},
-    {"slug": "xbo_hr", "name": "XBO HR"},
+    {"slug": "compliance", "name": "Compliance"},
+    {"slug": "content", "name": "Content"},
+    {"slug": "creative_studio", "name": "Creative Studio"},
+    {"slug": "design", "name": "Design"},
+    {"slug": "customer_support", "name": "Customer Support"},
+    {"slug": "dealing", "name": "Dealing"},
+    {"slug": "devops_it", "name": "DevOps & IT"},
+    {"slug": "finance", "name": "Finance"},
+    {"slug": "hr_recruitment_cy", "name": "HR&Recruitment (CY)"},
+    {"slug": "hr_recruitment_ukr", "name": "HR&Recruitment (UKR)"},
+    {"slug": "legal", "name": "Legal"},
+    {"slug": "onboarding", "name": "Onboarding"},
+    {"slug": "product_xbo", "name": "Product (XBO)"},
+    {"slug": "success", "name": "Success"},
+    {"slug": "technical_support", "name": "Technical Support"},
+    {"slug": "technical_writers", "name": "Technical Writers"},
+    {"slug": "ui_ux", "name": "UI/UX"},
 ]
 
 
@@ -66,7 +82,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture(scope="function")
 async def seeded_db(db_session: AsyncSession) -> AsyncGenerator[AsyncSession, None]:
-    """Seed the test DB with all 7 departments and one admin user.
+    """Seed the test DB with all 23 departments and one admin user.
 
     Admin credentials: email=admin@xbo.com, password=seedpassword
     """
