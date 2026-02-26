@@ -16,13 +16,14 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    build: ./AI-teamHub-app/backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    env_file: .env
+    env_file: ./AI-teamHub-app/.env
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./AI-teamHub-app/backend:/app
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,12 +31,12 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
   frontend:
-    build: ./frontend
+    build: ./AI-teamHub-app/frontend
     command: npm run dev
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./AI-teamHub-app/frontend:/app
       - /app/node_modules
     depends_on:
       - backend
@@ -46,3 +47,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
