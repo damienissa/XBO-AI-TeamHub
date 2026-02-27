@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -15,12 +15,13 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.dependencies import get_current_user, require_admin
 from app.models.column_history import ColumnHistory
-from app.models.ticket import Ticket
+from app.models.ticket import StatusColumn, Ticket
 from app.models.ticket_event import TicketEvent
 from app.models.user import User
 from app.schemas.column_history import ColumnHistoryOut
 from app.schemas.ticket import TicketCreate, TicketMoveRequest, TicketOut, TicketUpdate
 from app.schemas.ticket_event import TicketEventOut
+from app.services.notifications import notify_assignment, notify_mentions, notify_status_change
 from app.services.roi import compute_roi_fields
 from app.services.tickets import create_ticket, move_ticket
 
@@ -105,10 +106,14 @@ async def get_ticket(
     return await _load_ticket_out(db, ticket_id)
 
 
+_MENTION_FIELDS = frozenset({"problem_statement", "business_impact", "next_step", "success_criteria"})
+
+
 @router.patch("/{ticket_id}", response_model=TicketOut)
 async def update_ticket(
     ticket_id: uuid.UUID,
     data: TicketUpdate,
+    background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> TicketOut:
@@ -119,6 +124,7 @@ async def update_ticket(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
 
     update_data = data.model_dump(exclude_unset=True)
+    old_owner_id = ticket.owner_id
     changed_fields = []
 
     for field, value in update_data.items():
@@ -149,6 +155,16 @@ async def update_ticket(
         )
         db.add(event)
         await db.commit()
+
+        # Notify new owner if owner_id changed
+        if "owner_id" in changed_fields and ticket.owner_id and ticket.owner_id != old_owner_id:
+            await notify_assignment(db, ticket.owner_id, current_user, ticket, background_tasks)
+
+        # Notify @mentions in TipTap fields
+        for field in _MENTION_FIELDS.intersection(update_data.keys()):
+            await notify_mentions(db, update_data[field], current_user, ticket, background_tasks)
+
+        await db.commit()
     else:
         # No real changes, still refresh for consistent response
         await db.refresh(ticket)
@@ -175,11 +191,33 @@ async def delete_ticket(
 async def move_ticket_endpoint(
     ticket_id: uuid.UUID,
     data: TicketMoveRequest,
+    background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> TicketOut:
     """TICKET-07/08: Move ticket with Backlog enforcement rules."""
+    # Capture state before the move
+    old_result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
+    old_ticket = old_result.scalar_one_or_none()
+    if old_ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    old_status = old_ticket.status_column
+    old_owner_id = old_ticket.owner_id
+
     ticket = await move_ticket(db, ticket_id, data, actor_id=current_user.id)
+
+    # Notify on Backlog exit
+    if old_status == StatusColumn.Backlog and ticket.status_column != StatusColumn.Backlog:
+        if ticket.owner_id:
+            await notify_status_change(
+                db, ticket.owner_id, current_user, ticket, "Backlog", background_tasks
+            )
+
+    # Notify on new assignment during move
+    if data.owner_id and data.owner_id != old_owner_id:
+        await notify_assignment(db, data.owner_id, current_user, ticket, background_tasks)
+
+    await db.commit()
     return await _load_ticket_out(db, ticket.id)
 
 

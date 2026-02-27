@@ -11,72 +11,72 @@ import { useRef, useState } from "react";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { extractFields, fetchEffortEstimate } from "@/lib/api/ai";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { TiptapEditor } from "@/app/(app)/board/_components/TiptapEditor";
 import { cn } from "@/lib/utils";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-// ---- Types ------------------------------------------------------------------
+interface Department { id: string; slug: string; name: string; }
 
-interface Department {
-  id: string;
-  slug: string;
-  name: string;
-}
+// ── Design tokens ────────────────────────────────────────────────────────────
 
-// ---- Zod Schema -------------------------------------------------------------
-// Using z.number() (not coerce) since react-hook-form valueAsNumber handles conversion.
-// This keeps output types clean for the zodResolver generic.
+const CARD = {
+  background: "#FFFFFF",
+  border: "1px solid #E9E9E6",
+  borderRadius: "0.75rem",
+  padding: "1.5rem",
+} as const;
 
-const portalSchema = z
-  .object({
-    title: z.string().min(3, "Title must be at least 3 characters").max(500),
-    problem_statement: z.unknown().optional(),
-    urgency: z
-      .number({ error: "Urgency must be a number" })
-      .int()
-      .min(1, "Urgency must be 1–5")
-      .max(5, "Urgency must be 1–5"),
-    priority: z.enum(["low", "medium", "high", "critical"]),
-    business_impact: z.string().min(1, "Business impact is required"),
-    success_criteria: z.string().min(1, "Success criteria is required"),
-    due_date: z.string().optional(),
-    effort_estimate: z.number().min(0).optional(),
-    next_step: z.string().optional(),
-    // ROI inputs (ROI-01 field names)
-    current_time_cost_hours_per_week: z.number().positive().optional(),
-    employees_affected: z.number().positive().optional(),
-    avg_hourly_cost: z.number().positive().optional(),
-  })
-  .refine(
-    (d) => {
-      // If any of the three core ROI inputs is provided, all three must be provided
-      // to ensure a meaningful ROI can be computed (ROI-06)
-      const hasAny =
-        d.current_time_cost_hours_per_week !== undefined ||
-        d.employees_affected !== undefined ||
-        d.avg_hourly_cost !== undefined;
-      if (!hasAny) return false; // require at least one ROI group
+const INPUT_STYLE = {
+  background: "#FFFFFF",
+  border: "1px solid #E9E9E6",
+  color: "#37352F",
+  borderRadius: "0.5rem",
+  padding: "0.625rem 0.75rem",
+  fontSize: "0.875rem",
+  width: "100%",
+  outline: "none",
+  transition: "border-color 0.15s",
+} as const;
 
-      const hasAll =
-        d.current_time_cost_hours_per_week !== undefined &&
-        d.employees_affected !== undefined &&
-        d.avg_hourly_cost !== undefined;
-      return hasAll;
-    },
-    {
-      message:
-        "Hours/week, Employees affected, and Avg hourly cost must all be provided to compute ROI",
-      path: ["current_time_cost_hours_per_week"],
-    }
-  );
+const LABEL_STYLE = {
+  display: "block",
+  fontSize: "0.7rem",
+  fontFamily: "'JetBrains Mono', monospace",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.06em",
+  color: "#9B9A97",
+  marginBottom: "0.375rem",
+} as const;
+
+// ── Schema ───────────────────────────────────────────────────────────────────
+
+const portalSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters").max(500),
+  problem_statement: z.unknown().optional(),
+  urgency: z.number({ error: "Urgency must be a number" }).int().min(1).max(5),
+  priority: z.enum(["low", "medium", "high", "critical"]),
+  business_impact: z.string().min(1, "Business impact is required"),
+  success_criteria: z.string().min(1, "Success criteria is required"),
+  due_date: z.string().optional(),
+  effort_estimate: z.number().min(0).optional(),
+  next_step: z.string().optional(),
+  current_time_cost_hours_per_week: z.number().positive().optional(),
+  employees_affected: z.number().positive().optional(),
+  avg_hourly_cost: z.number().positive().optional(),
+}).refine(
+  (d) => {
+    const hasAny = d.current_time_cost_hours_per_week !== undefined || d.employees_affected !== undefined || d.avg_hourly_cost !== undefined;
+    if (!hasAny) return false;
+    return d.current_time_cost_hours_per_week !== undefined && d.employees_affected !== undefined && d.avg_hourly_cost !== undefined;
+  },
+  {
+    message: "Hours/week, Employees affected, and Avg hourly cost must all be provided",
+    path: ["current_time_cost_hours_per_week"],
+  }
+);
 
 type PortalFormValues = z.infer<typeof portalSchema>;
-
-// ---- API helpers ------------------------------------------------------------
 
 async function fetchDepartments(): Promise<Department[]> {
   const res = await fetch(`${API}/api/departments`, { credentials: "include" });
@@ -84,56 +84,51 @@ async function fetchDepartments(): Promise<Department[]> {
   return res.json();
 }
 
-// ---- Section wrapper --------------------------------------------------------
+// ── Section wrapper ───────────────────────────────────────────────────────────
 
-function FormSection({
-  title,
-  children,
-  note,
-}: {
-  title: string;
-  children: React.ReactNode;
-  note?: string;
-}) {
+function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-      <div>
-        <h2 className="text-base font-semibold text-slate-800">{title}</h2>
-        {note && <p className="text-xs text-slate-500 mt-0.5">{note}</p>}
+    <div style={CARD}>
+      <div className="mb-5">
+        <h2
+          className="font-display font-semibold text-base tracking-tight"
+          style={{ color: "#37352F" }}
+        >
+          {title}
+        </h2>
+        {note && (
+          <p className="text-xs mt-1" style={{ color: "#9B9A97" }}>
+            {note}
+          </p>
+        )}
       </div>
       {children}
     </div>
   );
 }
 
-// ---- Field wrapper ----------------------------------------------------------
+// ── Field wrapper ─────────────────────────────────────────────────────────────
 
-function FieldRow({
-  label,
-  htmlFor,
-  children,
-  error,
-  required,
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-  error?: string;
-  required?: boolean;
-}) {
+function Field({
+  label, htmlFor, children, error, required,
+}: { label: string; htmlFor: string; children: React.ReactNode; error?: string; required?: boolean }) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+    <div className="space-y-1">
+      <label htmlFor={htmlFor} style={LABEL_STYLE}>
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
-      </Label>
+        {required && <span style={{ color: "#E03E3E", marginLeft: 2 }}>*</span>}
+      </label>
       {children}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs mt-1" style={{ color: "#E03E3E" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
-// ---- Main component ---------------------------------------------------------
+// ── Main component ───────────────────────────────────────────────────────────
 
 export default function PortalDeptPage() {
   const params = useParams<{ dept: string }>();
@@ -152,34 +147,21 @@ export default function PortalDeptPage() {
   const dept = departments?.find((d) => d.slug === deptSlug);
   const deptName = dept?.name ?? deptSlug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<PortalFormValues>({
+  const { register, handleSubmit, control, watch, setValue, formState: { errors, isSubmitting } } = useForm<PortalFormValues>({
     resolver: zodResolver(portalSchema),
-    defaultValues: {
-      urgency: 3,
-      priority: "medium",
-    },
+    defaultValues: { urgency: 3, priority: "medium" },
   });
 
-  // Live ROI calculation preview from Row 1 core inputs
   const hoursPerWeek = watch("current_time_cost_hours_per_week") ?? 0;
   const employeesAffected = watch("employees_affected") ?? 0;
   const avgHourlyCost = watch("avg_hourly_cost") ?? 0;
+  const liveAnnualSavings = hoursPerWeek * employeesAffected * avgHourlyCost * 52;
   const liveWeeklyCost = hoursPerWeek * employeesAffected * avgHourlyCost;
   const liveYearlyCost = liveWeeklyCost * 52;
-  const liveAnnualSavings = liveYearlyCost;
 
   const aiEnabled = useAiEnabled();
   const { toast } = useToast();
   const [effortSuggestion, setEffortSuggestion] = useState<number | null>(null);
-
-  // File attachment state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileContext, setFileContext] = useState<string | null>(null);
@@ -196,11 +178,7 @@ export default function PortalDeptPage() {
       toast({ title: "Fields extracted from file", description: "Review and adjust as needed." });
     },
     onError: (err) => {
-      toast({
-        title: "Extraction failed",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Extraction failed", description: err instanceof Error ? err.message : "Please try again.", variant: "destructive" });
     },
   });
 
@@ -215,69 +193,43 @@ export default function PortalDeptPage() {
     onSuccess: (data) => {
       const currentEffort = watch("effort_estimate");
       if (!currentEffort || isNaN(currentEffort as number)) {
-        // Field empty — fill directly
         setValue("effort_estimate", data.hours, { shouldValidate: true });
         setEffortSuggestion(null);
       } else {
-        // Field has value — show suggestion hint
         setEffortSuggestion(data.hours);
       }
     },
     onError: (err) => {
-      toast({
-        title: "Effort estimate failed",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Effort estimate failed", description: err instanceof Error ? err.message : "Please try again.", variant: "destructive" });
     },
   });
 
   const submitMutation = useMutation({
     mutationFn: async (data: PortalFormValues) => {
       if (!dept?.id) throw new Error("Department not found");
-
       const payload = {
-        title: data.title,
-        department_id: dept.id,
-        problem_statement: data.problem_statement ?? null,
-        urgency: data.urgency,
-        priority: data.priority,
-        business_impact: data.business_impact,
-        success_criteria: data.success_criteria,
-        due_date: data.due_date || null,
-        effort_estimate: data.effort_estimate ?? null,
-        next_step: data.next_step || null,
-        // ROI-01 field names
+        title: data.title, department_id: dept.id,
+        problem_statement: data.problem_statement ?? null, urgency: data.urgency,
+        priority: data.priority, business_impact: data.business_impact,
+        success_criteria: data.success_criteria, due_date: data.due_date || null,
+        effort_estimate: data.effort_estimate ?? null, next_step: data.next_step || null,
         current_time_cost_hours_per_week: data.current_time_cost_hours_per_week ?? null,
-        employees_affected: data.employees_affected ?? null,
-        avg_hourly_cost: data.avg_hourly_cost ?? null,
+        employees_affected: data.employees_affected ?? null, avg_hourly_cost: data.avg_hourly_cost ?? null,
       };
-
       const res = await fetch(`${API}/api/tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include", body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { detail?: string }).detail ?? "Submission failed");
       }
-
       const ticket = await res.json();
-
-      // If a file was attached, upload it to the newly created ticket
       if (pendingFile) {
         const form = new FormData();
         form.append("file", pendingFile);
-        await fetch(`${API}/api/tickets/${ticket.id}/attachments`, {
-          method: "POST",
-          credentials: "include",
-          body: form,
-        });
+        await fetch(`${API}/api/tickets/${ticket.id}/attachments`, { method: "POST", credentials: "include", body: form });
       }
-
       return ticket;
     },
     onSuccess: () => {
@@ -287,46 +239,67 @@ export default function PortalDeptPage() {
     },
   });
 
-  const onSubmit = (data: PortalFormValues) => {
-    submitMutation.mutate(data);
-  };
+  const onSubmit = (data: PortalFormValues) => submitMutation.mutate(data);
 
-  // ---- Success state --------------------------------------------------------
+  // ── Success state ─────────────────────────────────────────────────────────
 
   if (submitted) {
     return (
-      <div className="p-8 max-w-2xl mx-auto">
+      <div className="p-8 max-w-2xl mx-auto animate-enter">
         <div className="flex flex-col items-center text-center py-16 space-y-4">
-          <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle className="h-9 w-9 text-green-600" />
+          <div
+            className="h-16 w-16 rounded-full flex items-center justify-center"
+            style={{ background: "#EBF7EE", border: "1px solid #A9DFB7" }}
+          >
+            <CheckCircle className="h-9 w-9" style={{ color: "#27AE60" }} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Request submitted successfully!</h1>
-          <p className="text-slate-500 max-w-md">
-            Your request has been added to the team board. The AI team will review and prioritise
-            it shortly.
+          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "#37352F" }}>
+            Request submitted!
+          </h1>
+          <p className="text-sm max-w-md" style={{ color: "#9B9A97" }}>
+            Your request has been added to the team board. The AI team will review and prioritise it shortly.
           </p>
           <div className="flex gap-3 pt-2">
-            <Button asChild variant="default">
-              <Link href="/board">View on board &rarr;</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/portal">Submit another request</Link>
-            </Button>
+            <Link
+              href="/board"
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all"
+              style={{ background: "#2383E2", color: "#FFFFFF" }}
+            >
+              View on board →
+            </Link>
+            <Link
+              href="/portal"
+              className="rounded-lg px-4 py-2 text-sm font-medium border transition-all"
+              style={{ borderColor: "#E9E9E6", color: "#37352F", background: "transparent" }}
+            >
+              Submit another
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
-  // ---- Form ----------------------------------------------------------------
+  // ── Form ──────────────────────────────────────────────────────────────────
+
+  const inputClass = "w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-all duration-150 disabled:opacity-50";
+  const textareaClass = "w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-all duration-150 resize-none";
+
+  function inputStyle(hasError?: boolean) {
+    return {
+      ...INPUT_STYLE,
+      borderColor: hasError ? "#E03E3E" : "#E9E9E6",
+    };
+  }
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
       {/* Back nav */}
-      <div className="mb-6">
+      <div className="mb-6 animate-enter">
         <Link
           href="/portal"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm transition-colors"
+          style={{ color: "#9B9A97" }}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Portal
@@ -334,292 +307,260 @@ export default function PortalDeptPage() {
       </div>
 
       {/* Page title */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">
-          New Request &mdash; {deptName}
+      <div className="mb-8 animate-enter">
+        <h1
+          className="font-display text-3xl font-bold tracking-tight"
+          style={{ color: "#37352F" }}
+        >
+          New Request
         </h1>
-        <p className="text-slate-500 mt-1 text-sm">
-          Fill in all required fields. ROI Row 1 (hours, employees, cost) must all be provided before submitting.
+        <p className="text-sm mt-1" style={{ color: "#9B9A97" }}>
+          {deptName}
         </p>
+        <div className="mt-4 h-px w-10" style={{ background: "#2383E2" }} />
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 animate-enter-1">
 
-        {/* Section 1: Request Details */}
-        <FormSection title="Request Details">
-          <FieldRow label="Title" htmlFor="title" error={errors.title?.message} required>
-            <Input
-              id="title"
-              placeholder="Short, descriptive title for this request"
-              {...register("title")}
-              className={cn(errors.title && "border-red-400 focus-visible:ring-red-400")}
-            />
-          </FieldRow>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FieldRow label="Urgency (1–5)" htmlFor="urgency" error={errors.urgency?.message} required>
-              <Input
-                id="urgency"
-                type="number"
-                min={1}
-                max={5}
-                placeholder="3"
-                {...register("urgency", { valueAsNumber: true })}
-                className={cn(errors.urgency && "border-red-400 focus-visible:ring-red-400")}
+        {/* ── Request Details ── */}
+        <Section title="Request Details">
+          <div className="space-y-4">
+            <Field label="Title" htmlFor="title" error={errors.title?.message} required>
+              <input
+                id="title"
+                placeholder="Short, descriptive title for this request"
+                {...register("title")}
+                className={inputClass}
+                style={inputStyle(!!errors.title)}
+                onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                onBlur={(e) => (e.target.style.borderColor = errors.title ? "#E03E3E" : "#E9E9E6")}
               />
-            </FieldRow>
+            </Field>
 
-            <FieldRow label="Priority" htmlFor="priority" error={errors.priority?.message} required>
-              <select
-                id="priority"
-                {...register("priority")}
-                className={cn(
-                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  errors.priority && "border-red-400 focus-visible:ring-red-400"
-                )}
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-            </FieldRow>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Urgency (1–5)" htmlFor="urgency" error={errors.urgency?.message} required>
+                <input
+                  id="urgency" type="number" min={1} max={5} placeholder="3"
+                  {...register("urgency", { valueAsNumber: true })}
+                  className={inputClass}
+                  style={inputStyle(!!errors.urgency)}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                />
+              </Field>
+              <Field label="Priority" htmlFor="priority" error={errors.priority?.message} required>
+                <select
+                  id="priority"
+                  {...register("priority")}
+                  className={inputClass}
+                  style={{ ...inputStyle(), cursor: "pointer" }}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </Field>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FieldRow label="Due Date" htmlFor="due_date" error={errors.due_date?.message}>
-              <Input
-                id="due_date"
-                type="date"
-                {...register("due_date")}
-              />
-            </FieldRow>
-
-            <FieldRow label="Effort Estimate (hours)" htmlFor="effort_estimate" error={errors.effort_estimate?.message}>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="effort_estimate"
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    placeholder="e.g. 8"
-                    {...register("effort_estimate", { valueAsNumber: true })}
-                    className="flex-1"
-                  />
-                  {aiEnabled && (
-                    <button
-                      type="button"
-                      onClick={() => effortMutation.mutate()}
-                      disabled={effortMutation.isPending}
-                      className="flex-shrink-0 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded px-2 py-1.5 disabled:opacity-50"
-                    >
-                      {effortMutation.isPending ? (
-                        <><Loader2 className="h-3 w-3 animate-spin" /> Estimating…</>
-                      ) : (
-                        <><Sparkles className="h-3 w-3" /> Estimate with AI</>
-                      )}
-                    </button>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Due Date" htmlFor="due_date">
+                <input
+                  id="due_date" type="date" {...register("due_date")}
+                  className={inputClass}
+                  style={inputStyle()}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                />
+              </Field>
+              <Field label="Effort Estimate (hours)" htmlFor="effort_estimate" error={errors.effort_estimate?.message}>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="effort_estimate" type="number" min={0} step={0.5} placeholder="e.g. 8"
+                      {...register("effort_estimate", { valueAsNumber: true })}
+                      className={cn(inputClass, "flex-1")}
+                      style={inputStyle()}
+                      onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                      onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                    />
+                    {aiEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => effortMutation.mutate()}
+                        disabled={effortMutation.isPending}
+                        className="flex-shrink-0 flex items-center gap-1 text-xs rounded-lg px-2.5 py-2 border transition-all disabled:opacity-40"
+                        style={{ borderColor: "#2383E2", color: "#2383E2", background: "#EEF4FD" }}
+                      >
+                        {effortMutation.isPending
+                          ? <><Loader2 className="h-3 w-3 animate-spin" /> …</>
+                          : <><Sparkles className="h-3 w-3" /> Estimate</>
+                        }
+                      </button>
+                    )}
+                  </div>
+                  {effortSuggestion !== null && (
+                    <div className="flex items-center gap-2 text-xs" style={{ color: "#9B9A97" }}>
+                      <span>AI suggests: <strong style={{ color: "#2383E2" }}>{effortSuggestion}h</strong></span>
+                      <button
+                        type="button"
+                        onClick={() => { setValue("effort_estimate", effortSuggestion, { shouldValidate: true }); setEffortSuggestion(null); }}
+                        style={{ color: "#2383E2" }}
+                        className="font-medium hover:opacity-80"
+                      >
+                        Use this
+                      </button>
+                      <button type="button" onClick={() => setEffortSuggestion(null)} style={{ color: "#9B9A97" }} className="hover:opacity-80">
+                        Dismiss
+                      </button>
+                    </div>
                   )}
                 </div>
-                {effortSuggestion !== null && (
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <span>AI suggests: <strong>{effortSuggestion}h</strong></span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValue("effort_estimate", effortSuggestion, { shouldValidate: true });
-                        setEffortSuggestion(null);
-                      }}
-                      className="text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      Use this
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEffortSuggestion(null)}
-                      className="text-slate-400 hover:text-slate-600"
-                    >
-                      Dismiss
-                    </button>
+              </Field>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Problem Description ── */}
+        <Section title="Problem Description">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label style={LABEL_STYLE}>Problem Statement</label>
+              <Controller
+                name="problem_statement"
+                control={control}
+                render={({ field }) => (
+                  <div
+                    className="rounded-lg border overflow-hidden"
+                    style={{ borderColor: "#E9E9E6", background: "#FFFFFF" }}
+                  >
+                    <TiptapEditor initialContent={field.value ?? null} onSave={(json) => field.onChange(json)} />
                   </div>
                 )}
-              </div>
-            </FieldRow>
+              />
+            </div>
+
+            <Field label="Business Impact" htmlFor="business_impact" error={errors.business_impact?.message} required>
+              <textarea
+                id="business_impact" rows={3}
+                placeholder="What is the business impact of this problem?"
+                {...register("business_impact")}
+                className={textareaClass}
+                style={inputStyle(!!errors.business_impact)}
+                onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                onBlur={(e) => (e.target.style.borderColor = errors.business_impact ? "#E03E3E" : "#E9E9E6")}
+              />
+            </Field>
+
+            <Field label="Success Criteria" htmlFor="success_criteria" error={errors.success_criteria?.message} required>
+              <textarea
+                id="success_criteria" rows={3}
+                placeholder="How do we know this request is complete?"
+                {...register("success_criteria")}
+                className={textareaClass}
+                style={inputStyle(!!errors.success_criteria)}
+                onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                onBlur={(e) => (e.target.style.borderColor = errors.success_criteria ? "#E03E3E" : "#E9E9E6")}
+              />
+            </Field>
+
+            <Field label="Next Step" htmlFor="next_step">
+              <textarea
+                id="next_step" rows={2}
+                placeholder="What is the immediate next action?"
+                {...register("next_step")}
+                className={textareaClass}
+                style={inputStyle()}
+                onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+              />
+            </Field>
           </div>
-        </FormSection>
+        </Section>
 
-        {/* Section 2: Problem Description */}
-        <FormSection title="Problem Description">
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium text-slate-700">
-              Problem Statement
-            </Label>
-            <Controller
-              name="problem_statement"
-              control={control}
-              render={({ field }) => (
-                <TiptapEditor
-                  initialContent={field.value ?? null}
-                  onSave={(json) => field.onChange(json)}
-                />
-              )}
-            />
-          </div>
-
-          <FieldRow
-            label="Business Impact"
-            htmlFor="business_impact"
-            error={errors.business_impact?.message}
-            required
-          >
-            <textarea
-              id="business_impact"
-              rows={3}
-              placeholder="What is the business impact of this problem?"
-              {...register("business_impact")}
-              className={cn(
-                "w-full text-sm border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring resize-none placeholder:text-slate-400",
-                errors.business_impact && "border-red-400 focus:ring-red-400"
-              )}
-            />
-          </FieldRow>
-
-          <FieldRow
-            label="Success Criteria"
-            htmlFor="success_criteria"
-            error={errors.success_criteria?.message}
-            required
-          >
-            <textarea
-              id="success_criteria"
-              rows={3}
-              placeholder="How do we know this request is complete?"
-              {...register("success_criteria")}
-              className={cn(
-                "w-full text-sm border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring resize-none placeholder:text-slate-400",
-                errors.success_criteria && "border-red-400 focus:ring-red-400"
-              )}
-            />
-          </FieldRow>
-
-          <FieldRow label="Next Step" htmlFor="next_step" error={errors.next_step?.message}>
-            <textarea
-              id="next_step"
-              rows={2}
-              placeholder="What is the immediate next action?"
-              {...register("next_step")}
-              className="w-full text-sm border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring resize-none placeholder:text-slate-400"
-            />
-          </FieldRow>
-        </FormSection>
-
-        {/* Section 3: ROI Information */}
-        <FormSection
+        {/* ── ROI Information ── */}
+        <Section
           title="ROI Information"
-          note="Row 1 (Hours/week, Employees affected, Avg hourly cost) must all be provided. Row 2 fields are optional."
+          note="Row 1 (Hours/week, Employees affected, Avg hourly cost) must all be provided."
         >
-          {/* Row 1: Core cost inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FieldRow
-              label="Hours saved / week"
-              htmlFor="current_time_cost_hours_per_week"
-              error={errors.current_time_cost_hours_per_week?.message}
-              required
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Field label="Hours saved / week" htmlFor="current_time_cost_hours_per_week" error={errors.current_time_cost_hours_per_week?.message} required>
+                <input
+                  id="current_time_cost_hours_per_week" type="number" min={0} step={0.5} placeholder="e.g. 2"
+                  {...register("current_time_cost_hours_per_week", { valueAsNumber: true })}
+                  className={inputClass}
+                  style={inputStyle(!!errors.current_time_cost_hours_per_week)}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                />
+              </Field>
+              <Field label="Employees affected" htmlFor="employees_affected" error={errors.employees_affected?.message} required>
+                <input
+                  id="employees_affected" type="number" min={1} step={1} placeholder="e.g. 10"
+                  {...register("employees_affected", { valueAsNumber: true })}
+                  className={inputClass}
+                  style={inputStyle(!!errors.employees_affected)}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                />
+              </Field>
+              <Field label="Avg hourly cost ($)" htmlFor="avg_hourly_cost" error={errors.avg_hourly_cost?.message} required>
+                <input
+                  id="avg_hourly_cost" type="number" min={0} step={0.01} placeholder="e.g. 50"
+                  {...register("avg_hourly_cost", { valueAsNumber: true })}
+                  className={inputClass}
+                  style={inputStyle(!!errors.avg_hourly_cost)}
+                  onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+                  onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+                />
+              </Field>
+            </div>
+
+            {/* ROI preview */}
+            <div
+              className="rounded-lg px-4 py-3 border transition-all duration-300"
+              style={{
+                background: liveAnnualSavings > 0 ? "#EBF7EE" : "#F7F7F5",
+                borderColor: liveAnnualSavings > 0 ? "#A9DFB7" : "#E9E9E6",
+              }}
             >
-              <Input
-                id="current_time_cost_hours_per_week"
-                type="number"
-                min={0}
-                step={0.5}
-                placeholder="e.g. 2"
-                {...register("current_time_cost_hours_per_week", { valueAsNumber: true })}
-                className={cn(
-                  errors.current_time_cost_hours_per_week && "border-red-400 focus-visible:ring-red-400"
+              <p className="text-sm" style={{ color: "#37352F" }}>
+                Estimated annual savings:{" "}
+                <strong
+                  className="font-mono text-base"
+                  style={{ color: liveAnnualSavings > 0 ? "#27AE60" : "#9B9A97" }}
+                >
+                  ${liveAnnualSavings.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                </strong>
+                {liveWeeklyCost > 0 && (
+                  <span className="font-mono text-xs ml-2" style={{ color: "#9B9A97" }}>
+                    (weekly ${liveWeeklyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })}, yearly ${liveYearlyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })})
+                  </span>
                 )}
-              />
-            </FieldRow>
-
-            <FieldRow
-              label="Employees affected"
-              htmlFor="employees_affected"
-              error={errors.employees_affected?.message}
-              required
-            >
-              <Input
-                id="employees_affected"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="e.g. 10"
-                {...register("employees_affected", { valueAsNumber: true })}
-                className={cn(errors.employees_affected && "border-red-400 focus-visible:ring-red-400")}
-              />
-            </FieldRow>
-
-            <FieldRow
-              label="Avg hourly cost ($)"
-              htmlFor="avg_hourly_cost"
-              error={errors.avg_hourly_cost?.message}
-              required
-            >
-              <Input
-                id="avg_hourly_cost"
-                type="number"
-                min={0}
-                step={0.01}
-                placeholder="e.g. 50"
-                {...register("avg_hourly_cost", { valueAsNumber: true })}
-                className={cn(errors.avg_hourly_cost && "border-red-400 focus-visible:ring-red-400")}
-              />
-            </FieldRow>
-          </div>
-
-          {/* Live ROI preview */}
-          <div
-            className={cn(
-              "rounded-lg border px-4 py-3 transition-colors",
-              liveAnnualSavings > 0
-                ? "border-green-200 bg-green-50"
-                : "border-slate-200 bg-slate-50"
-            )}
-          >
-            <p className="text-sm text-slate-600">
-              Estimated annual savings:{" "}
-              <strong
-                className={cn(
-                  "text-base",
-                  liveAnnualSavings > 0 ? "text-green-700" : "text-slate-500"
+                {liveWeeklyCost === 0 && (
+                  <span className="text-xs ml-2 font-mono" style={{ color: "#9B9A97" }}>
+                    Fill in Row 1 to see estimate
+                  </span>
                 )}
-              >
-                ${liveAnnualSavings.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-              </strong>
-              {liveWeeklyCost > 0 && (
-                <span className="text-xs text-slate-400 ml-2">
-                  (weekly cost: ${liveWeeklyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })},
-                  {" "}yearly: ${liveYearlyCost.toLocaleString("en-US", { maximumFractionDigits: 0 })})
-                </span>
-              )}
-              {liveWeeklyCost === 0 && (
-                <span className="text-xs text-slate-400 ml-2">
-                  Fill in Row 1 fields to see estimate
-                </span>
-              )}
-            </p>
+              </p>
+            </div>
           </div>
-        </FormSection>
+        </Section>
 
-        {/* Section 4: Attachment (Optional) */}
-        <FormSection
-          title="Attachment (Optional)"
-          note="Upload a PDF, DOCX, TXT, or MD file. If AI is enabled, fields will be auto-extracted."
-        >
+        {/* ── Attachment ── */}
+        <Section title="Attachment" note="Upload a PDF, DOCX, TXT, or MD file. If AI is enabled, fields will be auto-extracted.">
           {pendingFile ? (
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <Paperclip className="h-4 w-4 text-slate-400 flex-shrink-0" />
+            <div
+              className="flex items-center gap-3 p-3 rounded-lg border"
+              style={{ background: "#F7F7F5", borderColor: "#E9E9E6" }}
+            >
+              <Paperclip className="h-4 w-4 flex-shrink-0" style={{ color: "#2383E2" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-700 truncate">{pendingFile.name}</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm truncate" style={{ color: "#37352F" }}>{pendingFile.name}</p>
+                <p className="text-xs font-mono" style={{ color: "#9B9A97" }}>
                   {(pendingFile.size / 1024).toFixed(1)} KB
                   {fileContext && " · Fields extracted"}
                 </p>
@@ -627,7 +568,8 @@ export default function PortalDeptPage() {
               <button
                 type="button"
                 onClick={() => { setPendingFile(null); setFileContext(null); }}
-                className="flex-shrink-0 p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600"
+                className="flex-shrink-0 p-1 rounded transition-colors"
+                style={{ color: "#9B9A97" }}
                 aria-label="Remove file"
               >
                 <X className="h-4 w-4" />
@@ -639,17 +581,26 @@ export default function PortalDeptPage() {
               tabIndex={0}
               onClick={() => fileInputRef.current?.click()}
               onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
-              className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-slate-400 hover:bg-slate-50 transition-colors"
+              className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200"
+              style={{ borderColor: "#E9E9E6" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "#2383E2";
+                (e.currentTarget as HTMLElement).style.background = "#EEF4FD";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "#E9E9E6";
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+              }}
             >
-              <Paperclip className="h-6 w-6 text-slate-400" />
-              <p className="text-sm text-slate-500">Click to upload a file</p>
-              <p className="text-xs text-slate-400">PDF, DOCX, TXT, or MD · max 10 MB</p>
+              <Paperclip className="h-6 w-6" style={{ color: "#9B9A97" }} />
+              <p className="text-sm" style={{ color: "#9B9A97" }}>Click to upload a file</p>
+              <p className="text-xs font-mono" style={{ color: "#B8B7B3" }}>PDF · DOCX · TXT · MD · max 10 MB</p>
             </div>
           )}
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/x-markdown"
+            accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -657,44 +608,41 @@ export default function PortalDeptPage() {
               e.target.value = "";
               setPendingFile(file);
               setFileContext(null);
-              if (aiEnabled) {
-                extractMutation.mutate(file);
-              }
+              if (aiEnabled) extractMutation.mutate(file);
             }}
           />
           {extractMutation.isPending && (
-            <p className="flex items-center gap-1.5 text-xs text-slate-500">
+            <p className="flex items-center gap-1.5 text-xs mt-2" style={{ color: "#2383E2" }}>
               <Loader2 className="h-3 w-3 animate-spin" />
               Extracting fields with AI…
             </p>
           )}
-        </FormSection>
+        </Section>
 
-        {/* Submit */}
-        <div className="flex items-center justify-between pt-2">
-          <Button
+        {/* ── Submit ── */}
+        <div className="flex items-center justify-between pt-2 animate-enter-2">
+          <button
             type="button"
-            variant="ghost"
             onClick={() => router.push("/portal")}
+            className="rounded-lg px-4 py-2.5 text-sm transition-all"
+            style={{ color: "#9B9A97" }}
           >
             Cancel
-          </Button>
+          </button>
 
-          <Button
+          <button
             type="submit"
             disabled={isSubmitting || submitMutation.isPending}
-            className="min-w-[140px]"
+            className="min-w-[160px] rounded-lg py-2.5 px-6 text-sm font-semibold transition-all duration-150 disabled:opacity-50"
+            style={{ background: "#2383E2", color: "#FFFFFF" }}
           >
-            {submitMutation.isPending ? "Submitting..." : "Submit Request"}
-          </Button>
+            {submitMutation.isPending ? "Submitting…" : "Submit Request"}
+          </button>
         </div>
 
-        {/* Global submit error */}
         {submitMutation.isError && (
-          <p className="text-sm text-red-500 text-right">
-            {submitMutation.error instanceof Error
-              ? submitMutation.error.message
-              : "Submission failed. Please try again."}
+          <p className="text-sm text-right" style={{ color: "#E03E3E" }}>
+            {submitMutation.error instanceof Error ? submitMutation.error.message : "Submission failed."}
           </p>
         )}
       </form>

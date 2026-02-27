@@ -72,13 +72,13 @@ export default function WikiPageDetailPage() {
     },
   });
 
-  if (isLoading) return <div className="p-6 text-slate-400">Loading...</div>;
-  if (!page) return <div className="p-6 text-slate-500">Page not found.</div>;
+  if (isLoading) return <div className="p-6" style={{ color: "#B8B7B3" }}>Loading...</div>;
+  if (!page) return <div className="p-6" style={{ color: "#9B9A97" }}>Page not found.</div>;
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <a href="/wiki" className="text-slate-400 hover:text-slate-700">
+        <a href="/wiki" style={{ color: "#9B9A97" }} className="hover:opacity-70">
           <ArrowLeft className="h-5 w-5" />
         </a>
         {editingTitle ? (
@@ -93,11 +93,13 @@ export default function WikiPageDetailPage() {
               setEditingTitle(false);
             }}
             onKeyDown={e => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-            className="text-2xl font-bold text-slate-800 border-b border-slate-300 focus:outline-none bg-transparent flex-1"
+            className="text-2xl font-bold border-b focus:outline-none bg-transparent flex-1"
+            style={{ color: "#37352F", borderColor: "#2383E2" }}
           />
         ) : (
           <h1
-            className="text-2xl font-bold text-slate-800 flex-1 cursor-text hover:bg-slate-50 rounded px-1 -mx-1"
+            className="text-2xl font-bold flex-1 cursor-text rounded px-1 -mx-1 hover:opacity-80"
+            style={{ color: "#37352F" }}
             onClick={() => { setTitleDraft(page.title); setEditingTitle(true); }}
           >
             {page.title}
@@ -109,19 +111,20 @@ export default function WikiPageDetailPage() {
               deletePage.mutate();
             }
           }}
-          className="text-slate-400 hover:text-red-600 p-1.5 rounded"
+          className="hover:text-red-600 p-1.5 rounded"
+          style={{ color: "#9B9A97" }}
           title="Delete page (admin only)"
         >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
-      <p className="text-xs text-slate-400">
+      <p className="text-xs" style={{ color: "#B8B7B3" }}>
         Last updated {format(new Date(page.updated_at), "MMM d, yyyy 'at' h:mm a")}
       </p>
 
       {/* Tiptap editor — reuse existing component with immediatelyRender:false */}
-      <div className="min-h-[300px] border border-slate-200 rounded-lg p-4 bg-white">
+      <div className="min-h-[300px] rounded-lg p-4 bg-white" style={{ border: "1px solid #E9E9E6" }}>
         <TiptapEditor
           initialContent={page.content}
           onSave={(content) => updatePage.mutate({ content })}

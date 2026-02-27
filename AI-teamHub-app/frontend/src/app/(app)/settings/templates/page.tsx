@@ -162,13 +162,14 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Title <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-1" style={{ color: "#37352F" }}>
+              Title <span style={{ color: "#E03E3E" }}>*</span>
             </label>
             <input
               {...register("title")}
               placeholder="e.g. Standard Bug Report"
-              className="w-full text-sm px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full text-sm px-3 py-2 rounded focus:outline-none"
+              style={{ border: "1px solid #E9E9E6", color: "#37352F" }}
             />
             {errors.title && (
               <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>
@@ -177,8 +178,8 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
 
           {/* Problem Statement */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Problem Statement <span className="text-slate-400 text-xs font-normal">(optional)</span>
+            <label className="block text-sm font-medium mb-1" style={{ color: "#37352F" }}>
+              Problem Statement <span className="text-xs font-normal" style={{ color: "#9B9A97" }}>(optional)</span>
             </label>
             <Controller
               name="problem_statement"
@@ -194,8 +195,8 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
 
           {/* Default Urgency */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Default Urgency <span className="text-slate-400 text-xs font-normal">(1–5, optional)</span>
+            <label className="block text-sm font-medium mb-1" style={{ color: "#37352F" }}>
+              Default Urgency <span className="text-xs font-normal" style={{ color: "#9B9A97" }}>(1–5, optional)</span>
             </label>
             <input
               type="number"
@@ -203,7 +204,8 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
               max={5}
               {...register("default_urgency", { valueAsNumber: true })}
               placeholder="1–5"
-              className="w-28 text-sm px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-28 text-sm px-3 py-2 rounded focus:outline-none"
+              style={{ border: "1px solid #E9E9E6", color: "#37352F" }}
             />
             {errors.default_urgency && (
               <p className="text-xs text-red-500 mt-1">{errors.default_urgency.message}</p>
@@ -212,8 +214,8 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
 
           {/* Default Effort Estimate */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Default Effort Estimate <span className="text-slate-400 text-xs font-normal">(hours, optional)</span>
+            <label className="block text-sm font-medium mb-1" style={{ color: "#37352F" }}>
+              Default Effort Estimate <span className="text-xs font-normal" style={{ color: "#9B9A97" }}>(hours, optional)</span>
             </label>
             <input
               type="number"
@@ -221,7 +223,8 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
               step="0.5"
               {...register("default_effort_estimate", { valueAsNumber: true })}
               placeholder="e.g. 4"
-              className="w-28 text-sm px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-28 text-sm px-3 py-2 rounded focus:outline-none"
+              style={{ border: "1px solid #E9E9E6", color: "#37352F" }}
             />
             {errors.default_effort_estimate && (
               <p className="text-xs text-red-500 mt-1">{errors.default_effort_estimate.message}</p>
@@ -230,14 +233,15 @@ function TemplateFormDialog({ open, onOpenChange, editTarget, onSuccess }: Templ
 
           {/* Default Next Step */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Default Next Step <span className="text-slate-400 text-xs font-normal">(optional)</span>
+            <label className="block text-sm font-medium mb-1" style={{ color: "#37352F" }}>
+              Default Next Step <span className="text-xs font-normal" style={{ color: "#9B9A97" }}>(optional)</span>
             </label>
             <textarea
               {...register("default_next_step")}
               rows={3}
               placeholder="e.g. Reproduce the issue and document steps"
-              className="w-full text-sm px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none"
+              className="w-full text-sm px-3 py-2 rounded focus:outline-none resize-none"
+              style={{ border: "1px solid #E9E9E6", color: "#37352F" }}
             />
           </div>
 
@@ -297,8 +301,8 @@ export default function TemplatesPage() {
       {/* Page header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ticket Templates</h1>
-          <p className="text-slate-500 mt-1">Reusable request templates for common request types.</p>
+          <h1 className="text-2xl font-bold" style={{ color: "#37352F" }}>Ticket Templates</h1>
+          <p className="text-sm mt-1" style={{ color: "#9B9A97" }}>Reusable request templates for common request types.</p>
         </div>
         <Button onClick={handleNewTemplate} className="flex-shrink-0">
           <Plus className="mr-2 h-4 w-4" />
@@ -309,7 +313,7 @@ export default function TemplatesPage() {
       {/* Loading state */}
       {isPending && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#9B9A97" }} />
         </div>
       )}
 
@@ -322,8 +326,8 @@ export default function TemplatesPage() {
 
       {/* Empty state */}
       {templates && templates.length === 0 && (
-        <div className="text-center py-16 border border-dashed border-slate-200 rounded-xl">
-          <p className="text-slate-400 text-sm mb-3">No templates yet</p>
+        <div className="text-center py-16 border border-dashed rounded-xl" style={{ borderColor: "#E9E9E6" }}>
+          <p className="text-sm mb-3" style={{ color: "#B8B7B3" }}>No templates yet</p>
           <Button variant="outline" size="sm" onClick={handleNewTemplate}>
             <Plus className="mr-2 h-4 w-4" />
             Create your first template
@@ -333,27 +337,30 @@ export default function TemplatesPage() {
 
       {/* Template list */}
       {templates && templates.length > 0 && (
-        <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white">
+        <div className="rounded-xl overflow-hidden bg-white" style={{ border: "1px solid #E9E9E6" }}>
           {templates.map((template) => (
             <div
               key={template.id}
-              className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+              className="flex items-center justify-between px-5 py-4 transition-colors"
+              style={{ borderBottom: "1px solid #F0F0EE" }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#F7F7F5")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-800">{template.title}</p>
+                <p className="text-sm font-medium" style={{ color: "#37352F" }}>{template.title}</p>
                 <div className="flex items-center gap-3 mt-1">
                   {template.default_urgency != null && (
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs" style={{ color: "#9B9A97" }}>
                       Urgency: <span className="font-medium">{template.default_urgency}</span>
                     </span>
                   )}
                   {template.default_effort_estimate != null && (
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs" style={{ color: "#9B9A97" }}>
                       Effort: <span className="font-medium">{template.default_effort_estimate}h</span>
                     </span>
                   )}
                   {template.default_next_step && (
-                    <span className="text-xs text-slate-400 truncate max-w-xs">
+                    <span className="text-xs truncate max-w-xs" style={{ color: "#B8B7B3" }}>
                       Next step: {template.default_next_step}
                     </span>
                   )}
@@ -364,7 +371,8 @@ export default function TemplatesPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEdit(template)}
-                  className="h-8 w-8 p-0 text-slate-500 hover:text-slate-800"
+                  className="h-8 w-8 p-0"
+                  style={{ color: "#9B9A97" }}
                   aria-label={`Edit ${template.title}`}
                 >
                   <Pencil className="h-4 w-4" />
@@ -373,7 +381,8 @@ export default function TemplatesPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setDeleteTarget(template)}
-                  className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                  className="h-8 w-8 p-0 hover:text-red-600"
+                  style={{ color: "#9B9A97" }}
                   aria-label={`Delete ${template.title}`}
                 >
                   <Trash2 className="h-4 w-4" />

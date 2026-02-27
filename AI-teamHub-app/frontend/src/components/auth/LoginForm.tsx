@@ -2,16 +2,23 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { login } from "@/lib/api/client";
+
+const INPUT = {
+  width: "100%", padding: "8px 12px", borderRadius: "6px",
+  border: "1px solid #E9E9E6", background: "#fff",
+  color: "#37352F", fontSize: "14px", outline: "none",
+  transition: "border-color 0.15s",
+} as const;
+
+const LABEL = {
+  display: "block", fontSize: "12px", fontWeight: 500,
+  color: "#73726E", marginBottom: "5px",
+} as const;
 
 export function LoginForm() {
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("reason") === "expired";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,81 +28,58 @@ export function LoginForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-
-    // Client-side basic validation — inline errors per CONTEXT.md
     if (!email) { setError("Email is required"); return; }
     if (!password) { setError("Password is required"); return; }
-
     setIsPending(true);
     try {
       await login({ email, password });
-      // Hard navigation so the browser sends the fresh cookie to the Next.js server
       window.location.href = "/board";
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Invalid email or password";
-      setError(msg);  // Inline under form, not toast
+      setError(err instanceof Error ? err.message : "Invalid email or password");
       setIsPending(false);
     }
   }
 
   return (
-    <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle className="text-lg">Sign in</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Session expiry banner — dismissable, shown when ?reason=expired */}
-        {isExpired && !bannerDismissed && (
-          <div className="mb-4 flex items-center justify-between rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-            <span>Session expired, please log in again</span>
-            <button
-              onClick={() => setBannerDismissed(true)}
-              className="ml-2 text-amber-600 hover:text-amber-900"
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@xbo.com"
-              autoComplete="email"
-              disabled={isPending}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              disabled={isPending}
-            />
-          </div>
-
-          {/* Inline error below form fields — NOT a toast (CONTEXT.md locked decision) */}
-          {error && (
-            <p className="text-sm text-red-600" role="alert">{error}</p>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Signing in..." : "Sign in"}
-          </Button>
-
-          {/* NO Sign Up link — admin-creates-users only (CONTEXT.md locked decision) */}
-        </form>
-      </CardContent>
-    </Card>
+    <div className="rounded-xl border bg-white p-6 shadow-sm" style={{ borderColor: "#E9E9E6" }}>
+      {isExpired && !bannerDismissed && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border px-3 py-2 text-xs" style={{ background: "#FFF8EC", borderColor: "#FFE5A0", color: "#7F6A1E" }}>
+          <span>Session expired — please sign in again</span>
+          <button onClick={() => setBannerDismissed(true)} className="ml-2 opacity-60 hover:opacity-100">×</button>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" style={LABEL}>Email</label>
+          <input
+            id="email" type="email" value={email} placeholder="you@xbo.com"
+            autoComplete="email" disabled={isPending}
+            onChange={(e) => setEmail(e.target.value)}
+            style={INPUT}
+            onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+            onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+          />
+        </div>
+        <div>
+          <label htmlFor="password" style={LABEL}>Password</label>
+          <input
+            id="password" type="password" value={password}
+            autoComplete="current-password" disabled={isPending}
+            onChange={(e) => setPassword(e.target.value)}
+            style={INPUT}
+            onFocus={(e) => (e.target.style.borderColor = "#2383E2")}
+            onBlur={(e) => (e.target.style.borderColor = "#E9E9E6")}
+          />
+        </div>
+        {error && <p className="text-xs" style={{ color: "#d44c47" }} role="alert">{error}</p>}
+        <button
+          type="submit" disabled={isPending}
+          className="w-full rounded-lg py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-60"
+          style={{ background: "#2383E2" }}
+        >
+          {isPending ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+    </div>
   );
 }

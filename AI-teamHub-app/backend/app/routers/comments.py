@@ -5,7 +5,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,6 +17,7 @@ from app.models.ticket_comment import TicketComment
 from app.models.ticket_event import TicketEvent
 from app.models.user import User
 from app.schemas.ticket_comment import CommentCreate, CommentOut
+from app.services.notifications import notify_mentions
 
 router = APIRouter(prefix="/tickets/{ticket_id}/comments", tags=["comments"])
 
@@ -34,11 +35,12 @@ async def _get_ticket_or_404(db: AsyncSession, ticket_id: uuid.UUID) -> Ticket:
 async def create_comment(
     ticket_id: uuid.UUID,
     data: CommentCreate,
+    background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> CommentOut:
     """COLLAB-01: Create a comment on a ticket. Emits TicketEvent type='comment_added'."""
-    await _get_ticket_or_404(db, ticket_id)
+    ticket = await _get_ticket_or_404(db, ticket_id)
 
     comment = TicketComment(
         ticket_id=ticket_id,
@@ -57,6 +59,10 @@ async def create_comment(
 
     await db.commit()
     await db.refresh(comment)
+
+    # Notify @mentions in comment body
+    await notify_mentions(db, data.body, current_user, ticket, background_tasks)
+    await db.commit()
 
     # Eager-load author for response
     result = await db.execute(

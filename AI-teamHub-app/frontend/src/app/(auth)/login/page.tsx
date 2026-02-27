@@ -3,13 +3,15 @@ import { LoginForm } from "@/components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-sm">
+    <div className="animate-enter">
       <div className="text-center mb-6">
-        <h1 className="text-xl font-semibold text-slate-800">XBO TeamHub</h1>
-        <p className="text-slate-500 text-sm mt-1">Sign in to your account</p>
+        <div className="inline-flex items-center gap-2 mb-4">
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold text-white" style={{ background: "#2383E2" }}>X</div>
+          <span className="font-semibold text-lg" style={{ color: "#37352F" }}>XBO TeamHub</span>
+        </div>
+        <p className="text-sm" style={{ color: "#9B9A97" }}>Sign in to your workspace</p>
       </div>
-      {/* Suspense required for useSearchParams() in LoginForm (Next.js 14 requirement) */}
-      <Suspense fallback={<div className="h-64 rounded-lg bg-slate-100 animate-pulse" />}>
+      <Suspense fallback={<div className="h-56 rounded-xl bg-white border animate-pulse" style={{ borderColor: "#E9E9E6" }} />}>
         <LoginForm />
       </Suspense>
     </div>

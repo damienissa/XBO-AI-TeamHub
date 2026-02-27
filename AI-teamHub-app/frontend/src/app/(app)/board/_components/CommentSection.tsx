@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Trash2 } from "lucide-react";
@@ -15,7 +15,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { fetchMe } from "@/lib/api/tickets";
+import { fetchMe, fetchUsers } from "@/lib/api/tickets";
+import { TiptapEditor } from "./TiptapEditor";
 import { cn } from "@/lib/utils";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
@@ -74,7 +75,6 @@ function getInitials(name: string | null): string {
     .slice(0, 2);
 }
 
-// Deterministic color from author_id for visual distinction
 const AVATAR_COLORS = [
   "bg-blue-500",
   "bg-purple-500",
@@ -102,12 +102,36 @@ function safeRelativeTime(dateStr: string): string {
   }
 }
 
+// ---- Render comment body (JSON TipTap doc or plain string) -----------------
+
+function renderCommentBody(body: string): React.ReactNode {
+  try {
+    const doc = JSON.parse(body);
+    return <TiptapEditorReadOnly content={doc} />;
+  } catch {
+    return (
+      <p className="text-sm mt-0.5 whitespace-pre-wrap break-words" style={{ color: "#37352F" }}>
+        {body}
+      </p>
+    );
+  }
+}
+
+function TiptapEditorReadOnly({ content }: { content: object }) {
+  return (
+    <div className="text-sm mt-0.5">
+      {/* Lazy import to keep bundle light — just render with TiptapEditor editable=false */}
+      <TiptapEditor initialContent={content} onSave={() => {}} editable={false} />
+    </div>
+  );
+}
+
 // ---- CommentSection --------------------------------------------------------
 
 export function CommentSection({ ticketId }: CommentSectionProps) {
   const queryClient = useQueryClient();
-  const [body, setBody] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [commentContent, setCommentContent] = useState<object | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
     queryKey: ["comments", ticketId],
@@ -121,11 +145,18 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
     staleTime: 60_000,
   });
 
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 60_000,
+  });
+
   const addMutation = useMutation({
-    mutationFn: (commentBody: string) => createComment(ticketId, commentBody),
+    mutationFn: (body: string) => createComment(ticketId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", ticketId] });
-      setBody("");
+      setCommentContent(null);
+      setResetKey((k) => k + 1);
     },
   });
 
@@ -137,14 +168,13 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
   });
 
   function handleSubmit() {
-    const trimmed = body.trim();
-    if (!trimmed) return;
-    addMutation.mutate(trimmed);
+    if (!commentContent) return;
+    addMutation.mutate(JSON.stringify(commentContent));
   }
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-slate-700">Comments</h3>
+      <h3 className="text-sm font-medium" style={{ color: "#37352F" }}>Comments</h3>
 
       {/* Comment list */}
       {commentsLoading ? (
@@ -160,7 +190,7 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-slate-400">No comments yet. Be the first to comment.</p>
+        <p className="text-sm" style={{ color: "#B8B7B3" }}>No comments yet. Be the first to comment.</p>
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => {
@@ -183,18 +213,16 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
                 <div className="flex-1 min-w-0">
                   {/* Author name + timestamp */}
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-slate-800">
+                    <span className="text-sm font-medium" style={{ color: "#37352F" }}>
                       {comment.author_name ?? "Unknown"}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs" style={{ color: "#9B9A97" }}>
                       {safeRelativeTime(comment.created_at)}
                     </span>
                   </div>
 
-                  {/* Comment body */}
-                  <p className="text-sm text-slate-700 mt-0.5 whitespace-pre-wrap break-words">
-                    {comment.body}
-                  </p>
+                  {/* Comment body — supports TipTap JSON or plain string */}
+                  {renderCommentBody(comment.body)}
                 </div>
 
                 {/* Delete button — author or admin only */}
@@ -202,10 +230,11 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <button
-                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-100 transition-opacity self-start"
+                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded transition-opacity self-start"
+                        style={{ color: "#9B9A97" }}
                         aria-label="Delete comment"
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-slate-400 hover:text-red-500" />
+                        <Trash2 className="h-3.5 w-3.5 hover:text-red-500" />
                       </button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -233,22 +262,26 @@ export function CommentSection({ ticketId }: CommentSectionProps) {
         </div>
       )}
 
-      {/* Always-visible comment input */}
+      {/* Comment input */}
       <div className="space-y-2 pt-1">
-        <textarea
-          ref={textareaRef}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Add a comment..."
-          rows={3}
-          className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none placeholder:text-slate-400"
-          disabled={addMutation.isPending}
+        <TiptapEditor
+          initialContent={null}
+          onSave={setCommentContent}
+          users={users}
+          resetKey={resetKey}
         />
         <div className="flex justify-end">
           <button
             onClick={handleSubmit}
-            disabled={!body.trim() || addMutation.isPending}
-            className="px-3 py-1.5 text-sm font-medium rounded-md bg-slate-800 text-white hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            disabled={!commentContent || addMutation.isPending}
+            className="px-3 py-1.5 text-sm font-medium rounded-md text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            style={{ background: "#37352F" }}
+            onMouseEnter={(e) => {
+              if (!addMutation.isPending) (e.currentTarget as HTMLElement).style.background = "#2F2C29";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "#37352F";
+            }}
           >
             {addMutation.isPending ? "Posting..." : "Post"}
           </button>
