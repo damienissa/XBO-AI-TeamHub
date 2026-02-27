@@ -22,6 +22,13 @@ class TicketCreate(BaseModel):
     next_step: Optional[str] = None
     priority: Optional[Priority] = None
 
+    # ROI fields — accepted at creation time so portal can submit them in one request
+    current_time_cost_hours_per_week: Optional[float] = None
+    employees_affected: Optional[float] = None
+    avg_hourly_cost: Optional[float] = None
+
+    model_config = ConfigDict(extra="ignore")
+
     @field_validator("title")
     @classmethod
     def title_not_empty(cls, v: str) -> str:

@@ -63,6 +63,9 @@ async def create_ticket(db: AsyncSession, data: TicketCreate, actor_id: uuid.UUI
         priority=data.priority,
         status_column=StatusColumn.Backlog,
         owner_id=None,
+        current_time_cost_hours_per_week=data.current_time_cost_hours_per_week,
+        employees_affected=data.employees_affected,
+        avg_hourly_cost=data.avg_hourly_cost,
     )
     db.add(ticket)
     await db.flush()  # get ticket.id without committing

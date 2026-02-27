@@ -6,10 +6,10 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Loader2, Paperclip, Sparkles, X } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Paperclip, Sparkles, X, Plus, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { extractFields, fetchEffortEstimate } from "@/lib/api/ai";
+import { extractFields, fetchEffortEstimate, fetchSubtasks as fetchAiSubtasks } from "@/lib/api/ai";
 import { useToast } from "@/hooks/use-toast";
 import { TiptapEditor } from "@/app/(app)/board/_components/TiptapEditor";
 import { cn } from "@/lib/utils";
@@ -128,6 +128,115 @@ function Field({
   );
 }
 
+// ── Success page with optional AI subtask generation ─────────────────────────
+
+function SuccessPage({ ticketId, ticketTitle, aiEnabled }: { ticketId: string; ticketTitle: string; aiEnabled: boolean }) {
+  const { toast } = useToast();
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [saved, setSaved] = useState(false);
+
+  const generateMutation = useMutation({
+    mutationFn: () => fetchAiSubtasks({ title: ticketTitle }),
+    onSuccess: (data) => setSubtasks(data.subtasks),
+    onError: (err) => toast({ title: "AI failed", description: err instanceof Error ? err.message : "Try again.", variant: "destructive" }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      for (const title of subtasks.filter(Boolean)) {
+        await fetch(`${API}/api/tickets/${ticketId}/subtasks`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          credentials: "include", body: JSON.stringify({ title }),
+        });
+      }
+    },
+    onSuccess: () => setSaved(true),
+  });
+
+  return (
+    <div className="p-8 max-w-2xl mx-auto animate-enter">
+      <div className="flex flex-col items-center text-center pt-12 pb-6 space-y-4">
+        <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "#EBF7EE", border: "1px solid #A9DFB7" }}>
+          <CheckCircle className="h-9 w-9" style={{ color: "#27AE60" }} />
+        </div>
+        <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "#37352F" }}>Request submitted!</h1>
+        <p className="text-sm max-w-md" style={{ color: "#9B9A97" }}>
+          Your request has been added to the team board. The AI team will review and prioritise it shortly.
+        </p>
+      </div>
+
+      {/* AI Subtasks */}
+      {aiEnabled && !saved && (
+        <div className="mt-4 rounded-xl border p-5 space-y-4" style={{ borderColor: "#E9E9E6" }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold" style={{ color: "#37352F" }}>Generate subtasks with AI</h2>
+              <p className="text-xs mt-0.5" style={{ color: "#9B9A97" }}>Break this request into actionable tasks</p>
+            </div>
+            {subtasks.length === 0 && (
+              <button
+                onClick={() => generateMutation.mutate()}
+                disabled={generateMutation.isPending}
+                className="flex items-center gap-1.5 text-xs rounded-lg px-3 py-1.5 font-medium transition-all disabled:opacity-50"
+                style={{ background: "#EEF4FD", color: "#2383E2", border: "1px solid #C8DCFA" }}
+              >
+                {generateMutation.isPending ? <><Loader2 className="h-3 w-3 animate-spin" /> Generating…</> : <><Sparkles className="h-3 w-3" /> Generate</>}
+              </button>
+            )}
+          </div>
+
+          {subtasks.length > 0 && (
+            <div className="space-y-2">
+              {subtasks.map((t, i) => (
+                <div key={i} className="flex items-center gap-2 group">
+                  <input
+                    value={t}
+                    onChange={(e) => setSubtasks(s => s.map((x, j) => j === i ? e.target.value : x))}
+                    className="flex-1 text-sm rounded-md px-3 py-1.5 outline-none"
+                    style={{ border: "1px solid #E9E9E6", color: "#37352F" }}
+                  />
+                  <button onClick={() => setSubtasks(s => s.filter((_, j) => j !== i))} className="opacity-0 group-hover:opacity-100 p-1 rounded" style={{ color: "#9B9A97" }}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button onClick={() => setSubtasks(s => [...s, ""])} className="flex items-center gap-1 text-xs" style={{ color: "#9B9A97" }}>
+                <Plus className="h-3 w-3" /> Add subtask
+              </button>
+              <div className="flex justify-end gap-2 pt-1">
+                <button onClick={() => setSubtasks([])} className="text-xs px-3 py-1.5 rounded-md" style={{ color: "#9B9A97" }}>Discard</button>
+                <button
+                  onClick={() => saveMutation.mutate()}
+                  disabled={saveMutation.isPending}
+                  className="text-xs px-4 py-1.5 rounded-md font-medium text-white disabled:opacity-50"
+                  style={{ background: "#2383E2" }}
+                >
+                  {saveMutation.isPending ? "Saving…" : `Save ${subtasks.length} subtasks`}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {saved && (
+        <p className="text-center text-sm mt-3" style={{ color: "#27AE60" }}>
+          ✓ {subtasks.length} subtasks saved
+        </p>
+      )}
+
+      <div className="flex justify-center gap-3 mt-6">
+        <Link href="/board" className="rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2383E2", color: "#FFFFFF" }}>
+          View on board →
+        </Link>
+        <Link href="/portal" className="rounded-lg px-4 py-2 text-sm font-medium border" style={{ borderColor: "#E9E9E6", color: "#37352F" }}>
+          Submit another
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function PortalDeptPage() {
@@ -136,6 +245,8 @@ export default function PortalDeptPage() {
   const deptSlug = params.dept;
 
   const [submitted, setSubmitted] = useState(false);
+  const [createdTicketId, setCreatedTicketId] = useState<string | null>(null);
+  const [createdTicketTitle, setCreatedTicketTitle] = useState<string>("");
   const queryClient = useQueryClient();
 
   const { data: departments } = useQuery({
@@ -209,7 +320,16 @@ export default function PortalDeptPage() {
       if (!dept?.id) throw new Error("Department not found");
       const payload = {
         title: data.title, department_id: dept.id,
-        problem_statement: data.problem_statement ?? null, urgency: data.urgency,
+        problem_statement: (() => {
+          const ps = data.problem_statement;
+          if (!ps) return null;
+          if (typeof ps === "string") {
+            // AI extraction returns plain text — wrap in TipTap doc
+            return { type: "doc", content: [{ type: "paragraph", content: ps ? [{ type: "text", text: ps }] : [] }] };
+          }
+          return ps;
+        })(),
+        urgency: data.urgency,
         priority: data.priority, business_impact: data.business_impact,
         success_criteria: data.success_criteria, due_date: data.due_date || null,
         effort_estimate: data.effort_estimate ?? null, next_step: data.next_step || null,
@@ -222,7 +342,11 @@ export default function PortalDeptPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error((err as { detail?: string }).detail ?? "Submission failed");
+        const detail = (err as { detail?: unknown }).detail;
+        const message = typeof detail === "string" ? detail
+          : Array.isArray(detail) ? detail.map((e: { msg?: string }) => e.msg ?? String(e)).join(", ")
+          : "Submission failed";
+        throw new Error(message);
       }
       const ticket = await res.json();
       if (pendingFile) {
@@ -232,9 +356,11 @@ export default function PortalDeptPage() {
       }
       return ticket;
     },
-    onSuccess: () => {
+    onSuccess: (ticket) => {
       queryClient.invalidateQueries({ queryKey: ["board"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      setCreatedTicketId(ticket.id);
+      setCreatedTicketTitle(ticket.title);
       setSubmitted(true);
     },
   });
@@ -243,40 +369,13 @@ export default function PortalDeptPage() {
 
   // ── Success state ─────────────────────────────────────────────────────────
 
-  if (submitted) {
+  if (submitted && createdTicketId) {
     return (
-      <div className="p-8 max-w-2xl mx-auto animate-enter">
-        <div className="flex flex-col items-center text-center py-16 space-y-4">
-          <div
-            className="h-16 w-16 rounded-full flex items-center justify-center"
-            style={{ background: "#EBF7EE", border: "1px solid #A9DFB7" }}
-          >
-            <CheckCircle className="h-9 w-9" style={{ color: "#27AE60" }} />
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "#37352F" }}>
-            Request submitted!
-          </h1>
-          <p className="text-sm max-w-md" style={{ color: "#9B9A97" }}>
-            Your request has been added to the team board. The AI team will review and prioritise it shortly.
-          </p>
-          <div className="flex gap-3 pt-2">
-            <Link
-              href="/board"
-              className="rounded-lg px-4 py-2 text-sm font-semibold transition-all"
-              style={{ background: "#2383E2", color: "#FFFFFF" }}
-            >
-              View on board →
-            </Link>
-            <Link
-              href="/portal"
-              className="rounded-lg px-4 py-2 text-sm font-medium border transition-all"
-              style={{ borderColor: "#E9E9E6", color: "#37352F", background: "transparent" }}
-            >
-              Submit another
-            </Link>
-          </div>
-        </div>
-      </div>
+      <SuccessPage
+        ticketId={createdTicketId}
+        ticketTitle={createdTicketTitle}
+        aiEnabled={aiEnabled}
+      />
     );
   }
 
