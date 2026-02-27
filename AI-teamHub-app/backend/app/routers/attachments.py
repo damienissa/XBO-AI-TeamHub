@@ -135,6 +135,40 @@ async def download_attachment(
     )
 
 
+# ---- ATTACHMENT TEXT (for AI context) -------------------------------------
+
+
+@router.get("/{ticket_id}/attachments/text")
+async def get_attachments_text(
+    ticket_id: uuid.UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return concatenated extracted text from all ticket attachments (for AI context)."""
+    from app.services.file_extraction import extract_text, AI_CONTEXT_CHARS
+
+    result = await db.execute(
+        select(TicketAttachment)
+        .where(TicketAttachment.ticket_id == ticket_id)
+        .order_by(TicketAttachment.created_at)
+    )
+    attachments = result.scalars().all()
+
+    parts: list[str] = []
+    for att in attachments:
+        path = _attachment_path(ticket_id, att.id, att.filename)
+        if path.exists():
+            try:
+                text = extract_text(path.read_bytes(), att.content_type)
+                if text.strip():
+                    parts.append(f"[{att.filename}]\n{text.strip()}")
+            except Exception:
+                pass
+
+    combined = "\n\n".join(parts)[:AI_CONTEXT_CHARS]
+    return {"text": combined or None}
+
+
 # ---- DELETE ----------------------------------------------------------------
 
 

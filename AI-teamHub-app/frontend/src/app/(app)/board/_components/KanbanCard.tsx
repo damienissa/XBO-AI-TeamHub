@@ -1,7 +1,8 @@
 "use client";
 
-import { useDraggable } from "@dnd-kit/core";
+import React from "react";
 import { CSS } from "@dnd-kit/utilities";
+import { useSortable } from "@dnd-kit/sortable";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { Check, ShieldAlert } from "lucide-react";
 import { useQueryState, parseAsString } from "nuqs";
@@ -70,20 +71,21 @@ function getInitials(fullName: string): string {
 }
 
 export function KanbanCard({ ticket, isOverlay = false }: KanbanCardProps) {
-  // DragOverlay children must NOT use useDraggable (anti-pattern)
+  // DragOverlay children must NOT use useSortable (anti-pattern)
   const draggable = isOverlay
-    ? { attributes: {}, listeners: {}, setNodeRef: () => {}, transform: null, isDragging: false }
+    ? { attributes: {}, listeners: {}, setNodeRef: () => {}, transform: null, transition: undefined, isDragging: false }
     : // eslint-disable-next-line react-hooks/rules-of-hooks
-      useDraggable({ id: ticket.id, data: ticket });
+      useSortable({ id: ticket.id, data: { type: "ticket", ticket } });
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = draggable;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = draggable;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [, setTicketId] = isOverlay ? [null, () => {}] : useQueryState("ticket", parseAsString);
 
-  const style = transform
-    ? { transform: CSS.Transform.toString(transform) }
-    : undefined;
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const deptSlug = ticket.department?.slug?.toLowerCase() ?? "default";
   const deptColor = DEPT_COLORS[deptSlug] ?? DEPT_COLORS.default;

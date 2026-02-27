@@ -22,6 +22,7 @@ import { GripVertical, Loader2, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { fetchSubtasks as fetchAiSubtasks } from "@/lib/api/ai";
+import { fetchWithAuth } from "@/lib/api/client";
 import { useToast } from "@/hooks/use-toast";
 import { SubtaskAiModal } from "./SubtaskAiModal";
 
@@ -41,7 +42,9 @@ interface SubtaskSectionProps {
     title: string;
     problem_statement?: string | null;
     business_impact?: string | null;
+    success_criteria?: string | null;
     urgency?: number | null;
+    custom_fields?: Record<string, unknown> | null;
   };
 }
 
@@ -230,13 +233,29 @@ export function SubtaskSection({ ticketId, ticketContext }: SubtaskSectionProps)
   });
 
   const generateMutation = useMutation({
-    mutationFn: () => fetchAiSubtasks({
-      title: ticketContext.title,
-      problem_statement: ticketContext.problem_statement as string | null | undefined,
-      business_impact: ticketContext.business_impact,
-      urgency: ticketContext.urgency,
-      existing_subtasks: subtasks.map(s => s.title),
-    }),
+    mutationFn: async () => {
+      // Fetch extracted text from all ticket attachments for AI context
+      const API = process.env.NEXT_PUBLIC_API_URL;
+      let file_context: string | null = null;
+      try {
+        const r = await fetchWithAuth(`${API}/api/tickets/${ticketId}/attachments/text`);
+        if (r.ok) {
+          const d = await r.json() as { text: string | null };
+          file_context = d.text ?? null;
+        }
+      } catch { /* non-fatal — AI still runs without file context */ }
+
+      return fetchAiSubtasks({
+        title: ticketContext.title,
+        problem_statement: ticketContext.problem_statement as string | null | undefined,
+        business_impact: ticketContext.business_impact,
+        success_criteria: ticketContext.success_criteria,
+        urgency: ticketContext.urgency,
+        custom_fields: ticketContext.custom_fields,
+        existing_subtasks: subtasks.map(s => s.title),
+        file_context,
+      });
+    },
     onSuccess: (data) => {
       setAiSubtasks(data.subtasks);
       setAiModalOpen(true);

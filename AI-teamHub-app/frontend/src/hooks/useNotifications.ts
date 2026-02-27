@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchWithAuth } from "@/lib/api/client";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -16,25 +17,19 @@ export interface Notification {
 }
 
 async function fetchNotifications(): Promise<Notification[]> {
-  const res = await fetch(`${API}/api/notifications`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/notifications`);
   if (!res.ok) throw new Error("Failed to fetch notifications");
   return res.json();
 }
 
 async function markOneRead(id: string): Promise<Notification> {
-  const res = await fetch(`${API}/api/notifications/${id}/read`, {
-    method: "PATCH",
-    credentials: "include",
-  });
+  const res = await fetchWithAuth(`${API}/api/notifications/${id}/read`, { method: "PATCH" });
   if (!res.ok) throw new Error("Failed to mark notification as read");
   return res.json();
 }
 
 async function markAllReadApi(): Promise<void> {
-  const res = await fetch(`${API}/api/notifications/read-all`, {
-    method: "PATCH",
-    credentials: "include",
-  });
+  const res = await fetchWithAuth(`${API}/api/notifications/read-all`, { method: "PATCH" });
   if (!res.ok) throw new Error("Failed to mark all notifications as read");
 }
 

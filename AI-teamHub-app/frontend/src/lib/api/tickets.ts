@@ -1,3 +1,5 @@
+import { fetchWithAuth } from "./client";
+
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export type StatusColumn = "Backlog" | "Discovery" | "In Progress" | "Review/QA" | "Done";
@@ -57,7 +59,7 @@ export interface BoardData {
 export async function fetchBoard(filters: Record<string, string | null> = {}): Promise<Ticket[]> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
-  const res = await fetch(`${API}/api/board?${params}`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/board?${params}`);
   if (!res.ok) throw new Error("Failed to fetch board");
   return res.json();
 }
@@ -70,10 +72,9 @@ export async function createTicket(data: {
   effort_estimate?: number | null;
   next_step?: string | null;
 }): Promise<Ticket> {
-  const res = await fetch(`${API}/api/tickets`, {
+  const res = await fetchWithAuth(`${API}/api/tickets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create ticket");
@@ -96,10 +97,9 @@ export class TicketBlockedError extends Error {
 }
 
 export async function moveTicket(ticketId: string, targetColumn: StatusColumn, ownerId: string | null): Promise<Ticket> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}/move`, {
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}/move`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ target_column: targetColumn, owner_id: ownerId }),
   });
   if (!res.ok) {
@@ -114,10 +114,9 @@ export async function moveTicket(ticketId: string, targetColumn: StatusColumn, o
 }
 
 export async function updateTicket(ticketId: string, data: Partial<Ticket>): Promise<Ticket> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}`, {
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to update ticket");
@@ -125,13 +124,13 @@ export async function updateTicket(ticketId: string, data: Partial<Ticket>): Pro
 }
 
 export async function fetchUsers(): Promise<{ id: string; full_name: string; email: string }[]> {
-  const res = await fetch(`${API}/api/auth/users`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/auth/users`);
   if (!res.ok) throw new Error("Failed to fetch users");
   return res.json();
 }
 
 export async function fetchTicket(ticketId: string): Promise<Ticket> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}`);
   if (!res.ok) throw new Error("Failed to fetch ticket");
   return res.json();
 }
@@ -155,13 +154,13 @@ export interface ColumnHistoryEntry {
 }
 
 export async function fetchTicketEvents(ticketId: string): Promise<TicketEvent[]> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}/events`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}/events`);
   if (!res.ok) throw new Error("Failed to fetch events");
   return res.json();
 }
 
 export async function fetchTicketHistory(ticketId: string): Promise<ColumnHistoryEntry[]> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}/history`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}/history`);
   if (!res.ok) throw new Error("Failed to fetch history");
   return res.json();
 }
@@ -175,7 +174,7 @@ export interface CurrentUser {
 }
 
 export async function fetchMe(): Promise<CurrentUser> {
-  const res = await fetch(`${API}/api/auth/me`, { credentials: "include" });
+  const res = await fetchWithAuth(`${API}/api/auth/me`);
   if (!res.ok) throw new Error("Not authenticated");
   return res.json();
 }

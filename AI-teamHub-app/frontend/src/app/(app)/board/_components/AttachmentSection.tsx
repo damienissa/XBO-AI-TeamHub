@@ -4,16 +4,34 @@ import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader2, Paperclip, Trash2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth } from "@/lib/api/client";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-const ALLOWED_TYPES = [
+const ALLOWED_TYPES = new Set([
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "text/plain",
   "text/markdown",
   "text/x-markdown",
-];
+]);
+
+// Extension → MIME fallback: mirrors backend resolve_content_type()
+// Browsers often report .md as "" or "application/octet-stream"
+const EXT_MIME: Record<string, string> = {
+  md: "text/markdown",
+  markdown: "text/markdown",
+  txt: "text/plain",
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+
+function resolveFileType(file: File): string | null {
+  if (ALLOWED_TYPES.has(file.type)) return file.type;
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return EXT_MIME[ext] ?? null;
+}
+
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export interface Attachment {
@@ -36,9 +54,7 @@ function formatBytes(bytes: number): string {
 }
 
 async function fetchAttachments(ticketId: string): Promise<Attachment[]> {
-  const res = await fetch(`${API}/api/tickets/${ticketId}/attachments`, {
-    credentials: "include",
-  });
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}/attachments`);
   if (!res.ok) throw new Error("Failed to fetch attachments");
   return res.json();
 }
@@ -46,9 +62,8 @@ async function fetchAttachments(ticketId: string): Promise<Attachment[]> {
 async function uploadAttachment(ticketId: string, file: File): Promise<Attachment> {
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch(`${API}/api/tickets/${ticketId}/attachments`, {
+  const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}/attachments`, {
     method: "POST",
-    credentials: "include",
     body: form,
   });
   if (!res.ok) {
@@ -59,17 +74,16 @@ async function uploadAttachment(ticketId: string, file: File): Promise<Attachmen
 }
 
 async function deleteAttachment(ticketId: string, attachmentId: string): Promise<void> {
-  const res = await fetch(
+  const res = await fetchWithAuth(
     `${API}/api/tickets/${ticketId}/attachments/${attachmentId}`,
-    { method: "DELETE", credentials: "include" }
+    { method: "DELETE" }
   );
   if (!res.ok) throw new Error("Failed to delete attachment");
 }
 
 async function downloadAttachment(ticketId: string, att: Attachment): Promise<void> {
-  const res = await fetch(
-    `${API}/api/tickets/${ticketId}/attachments/${att.id}/download`,
-    { credentials: "include" }
+  const res = await fetchWithAuth(
+    `${API}/api/tickets/${ticketId}/attachments/${att.id}/download`
   );
   if (!res.ok) throw new Error("Download failed");
   const blob = await res.blob();
@@ -129,7 +143,7 @@ export function AttachmentSection({ ticketId }: AttachmentSectionProps) {
     if (!file) return;
     e.target.value = "";
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!resolveFileType(file)) {
       toast({
         title: "Unsupported file type",
         description: "Please upload a PDF, DOCX, TXT, or MD file.",

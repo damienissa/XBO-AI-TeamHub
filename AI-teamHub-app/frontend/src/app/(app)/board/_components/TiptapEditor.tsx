@@ -82,7 +82,12 @@ const MentionList = forwardRef<MentionListRef, SuggestionProps<UserOption, Menti
         {items.map((item, index) => (
           <button
             key={item.id}
-            onClick={() => selectItem(index)}
+            // onMouseDown + preventDefault keeps editor focus so the suggestion
+            // context (command) is still valid when selectItem fires
+            onMouseDown={(e) => {
+              e.preventDefault();
+              selectItem(index);
+            }}
             style={{
               display: "block",
               width: "100%",

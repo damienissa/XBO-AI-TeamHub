@@ -31,5 +31,6 @@ export function useBoard() {
     queryKey: ["board", filterParams],
     queryFn: () => fetchBoard(filterParams),
     refetchInterval: 30_000,  // BOARD-07
+    retry: 1,                 // Don't hammer a briefly-unavailable backend
   });
 }

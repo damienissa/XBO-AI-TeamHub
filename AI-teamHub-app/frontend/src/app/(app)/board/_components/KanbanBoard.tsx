@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -9,7 +9,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCenter,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useBoard } from "@/hooks/useBoard";
 import { useMoveTicket } from "@/hooks/useMoveTicket";
 import { StatusColumn, Ticket } from "@/lib/api/tickets";
@@ -37,52 +39,141 @@ export function KanbanBoard() {
     targetColumn: StatusColumn;
   } | null>(null);
 
+  // Client-side ordering: column → ordered ticket IDs
+  const [columnOrder, setColumnOrder] = useState<Map<StatusColumn, string[]>>(new Map());
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
+  // Sync columnOrder from server data.
+  // Guarded while a mutation is in-flight to avoid overwriting optimistic updates.
+  useEffect(() => {
+    if (!tickets) return;
+    if (moveTicket.isPending) return;
+
+    setColumnOrder((prev) => {
+      const next = new Map(prev);
+      COLUMNS.forEach((col) => {
+        const freshIds = tickets
+          .filter((t) => t.status_column === col)
+          .map((t) => t.id);
+
+        if (!next.has(col)) {
+          // First load: initialize from server order
+          next.set(col, freshIds);
+        } else {
+          const existing = next.get(col)!;
+          const freshSet = new Set(freshIds);
+          // Preserve local order, prune stale IDs, append new ones at the end
+          const pruned = existing.filter((id) => freshSet.has(id));
+          const newIds = freshIds.filter((id) => !existing.includes(id));
+          next.set(col, [...pruned, ...newIds]);
+        }
+      });
+      return next;
+    });
+  }, [tickets, moveTicket.isPending]);
+
+  // Apply client-side column order on top of server data.
+  // Filters by status_column to stay consistent with React Query optimistic updates.
   const ticketsByColumn = useMemo(() => {
     const map = new Map<StatusColumn, Ticket[]>();
     COLUMNS.forEach((col) => map.set(col, []));
-    if (tickets) {
-      tickets.forEach((ticket) => {
-        const col = ticket.status_column;
-        if (map.has(col)) {
-          map.get(col)!.push(ticket);
-        }
-      });
-    }
+    if (!tickets) return map;
+
+    const ticketById = new Map(tickets.map((t) => [t.id, t]));
+    COLUMNS.forEach((col) => {
+      const order = columnOrder.get(col);
+      if (order) {
+        map.set(
+          col,
+          order
+            .map((id) => ticketById.get(id))
+            .filter((t): t is Ticket => !!t && t.status_column === col)
+        );
+      } else {
+        map.set(col, tickets.filter((t) => t.status_column === col));
+      }
+    });
     return map;
-  }, [tickets]);
+  }, [tickets, columnOrder]);
 
   function handleDragStart(event: DragStartEvent) {
-    const ticket = event.active.data.current as Ticket | undefined;
-    if (ticket) {
-      setActiveTicket(ticket);
+    const data = event.active.data.current as
+      | { type?: string; ticket?: Ticket }
+      | undefined;
+    if (data?.type === "ticket" && data.ticket) {
+      setActiveTicket(data.ticket);
     }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveTicket(null);
-
     if (!over) return;
 
-    const ticket = active.data.current as Ticket | undefined;
+    const activeData = active.data.current as
+      | { type?: string; ticket?: Ticket }
+      | undefined;
+    const ticket = activeData?.type === "ticket" ? activeData.ticket : undefined;
     if (!ticket) return;
 
-    const targetColumn = over.id as StatusColumn;
-    if (ticket.status_column === targetColumn) return;
+    const overId = over.id as string;
+    const overData = over.data.current as
+      | { type?: string; column?: StatusColumn; ticket?: Ticket }
+      | undefined;
+
+    const isColumnTarget = overData?.type === "column";
+    const sourceColumn = ticket.status_column;
+    const targetColumn: StatusColumn = isColumnTarget
+      ? overData!.column!
+      : (overData?.ticket?.status_column ?? sourceColumn);
+
+    if (sourceColumn === targetColumn) {
+      // Same-column reorder
+      const currentIds = columnOrder.get(sourceColumn) ?? [];
+      const activeIndex = currentIds.indexOf(ticket.id);
+      const overIndex = currentIds.indexOf(overId);
+      if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
+        setColumnOrder((prev) => {
+          const next = new Map(prev);
+          next.set(sourceColumn, arrayMove(currentIds, activeIndex, overIndex));
+          return next;
+        });
+      }
+      return;
+    }
+
+    // Cross-column move ─────────────────────────────────────────────────────
 
     // BOARD-03: intercept Backlog → any move for unowned tickets
-    // Do NOT apply optimistic update yet — wait for owner selection
     if (ticket.status_column === "Backlog" && !ticket.owner_id) {
       setPendingMove({ ticketId: ticket.id, targetColumn });
       return;
     }
 
-    // All other moves: commit immediately with optimistic update
+    // Optimistic local order update: remove from source, insert in target
+    setColumnOrder((prev) => {
+      const next = new Map(prev);
+      const sourceIds = (prev.get(sourceColumn) ?? []).filter(
+        (id) => id !== ticket.id
+      );
+      const targetIds = [...(prev.get(targetColumn) ?? [])];
+      if (!isColumnTarget) {
+        const overIdx = targetIds.indexOf(overId);
+        overIdx !== -1
+          ? targetIds.splice(overIdx, 0, ticket.id)
+          : targetIds.push(ticket.id);
+      } else {
+        targetIds.push(ticket.id);
+      }
+      next.set(sourceColumn, sourceIds);
+      next.set(targetColumn, targetIds);
+      return next;
+    });
+
     moveTicket.mutate({
       ticketId: ticket.id,
       targetColumn,
@@ -115,7 +206,8 @@ export function KanbanBoard() {
     );
   }
 
-  if (isError) {
+  // Hard error: no cached data at all — nothing to show
+  if (isError && !tickets) {
     return (
       <div className="flex flex-col h-full">
         <BoardFilterBar />
@@ -129,22 +221,39 @@ export function KanbanBoard() {
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      {/* Filter bar above the columns */}
-      <BoardFilterBar />
+      <div className="flex flex-col h-full">
+        {/* Sync error banner — shown only when background refetch fails but cached data is still available */}
+        {isError && tickets && (
+          <div className="flex items-center justify-center gap-2 py-1.5 bg-amber-50 border-b border-amber-200 text-xs text-amber-700 flex-shrink-0">
+            <span>Sync failed — showing last saved data.</span>
+            <button
+              onClick={() => window.location.reload()}
+              className="underline hover:text-amber-900"
+            >
+              Refresh
+            </button>
+          </div>
+        )}
 
-      <div className="flex gap-4 p-6 overflow-x-auto h-full">
-        {COLUMNS.map((col, index) => (
-          <KanbanColumn
-            key={col}
-            column={col}
-            tickets={ticketsByColumn.get(col) ?? []}
-            showQuickAdd={index === 0}
-          />
-        ))}
+        {/* Filter bar above the columns */}
+        <BoardFilterBar />
+
+        {/* Columns container: horizontal scroll, each column scrolls vertically */}
+        <div className="flex gap-4 p-6 overflow-x-auto flex-1 min-h-0">
+          {COLUMNS.map((col, index) => (
+            <KanbanColumn
+              key={col}
+              column={col}
+              tickets={ticketsByColumn.get(col) ?? []}
+              showQuickAdd={index === 0}
+            />
+          ))}
+        </div>
       </div>
 
       {/* DragOverlay is always mounted — never conditionally rendered */}
@@ -163,7 +272,6 @@ export function KanbanBoard() {
             setPendingMove(null);
           }}
           onCancel={() => {
-            // Card snaps back automatically: optimistic update was never applied
             setPendingMove(null);
           }}
         />

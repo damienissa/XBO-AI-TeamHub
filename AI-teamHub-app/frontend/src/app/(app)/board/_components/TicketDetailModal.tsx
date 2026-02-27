@@ -415,7 +415,9 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
             title: ticket.title,
             problem_statement: ticket.problem_statement as string | null | undefined,
             business_impact: ticket.business_impact,
+            success_criteria: ticket.success_criteria,
             urgency: ticket.urgency,
+            custom_fields: (ticket.custom_field_values as Record<string, unknown> | null | undefined) ?? null,
           }}
         />
 
