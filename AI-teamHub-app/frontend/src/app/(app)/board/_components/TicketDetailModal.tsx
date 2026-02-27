@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQueryState, parseAsString } from "nuqs";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow, format, parseISO } from "date-fns";
-import { X, Sparkles } from "lucide-react";
-import { injectTicketIntoAssistant } from "@/components/assistant/AssistantDrawer";
+import { X, Sparkles, Loader2, Send, Trash2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api/client";
 import { useTicketDetail } from "@/hooks/useTicketDetail";
 import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
@@ -19,6 +19,20 @@ import { AttachmentSection } from "./AttachmentSection";
 import { WikiLinkField } from "./WikiLinkField";
 import { ContactsSection } from "./ContactsSection";
 import { cn } from "@/lib/utils";
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+interface TicketContext {
+  title?: string;
+  status?: string;
+  department?: string;
+  urgency?: string | number | null;
+  problem_statement?: string;
+  business_impact?: string;
+  success_criteria?: string;
+  subtasks?: string[];
+  [key: string]: unknown;
+}
 
 const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: "low", label: "Low" },
@@ -59,14 +73,357 @@ function safeFormat(dateStr: string | null, fmt: string): string {
   }
 }
 
+// ---- AlexChatPanel --------------------------------------------------------
+
+interface AlexMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  streaming?: boolean;
+}
+
+interface AlexChatPanelProps {
+  initialContext: TicketContext | null;
+  onClose: () => void;
+}
+
+function AlexChatPanel({ initialContext, onClose }: AlexChatPanelProps) {
+  const [messages, setMessages] = useState<AlexMessage[]>(() =>
+    initialContext
+      ? [
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: `Ticket context loaded: **${initialContext.title ?? "Untitled"}**.\n\nI can now answer questions about this ticket. What do you need?`,
+          },
+        ]
+      : []
+  );
+  const [input, setInput] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const [convId, setConvId] = useState<string | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 60);
+  }, []);
+
+  const clearConversation = useCallback(async () => {
+    abortRef.current?.abort();
+    if (convId) {
+      await fetchWithAuth(`${API}/api/assistant/chat/${convId}`, {
+        method: "DELETE",
+      });
+    }
+    setMessages([]);
+    setConvId(null);
+    setStreaming(false);
+  }, [convId]);
+
+  const sendMessage = useCallback(async () => {
+    const text = input.trim();
+    if (!text || streaming) return;
+
+    const userMsgId = crypto.randomUUID();
+    const assistantMsgId = crypto.randomUUID();
+
+    setMessages((prev) => [
+      ...prev,
+      { id: userMsgId, role: "user", content: text },
+      { id: assistantMsgId, role: "assistant", content: "", streaming: true },
+    ]);
+    setInput("");
+    setStreaming(true);
+
+    if (inputRef.current) inputRef.current.style.height = "auto";
+
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    try {
+      const res = await fetchWithAuth(`${API}/api/assistant/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          conversation_id: convId,
+          ticket_context: initialContext ?? undefined,
+        }),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6).trim();
+
+          if (payload === "[DONE]") {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMsgId ? { ...m, streaming: false } : m
+              )
+            );
+            setStreaming(false);
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed.text) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId
+                    ? { ...m, content: m.content + parsed.text }
+                    : m
+                )
+              );
+            }
+            if (parsed.conversation_id) setConvId(parsed.conversation_id);
+            if (parsed.error) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId
+                    ? { ...m, content: `Error: ${parsed.error}`, streaming: false }
+                    : m
+                )
+              );
+              setStreaming(false);
+              return;
+            }
+          } catch {
+            /* skip malformed lines */
+          }
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId
+              ? { ...m, content: "Connection error — please try again.", streaming: false }
+              : m
+          )
+        );
+      }
+      setStreaming(false);
+    }
+  }, [input, streaming, convId, initialContext]);
+
+  return (
+    <div className="flex flex-col h-full" style={{ background: "#FAFAF9" }}>
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
+        style={{ borderColor: "#E9E9E6", background: "#fff" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+            style={{ background: "#37352F" }}
+          >
+            A
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight" style={{ color: "#37352F" }}>
+              Alex
+            </p>
+            <p className="text-xs leading-tight" style={{ color: "#9B9A97" }}>
+              Senior Tech Lead · XBO
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          {messages.length > 0 && (
+            <button
+              onClick={clearConversation}
+              className="p-1.5 rounded-md transition-colors"
+              style={{ color: "#9B9A97" }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#E03E3E")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#9B9A97")}
+              title="Clear conversation"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md transition-colors"
+            style={{ color: "#9B9A97" }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#37352F")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "#9B9A97")}
+            title="Close Alex"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Context banner */}
+      {initialContext && (
+        <div
+          className="flex items-center gap-1.5 px-4 py-2 text-xs border-b flex-shrink-0"
+          style={{ background: "#F0F7FF", borderColor: "#D0E6FA", color: "#2383E2" }}
+        >
+          <Sparkles className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">
+            Context: <strong>{initialContext.title ?? "Current ticket"}</strong>
+          </span>
+        </div>
+      )}
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-center pb-8">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
+              style={{ background: "#37352F" }}
+            >
+              A
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "#37352F" }}>
+                Ask me about this ticket
+              </p>
+              <p className="text-xs mt-1 leading-relaxed" style={{ color: "#9B9A97" }}>
+                Subtasks, risks, priorities, next steps — I&apos;ve got context.
+              </p>
+            </div>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+            >
+              {msg.role === "assistant" && (
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
+                  style={{ background: "#37352F" }}
+                >
+                  A
+                </div>
+              )}
+              <div
+                className="max-w-[85%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed"
+                style={
+                  msg.role === "user"
+                    ? { background: "#2383E2", color: "#fff", borderBottomRightRadius: "4px" }
+                    : {
+                        background: "#fff",
+                        color: "#37352F",
+                        border: "1px solid #E9E9E6",
+                        borderBottomLeftRadius: "4px",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }
+                }
+              >
+                {msg.streaming && !msg.content ? (
+                  <span className="flex items-center gap-1.5" style={{ color: "#9B9A97" }}>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="text-xs">Thinking…</span>
+                  </span>
+                ) : (
+                  msg.content
+                )}
+                {msg.streaming && msg.content && (
+                  <span
+                    className="inline-block w-1.5 h-3.5 ml-0.5 animate-pulse rounded-sm"
+                    style={{ background: "#9B9A97", verticalAlign: "text-bottom" }}
+                  />
+                )}
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div
+        className="border-t flex-shrink-0 p-3"
+        style={{ borderColor: "#E9E9E6", background: "#fff" }}
+      >
+        <div
+          className="flex items-end gap-2 rounded-xl border px-3 py-2"
+          style={{ borderColor: "#E9E9E6", background: "#FAFAF9" }}
+        >
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            placeholder="Ask Alex anything…"
+            rows={1}
+            disabled={streaming}
+            className="flex-1 resize-none outline-none text-sm bg-transparent py-0.5 leading-relaxed"
+            style={{ color: "#37352F", maxHeight: "80px", fontFamily: "DM Sans, sans-serif" }}
+            onInput={(e) => {
+              const t = e.currentTarget;
+              t.style.height = "auto";
+              t.style.height = `${Math.min(t.scrollHeight, 80)}px`;
+            }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || streaming}
+            className="flex-shrink-0 p-1.5 rounded-lg transition-all"
+            style={{
+              background: input.trim() && !streaming ? "#2383E2" : "#E9E9E6",
+              color: input.trim() && !streaming ? "#fff" : "#9B9A97",
+            }}
+            title="Send (Enter)"
+          >
+            {streaming ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+        <p className="text-center text-xs mt-1.5" style={{ color: "#C7C7C4" }}>
+          Enter to send · Shift+Enter for newline
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ---- TicketDetailContent --------------------------------------------------
 
 interface TicketDetailContentProps {
   ticketId: string;
   onClose: () => void;
+  onAskAlex: (ctx: TicketContext) => void;
 }
 
-function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
+function TicketDetailContent({ ticketId, onClose, onAskAlex }: TicketDetailContentProps) {
   const { ticketQuery, eventsQuery, historyQuery, updateMutation } = useTicketDetail(ticketId);
 
   const { data: users } = useQuery({
@@ -150,14 +507,53 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={() =>
-              injectTicketIntoAssistant({
+              onAskAlex({
+                // Core
+                id: ticket.id,
                 title: ticket.title,
                 status: ticket.status_column,
+                created_at: ticket.created_at,
+                updated_at: ticket.updated_at,
+                time_in_column: ticket.time_in_column,
+                // People
+                owner: ticket.owner?.full_name ?? "Unassigned",
+                owner_email: ticket.owner?.email ?? null,
                 department: ticket.department?.name ?? ticket.department_id,
-                urgency: ticket.urgency ?? undefined,
-                problem_statement: ticket.problem_statement as string | undefined,
-                business_impact: ticket.business_impact ?? undefined,
-                success_criteria: ticket.success_criteria ?? undefined,
+                department_slug: ticket.department?.slug,
+                contacts: ticket.contacts?.map((c) => ({
+                  name: c.name,
+                  email: c.email,
+                  type: c.user_id ? "internal" : "external",
+                })),
+                // Scheduling & effort
+                priority: ticket.priority,
+                urgency: ticket.urgency,
+                due_date: ticket.due_date,
+                effort_estimate: ticket.effort_estimate,
+                // Content fields
+                problem_statement: ticket.problem_statement,
+                next_step: ticket.next_step,
+                business_impact: ticket.business_impact,
+                success_criteria: ticket.success_criteria,
+                // Subtasks
+                subtasks_total: ticket.subtasks_total,
+                subtasks_done: ticket.subtasks_done,
+                // ROI inputs
+                current_time_cost_hours_per_week: ticket.current_time_cost_hours_per_week,
+                employees_affected: ticket.employees_affected,
+                avg_hourly_cost: ticket.avg_hourly_cost,
+                current_error_rate: ticket.current_error_rate,
+                revenue_blocked: ticket.revenue_blocked,
+                // ROI computed
+                weekly_cost: ticket.weekly_cost,
+                yearly_cost: ticket.yearly_cost,
+                annual_savings: ticket.annual_savings,
+                dev_cost: ticket.dev_cost,
+                roi: ticket.roi,
+                // Misc
+                blocked_by_count: ticket.blocked_by_count,
+                custom_field_values: ticket.custom_field_values,
+                wiki_page_id: ticket.wiki_page_id,
               })
             }
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors"
@@ -587,21 +983,58 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
 
 export function TicketDetailModal() {
   const [ticketId, setTicketId] = useQueryState("ticket", parseAsString);
+  const [alexOpen, setAlexOpen] = useState(false);
+  const [alexCtx, setAlexCtx] = useState<TicketContext | null>(null);
+
+  const handleAskAlex = (ctx: TicketContext) => {
+    setAlexCtx(ctx);
+    setAlexOpen(true);
+  };
 
   return (
-    <Dialog.Root open={!!ticketId} onOpenChange={(open) => !open && setTicketId(null)}>
+    <Dialog.Root
+      open={!!ticketId}
+      onOpenChange={(open) => {
+        if (!open) {
+          setTicketId(null);
+          setAlexOpen(false);
+          setAlexCtx(null);
+        }
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content
-          className="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 overflow-hidden flex flex-col focus:outline-none"
+          className={cn(
+            "fixed inset-y-0 right-0 w-full bg-white shadow-2xl z-50 overflow-hidden flex focus:outline-none transition-[max-width] duration-300 ease-in-out",
+            alexOpen ? "max-w-5xl" : "max-w-2xl"
+          )}
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">Ticket Detail</Dialog.Title>
-          {ticketId && (
-            <TicketDetailContent
-              ticketId={ticketId}
-              onClose={() => setTicketId(null)}
-            />
+
+          {/* Ticket detail panel — always visible, shrinks when Alex opens */}
+          <div className="flex flex-col h-full overflow-hidden flex-1 min-w-0">
+            {ticketId && (
+              <TicketDetailContent
+                ticketId={ticketId}
+                onClose={() => setTicketId(null)}
+                onAskAlex={handleAskAlex}
+              />
+            )}
+          </div>
+
+          {/* Alex chat panel — slides in on the right */}
+          {alexOpen && (
+            <div
+              className="w-[400px] flex-shrink-0 border-l flex flex-col h-full"
+              style={{ borderColor: "#E9E9E6" }}
+            >
+              <AlexChatPanel
+                initialContext={alexCtx}
+                onClose={() => setAlexOpen(false)}
+              />
+            </div>
           )}
         </Dialog.Content>
       </Dialog.Portal>

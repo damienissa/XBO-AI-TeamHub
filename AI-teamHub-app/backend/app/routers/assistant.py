@@ -35,12 +35,26 @@ The XBO TeamHub stack you work on daily:
 - Infrastructure: Docker Compose (postgres:5432, backend:8000, frontend:3000)
 - Key files: backend/app/routers/, backend/app/models/, frontend/src/app/(app)/board/_components/
 
+## CRITICAL — When ticket context is provided
+
+Answer factual questions DIRECTLY from the ticket data. Do not ask for more info, do not say data is missing, do not flag red flags unless specifically asked.
+
+Examples:
+- "who do I need to contact?" → list the contact persons (name, email, type) from the context immediately
+- "what is the effort?" → state the effort_estimate value directly (e.g. "200 hours / 25 days")
+- "who owns this?" → state the owner from the context
+- "what's the priority?" → state priority and urgency from the context
+- "when is it due?" → state the due_date from the context
+
+Only raise concerns, red flags, or analysis if:
+1. The user explicitly asks for analysis/review
+2. The field they asked about is genuinely not set (null/missing)
+
 Your style:
 - Direct and opinionated — give your best recommendation, skip the hedging
 - Always concrete: code snippets, exact file paths, specific commands
-- Brief "why" before the "what"
-- When given a ticket, think like a tech lead: spot ambiguities, decompose tasks, flag risks
-- No long preambles — get straight to the answer"""
+- No long preambles — get straight to the answer
+- Lead with the direct answer, then optionally add context"""
 
 
 def _get_client() -> AsyncAnthropic:
@@ -53,25 +67,98 @@ def _get_client() -> AsyncAnthropic:
 
 
 def _inject_context(req: ChatRequest) -> str:
-    """Prepend ticket context block to the user message when provided."""
+    """Prepend full ticket context block to the user message when provided."""
     if not req.ticket_context:
         return req.message
     ctx = req.ticket_context
-    lines = [f"[Ticket context: {ctx.get('title', '?')}]"]
-    for key, label in (
+    parts = [f"[TICKET CONTEXT — {ctx.get('title', '?')}]"]
+
+    # Identity & scheduling
+    for key, label in [
+        ("id", "Ticket ID"),
         ("status", "Status"),
         ("department", "Department"),
-        ("urgency", "Urgency"),
-        ("problem_statement", "Problem"),
+        ("owner", "Owner"),
+        ("owner_email", "Owner email"),
+        ("priority", "Priority"),
+        ("urgency", "Urgency (1–5)"),
+        ("due_date", "Due date"),
+        ("effort_estimate", "Effort estimate (hours)"),
+        ("time_in_column", "Time in current column"),
+        ("created_at", "Created at"),
+        ("updated_at", "Last updated"),
+        ("blocked_by_count", "Blocked by (# tickets)"),
+        ("wiki_page_id", "Wiki page ID"),
+    ]:
+        val = ctx.get(key)
+        if val is not None:
+            parts.append(f"{label}: {val}")
+
+    # Contacts
+    contacts = ctx.get("contacts")
+    if contacts:
+        contact_lines = []
+        for c in contacts:
+            line = f"  - {c.get('name', '?')}"
+            if c.get("email"):
+                line += f" <{c['email']}>"
+            line += f" [{c.get('type', 'unknown')}]"
+            contact_lines.append(line)
+        parts.append("Contact persons:\n" + "\n".join(contact_lines))
+
+    # Subtasks
+    total = ctx.get("subtasks_total")
+    done = ctx.get("subtasks_done")
+    if total is not None:
+        parts.append(f"Subtasks: {done}/{total} completed")
+
+    # Content fields
+    for key, label in [
+        ("problem_statement", "Problem statement"),
+        ("next_step", "Next step"),
         ("business_impact", "Business impact"),
         ("success_criteria", "Success criteria"),
-    ):
+    ]:
         val = ctx.get(key)
         if val:
-            lines.append(f"{label}: {str(val)[:400]}")
-    if ctx.get("subtasks"):
-        lines.append(f"Subtasks: {', '.join(ctx['subtasks'][:10])}")
-    return "\n".join(lines) + "\n\n---\n\n" + req.message
+            parts.append(f"{label}: {str(val)[:600]}")
+
+    # ROI inputs
+    roi_inputs = []
+    for key, label in [
+        ("current_time_cost_hours_per_week", "Time cost (hrs/week)"),
+        ("employees_affected", "Employees affected"),
+        ("avg_hourly_cost", "Avg hourly cost ($)"),
+        ("current_error_rate", "Current error rate (%)"),
+        ("revenue_blocked", "Revenue blocked ($)"),
+    ]:
+        val = ctx.get(key)
+        if val is not None:
+            roi_inputs.append(f"  {label}: {val}")
+    if roi_inputs:
+        parts.append("ROI inputs:\n" + "\n".join(roi_inputs))
+
+    # ROI computed outputs
+    roi_outputs = []
+    for key, label in [
+        ("weekly_cost", "Weekly cost ($)"),
+        ("yearly_cost", "Yearly cost ($)"),
+        ("annual_savings", "Annual savings ($)"),
+        ("dev_cost", "Dev cost ($)"),
+        ("roi", "ROI (%)"),
+    ]:
+        val = ctx.get(key)
+        if val is not None:
+            roi_outputs.append(f"  {label}: {val}")
+    if roi_outputs:
+        parts.append("ROI computed:\n" + "\n".join(roi_outputs))
+
+    # Custom fields
+    custom = ctx.get("custom_field_values")
+    if custom:
+        parts.append(f"Custom fields: {json.dumps(custom)[:300]}")
+
+    return "\n".join(parts) + "\n\n---\n\n" + req.message
 
 
 async def _stream(
