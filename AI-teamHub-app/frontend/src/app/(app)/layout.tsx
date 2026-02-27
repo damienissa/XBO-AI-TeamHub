@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Providers } from "@/lib/providers";
 import { NotificationBar } from "@/components/notifications/NotificationBar";
+import { AssistantDrawer } from "@/components/assistant/AssistantDrawer";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await verifySession();
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </main>
           </div>
         </div>
+        <AssistantDrawer />
       </SidebarProvider>
     </Providers>
   );

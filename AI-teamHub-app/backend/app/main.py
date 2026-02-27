@@ -17,6 +17,7 @@ from app.routers.wiki import router as wiki_router
 from app.routers.ai import router as ai_router
 from app.routers.attachments import router as attachments_router
 from app.routers.notifications import router as notifications_router
+from app.routers.assistant import router as assistant_router
 
 app = FastAPI(title="XBO TeamHub API", version="0.1.0")
 
@@ -52,6 +53,9 @@ app.include_router(attachments_router, prefix="/api/tickets", tags=["attachments
 
 # Phase 8: Notifications router
 app.include_router(notifications_router, prefix="/api", tags=["notifications"])
+
+# Phase 9: AI Assistant
+app.include_router(assistant_router, prefix="/api", tags=["assistant"])
 
 
 @app.get("/health")

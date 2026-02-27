@@ -5,7 +5,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useQueryState, parseAsString } from "nuqs";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow, format, parseISO } from "date-fns";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
+import { injectTicketIntoAssistant } from "@/components/assistant/AssistantDrawer";
 import { useTicketDetail } from "@/hooks/useTicketDetail";
 import { fetchUsers, Priority, StatusColumn } from "@/lib/api/tickets";
 import { TiptapEditor } from "./TiptapEditor";
@@ -16,6 +17,7 @@ import { CustomFieldsSection } from "./CustomFieldsSection";
 import { AiSummarySection } from "./AiSummarySection";
 import { AttachmentSection } from "./AttachmentSection";
 import { WikiLinkField } from "./WikiLinkField";
+import { ContactsSection } from "./ContactsSection";
 import { cn } from "@/lib/utils";
 
 const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
@@ -145,16 +147,47 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
             </h2>
           )}
         </div>
-        <button
-          onClick={onClose}
-          className="flex-shrink-0 p-1.5 rounded transition-colors"
-          style={{ color: "#9B9A97" }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#F7F7F5")}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() =>
+              injectTicketIntoAssistant({
+                title: ticket.title,
+                status: ticket.status_column,
+                department: ticket.department?.name ?? ticket.department_id,
+                urgency: ticket.urgency ?? undefined,
+                problem_statement: ticket.problem_statement as string | undefined,
+                business_impact: ticket.business_impact ?? undefined,
+                success_criteria: ticket.success_criteria ?? undefined,
+              })
+            }
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors"
+            style={{ color: "#2383E2", background: "#EEF4FD" }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "#D9ECFF")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "#EEF4FD")
+            }
+            title="Ask Alex about this ticket"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Ask Alex
+          </button>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded transition-colors"
+            style={{ color: "#9B9A97" }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "#F7F7F5")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.background = "transparent")
+            }
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Scrollable body */}
@@ -211,6 +244,18 @@ function TicketDetailContent({ ticketId, onClose }: TicketDetailContentProps) {
           <span className="text-xs" style={{ color: "#9B9A97" }}>
             {ticket.department?.name ?? ticket.department_id}
           </span>
+        </div>
+
+        {/* Contact Persons */}
+        <div className="border-t pt-4" style={{ borderColor: "#E9E9E6" }}>
+          <h3 className="text-xs font-medium uppercase tracking-wide mb-3" style={{ color: "#9B9A97" }}>
+            Contact Persons
+          </h3>
+          <ContactsSection
+            contacts={ticket.contacts ?? []}
+            users={users ?? []}
+            onUpdate={(contacts) => updateMutation.mutate({ contacts })}
+          />
         </div>
 
         {/* Metadata grid (DETAIL-04) */}

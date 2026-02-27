@@ -16,10 +16,12 @@ from app.core.database import get_db
 from app.dependencies import get_current_user
 from app.models.column_history import ColumnHistory
 from app.models.ticket import Priority, StatusColumn, Ticket
+from app.models.ticket_contact import TicketContact
 from app.models.ticket_dependency import ticket_dependencies
 from app.models.ticket_subtask import TicketSubtask
 from app.models.user import User
 from app.schemas.ticket import BoardTicketOut
+from app.schemas.ticket_contact import ContactOut
 
 router = APIRouter()
 
@@ -67,6 +69,7 @@ async def get_board(
         .options(
             selectinload(Ticket.owner),
             selectinload(Ticket.department),
+            selectinload(Ticket.contacts).selectinload(TicketContact.user),
         )
         .order_by(Ticket.created_at.asc())
     )
@@ -169,6 +172,16 @@ async def get_board(
             ticket_out.subtasks_total = counts[0]
             ticket_out.subtasks_done = counts[1]
         ticket_out.blocked_by_count = blocked_by_counts.get(ticket.id, 0)
+        ticket_out.contacts = [
+            ContactOut(
+                id=c.id,
+                ticket_id=c.ticket_id,
+                user_id=c.user_id,
+                name=c.user.full_name if c.user_id is not None else c.external_name,
+                email=c.user.email if c.user_id is not None else c.external_email,
+            )
+            for c in ticket.contacts
+        ]
         output.append(ticket_out)
 
     return output

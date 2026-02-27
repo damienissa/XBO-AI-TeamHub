@@ -6,10 +6,11 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Loader2, Paperclip, Sparkles, X, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Paperclip, Sparkles, X, Plus, Trash2, UserPlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { extractFields, fetchEffortEstimate, fetchSubtasks as fetchAiSubtasks } from "@/lib/api/ai";
+import { fetchUsers, ContactIn } from "@/lib/api/tickets";
 import { useToast } from "@/hooks/use-toast";
 import { TiptapEditor } from "@/app/(app)/board/_components/TiptapEditor";
 import { cn } from "@/lib/utils";
@@ -277,6 +278,19 @@ export default function PortalDeptPage() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileContext, setFileContext] = useState<string | null>(null);
 
+  // Contact persons state (managed outside react-hook-form)
+  const [contacts, setContacts] = useState<ContactIn[]>([]);
+  const [contactSelectedUserId, setContactSelectedUserId] = useState("");
+  const [contactShowExtForm, setContactShowExtForm] = useState(false);
+  const [contactExtName, setContactExtName] = useState("");
+  const [contactExtEmail, setContactExtEmail] = useState("");
+
+  const { data: userList } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 60_000,
+  });
+
   const extractMutation = useMutation({
     mutationFn: (file: File) => extractFields(file),
     onSuccess: (data) => {
@@ -335,6 +349,7 @@ export default function PortalDeptPage() {
         effort_estimate: data.effort_estimate ?? null, next_step: data.next_step || null,
         current_time_cost_hours_per_week: data.current_time_cost_hours_per_week ?? null,
         employees_affected: data.employees_affected ?? null, avg_hourly_cost: data.avg_hourly_cost ?? null,
+        contacts: contacts,
       };
       const res = await fetch(`${API}/api/tickets`, {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -716,6 +731,93 @@ export default function PortalDeptPage() {
               Extracting fields with AI…
             </p>
           )}
+        </Section>
+
+        {/* ── Contact Persons ── */}
+        <Section title="Contact Persons" note="Add team members or external contacts to loop in for this request.">
+          <div className="space-y-2">
+            {contacts.map((c, i) => {
+              const user = c.user_id ? userList?.find((u) => u.id === c.user_id) : null;
+              const name = user?.full_name ?? c.external_name ?? "?";
+              const email = user?.email ?? c.external_email ?? null;
+              const isInternal = !!c.user_id;
+              return (
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
+                     style={{ background: "#F7F7F5", border: "1px solid #E9E9E6" }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
+                       style={{ background: isInternal ? "#EEF4FD" : "#F0F0EE", color: isInternal ? "#2383E2" : "#9B9A97" }}>
+                    {name[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate" style={{ color: "#37352F" }}>{name}</p>
+                    {email && <p className="text-xs truncate" style={{ color: "#9B9A97" }}>{email}</p>}
+                  </div>
+                  {!isInternal && (
+                    <span className="text-xs px-1.5 py-0.5 rounded flex-shrink-0"
+                          style={{ background: "#FFF3CD", color: "#856404" }}>External</span>
+                  )}
+                  <button type="button" onClick={() => setContacts((prev) => prev.filter((_, j) => j !== i))}
+                          style={{ color: "#9B9A97" }}>
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+
+            <select
+              value={contactSelectedUserId}
+              onChange={(e) => {
+                const uid = e.target.value;
+                if (!uid || contacts.some((c) => c.user_id === uid)) return;
+                setContacts((prev) => [...prev, { user_id: uid }]);
+                setContactSelectedUserId("");
+              }}
+              className="w-full text-sm rounded-lg px-3 py-1.5 focus:outline-none"
+              style={{ border: "1px solid #E9E9E6", color: "#9B9A97", background: "#fff", cursor: "pointer" }}
+            >
+              <option value="">+ Add team member…</option>
+              {userList?.filter((u) => !contacts.some((c) => c.user_id === u.id)).map((u) => (
+                <option key={u.id} value={u.id}>{u.full_name} — {u.email}</option>
+              ))}
+            </select>
+
+            {contactShowExtForm ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="text" placeholder="Full name *" value={contactExtName}
+                         onChange={(e) => setContactExtName(e.target.value)}
+                         className="text-sm rounded-lg px-3 py-1.5 focus:outline-none"
+                         style={{ border: "1px solid #E9E9E6", color: "#37352F", background: "#fff" }} />
+                  <input type="email" placeholder="Email (optional)" value={contactExtEmail}
+                         onChange={(e) => setContactExtEmail(e.target.value)}
+                         className="text-sm rounded-lg px-3 py-1.5 focus:outline-none"
+                         style={{ border: "1px solid #E9E9E6", color: "#37352F", background: "#fff" }} />
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" disabled={!contactExtName.trim()}
+                          onClick={() => {
+                            const name = contactExtName.trim();
+                            if (!name) return;
+                            setContacts((prev) => [...prev, { external_name: name, external_email: contactExtEmail.trim() || undefined }]);
+                            setContactExtName(""); setContactExtEmail(""); setContactShowExtForm(false);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white disabled:opacity-40"
+                          style={{ background: "#2383E2" }}>
+                    <UserPlus className="w-3.5 h-3.5" /> Add
+                  </button>
+                  <button type="button" onClick={() => { setContactExtName(""); setContactExtEmail(""); setContactShowExtForm(false); }}
+                          className="px-3 py-1.5 rounded-lg text-sm" style={{ color: "#9B9A97" }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setContactShowExtForm(true)}
+                      className="text-xs" style={{ color: "#9B9A97" }}>
+                + Add external contact
+              </button>
+            )}
+          </div>
         </Section>
 
         {/* ── Submit ── */}

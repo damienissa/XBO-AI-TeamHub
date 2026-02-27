@@ -9,3 +9,4 @@ from app.models.ticket_subtask import TicketSubtask  # noqa: F401
 from app.models.ticket_template import TicketTemplate  # noqa: F401
 from app.models.ticket_attachment import TicketAttachment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
+from app.models.ticket_contact import TicketContact  # noqa: F401

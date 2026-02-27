@@ -16,11 +16,14 @@ from app.core.database import get_db
 from app.dependencies import get_current_user, require_admin
 from app.models.column_history import ColumnHistory
 from app.models.ticket import StatusColumn, Ticket
+from app.models.ticket_contact import TicketContact
 from app.models.ticket_event import TicketEvent
 from app.models.user import User
 from app.schemas.column_history import ColumnHistoryOut
 from app.schemas.ticket import TicketCreate, TicketMoveRequest, TicketOut, TicketUpdate
+from app.schemas.ticket_contact import ContactOut
 from app.schemas.ticket_event import TicketEventOut
+from app.services.contacts import replace_contacts
 from app.services.notifications import notify_assignment, notify_mentions, notify_status_change
 from app.services.roi import compute_roi_fields
 from app.services.tickets import create_ticket, move_ticket
@@ -56,12 +59,13 @@ def _compute_time_in_column(entered_at: datetime) -> str:
 
 
 async def _load_ticket_out(db: AsyncSession, ticket_id: uuid.UUID) -> TicketOut:
-    """Fetch ticket with eager-loaded owner/department and compute time_in_column."""
+    """Fetch ticket with eager-loaded owner/department/contacts and compute time_in_column."""
     result = await db.execute(
         select(Ticket)
         .options(
             selectinload(Ticket.owner),
             selectinload(Ticket.department),
+            selectinload(Ticket.contacts).selectinload(TicketContact.user),
         )
         .where(Ticket.id == ticket_id)
     )
@@ -81,6 +85,18 @@ async def _load_ticket_out(db: AsyncSession, ticket_id: uuid.UUID) -> TicketOut:
     ticket_out = TicketOut.model_validate(ticket)
     if open_row is not None:
         ticket_out.time_in_column = _compute_time_in_column(open_row.entered_at)
+
+    # Manually resolve contacts (name/email are computed, not raw ORM columns)
+    ticket_out.contacts = [
+        ContactOut(
+            id=c.id,
+            ticket_id=c.ticket_id,
+            user_id=c.user_id,
+            name=c.user.full_name if c.user_id is not None else c.external_name,
+            email=c.user.email if c.user_id is not None else c.external_email,
+        )
+        for c in ticket.contacts
+    ]
 
     return ticket_out
 
@@ -127,6 +143,9 @@ async def update_ticket(
     old_owner_id = ticket.owner_id
     changed_fields = []
 
+    # Pop contacts before the setattr loop — handled separately via replace_contacts()
+    contacts_in = update_data.pop("contacts", None)
+
     for field, value in update_data.items():
         if getattr(ticket, field) != value:
             setattr(ticket, field, value)
@@ -145,6 +164,14 @@ async def update_ticket(
             setattr(ticket, col, val)
             if col not in changed_fields:
                 changed_fields.append(col)
+
+    # Replace contacts if provided (runs regardless of other field changes)
+    if contacts_in is not None:
+        from app.schemas.ticket_contact import ContactIn as _ContactIn
+        contacts_in = [_ContactIn(**c) if isinstance(c, dict) else c for c in contacts_in]
+        await replace_contacts(db, ticket_id, contacts_in)
+        if "contacts" not in changed_fields:
+            changed_fields.append("contacts")
 
     if changed_fields:
         event = TicketEvent(

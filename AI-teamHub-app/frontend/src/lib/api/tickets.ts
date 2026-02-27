@@ -5,6 +5,41 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 export type StatusColumn = "Backlog" | "Discovery" | "In Progress" | "Review/QA" | "Done";
 export type Priority = "low" | "medium" | "high" | "critical";
 
+export interface ContactOut {
+  id: string;
+  ticket_id: string;
+  user_id: string | null;  // null = external contact
+  name: string;            // resolved: user.full_name or external_name
+  email: string | null;    // resolved: user.email or external_email
+}
+
+export interface ContactIn {
+  user_id?: string | null;
+  external_name?: string | null;
+  external_email?: string | null;
+}
+
+export interface TicketUpdatePayload {
+  title?: string | null;
+  problem_statement?: object | null;
+  urgency?: number | null;
+  business_impact?: string | null;
+  success_criteria?: string | null;
+  due_date?: string | null;
+  effort_estimate?: number | null;
+  next_step?: string | null;
+  priority?: Priority | null;
+  owner_id?: string | null;
+  contacts?: ContactIn[];
+  current_time_cost_hours_per_week?: number | null;
+  employees_affected?: number | null;
+  avg_hourly_cost?: number | null;
+  current_error_rate?: number | null;
+  revenue_blocked?: number | null;
+  wiki_page_id?: string | null;
+  custom_field_values?: Record<string, unknown> | null;
+}
+
 export interface Ticket {
   id: string;
   title: string;
@@ -50,6 +85,9 @@ export interface Ticket {
 
   // Phase 5 wiki link (WIKI-05)
   wiki_page_id?: string | null;
+
+  // Contact persons
+  contacts: ContactOut[];
 }
 
 export interface BoardData {
@@ -113,7 +151,7 @@ export async function moveTicket(ticketId: string, targetColumn: StatusColumn, o
   return res.json();
 }
 
-export async function updateTicket(ticketId: string, data: Partial<Ticket>): Promise<Ticket> {
+export async function updateTicket(ticketId: string, data: TicketUpdatePayload): Promise<Ticket> {
   const res = await fetchWithAuth(`${API}/api/tickets/${ticketId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

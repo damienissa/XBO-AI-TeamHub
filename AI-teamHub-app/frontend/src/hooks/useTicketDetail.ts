@@ -6,6 +6,7 @@ import {
   fetchTicketHistory,
   updateTicket,
   Ticket,
+  TicketUpdatePayload,
 } from "@/lib/api/tickets";
 
 export function useTicketDetail(ticketId: string | null) {
@@ -30,7 +31,7 @@ export function useTicketDetail(ticketId: string | null) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<Ticket>) => updateTicket(ticketId!, data),
+    mutationFn: (data: TicketUpdatePayload) => updateTicket(ticketId!, data),
     onSuccess: (updated) => {
       queryClient.setQueryData(["ticket", ticketId], updated);
       queryClient.invalidateQueries({ queryKey: ["board"] });

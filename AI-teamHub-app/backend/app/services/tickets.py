@@ -15,6 +15,7 @@ from app.models.ticket import StatusColumn, Ticket
 from app.models.ticket_dependency import ticket_dependencies
 from app.models.ticket_event import TicketEvent
 from app.schemas.ticket import TicketCreate, TicketMoveRequest
+from app.services.contacts import replace_contacts
 
 
 async def check_not_blocked(db: AsyncSession, ticket_id: uuid.UUID) -> None:
@@ -85,6 +86,10 @@ async def create_ticket(db: AsyncSession, data: TicketCreate, actor_id: uuid.UUI
         actor_id=actor_id,
     )
     db.add(event)
+
+    # Insert contact persons if provided
+    if data.contacts:
+        await replace_contacts(db, ticket.id, data.contacts)
 
     await db.commit()
     await db.refresh(ticket)

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from app.models.ticket import Priority, StatusColumn
 from app.schemas.auth import UserOut
 from app.schemas.department import DepartmentOut
+from app.schemas.ticket_contact import ContactIn, ContactOut
 
 
 class TicketCreate(BaseModel):
@@ -26,6 +27,9 @@ class TicketCreate(BaseModel):
     current_time_cost_hours_per_week: Optional[float] = None
     employees_affected: Optional[float] = None
     avg_hourly_cost: Optional[float] = None
+
+    # Contact persons (internal users or external name/email)
+    contacts: list[ContactIn] = []
 
     model_config = ConfigDict(extra="ignore")
 
@@ -63,6 +67,9 @@ class TicketUpdate(BaseModel):
     # Phase 5 fields (WIKI-05, ADV-02)
     wiki_page_id: Optional[uuid.UUID] = None
     custom_field_values: Optional[dict] = None
+
+    # Contact persons — None means "don't touch", [] means "clear all"
+    contacts: Optional[list[ContactIn]] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -117,6 +124,27 @@ class TicketOut(BaseModel):
 
     # Phase 5 dependency badge (ADV-04) — computed by board endpoint via batch count query
     blocked_by_count: int = 0
+
+    # Contact persons (resolved name/email)
+    contacts: list[ContactOut] = []
+
+    @field_validator("contacts", mode="before")
+    @classmethod
+    def _skip_orm_contacts(cls, v: object) -> list:
+        """
+        When model_validate is called with a Ticket ORM object, ticket.contacts
+        is a list of TicketContact ORM instances that lack the computed 'name'
+        field required by ContactOut.  Return [] here so model_validate succeeds;
+        the router sets contacts manually afterwards via the explicit resolution loop.
+        Already-resolved ContactOut dicts/instances pass through unchanged.
+        """
+        if not v:
+            return []
+        items = list(v)  # type: ignore[arg-type]
+        if items and not isinstance(items[0], dict) and not isinstance(items[0], ContactOut):
+            # ORM TicketContact objects — defer resolution to the router
+            return []
+        return items
 
     model_config = ConfigDict(from_attributes=True)
 

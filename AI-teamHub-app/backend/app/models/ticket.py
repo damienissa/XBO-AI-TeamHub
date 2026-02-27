@@ -132,6 +132,13 @@ class Ticket(Base):
         order_by="TicketAttachment.created_at",
         cascade="all, delete-orphan",
     )
+    contacts = relationship(
+        "TicketContact",
+        back_populates="ticket",
+        lazy="raise",
+        order_by="TicketContact.created_at",
+        cascade="all, delete-orphan",
+    )
 
     # Phase 5: Self-referential M2M dependency relationships (ADV-04)
     # CRITICAL: primaryjoin/secondaryjoin/foreign_keys must be explicit — SQLAlchemy
