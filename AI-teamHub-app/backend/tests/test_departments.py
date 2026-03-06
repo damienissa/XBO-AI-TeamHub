@@ -2,14 +2,15 @@
 # Tests for GET /api/departments (DEPT-03)
 #
 # Uses asyncio_mode = "auto" from pyproject.toml — no @pytest.mark.anyio needed.
+# Note: The departments endpoint now requires authentication.
 
 import pytest
 from httpx import AsyncClient
 
 
-async def test_list_departments_returns_all(client: AsyncClient, seeded_db):
-    """DEPT-03: GET /api/departments returns all 23 departments without authentication."""
-    r = await client.get("/api/departments")
+async def test_list_departments_returns_all(auth_client: AsyncClient):
+    """DEPT-03: GET /api/departments returns all 23 departments."""
+    r = await auth_client.get("/api/departments")
     assert r.status_code == 200
     data = r.json()
     assert len(data) == 23
@@ -41,15 +42,15 @@ async def test_list_departments_returns_all(client: AsyncClient, seeded_db):
     }
 
 
-async def test_list_departments_no_auth_required(client: AsyncClient, seeded_db):
-    """GET /api/departments is accessible without any authentication cookie."""
+async def test_list_departments_unauthenticated_returns_401(client: AsyncClient, seeded_db):
+    """GET /api/departments without auth returns 401."""
     r = await client.get("/api/departments")
-    assert r.status_code == 200
+    assert r.status_code == 401
 
 
-async def test_department_has_expected_fields(client: AsyncClient, seeded_db):
+async def test_department_has_expected_fields(auth_client: AsyncClient):
     """Each department object has id, slug, and name fields."""
-    r = await client.get("/api/departments")
+    r = await auth_client.get("/api/departments")
     assert r.status_code == 200
     first = r.json()[0]
     assert "id" in first

@@ -10,6 +10,8 @@
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import VALID_TEST_PASSWORD
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -30,7 +32,7 @@ async def create_test_user(
     client: AsyncClient,
     admin_cookies: dict,
     email: str = "user@test.com",
-    password: str = "testpass123",
+    password: str = VALID_TEST_PASSWORD,
     role: str = "member",
     full_name: str = "Test User",
 ):
@@ -131,7 +133,7 @@ async def test_member_cannot_create_user(client: AsyncClient, seeded_db):
     admin_login = await login(client, "admin@xbo.com", "seedpassword")
     # Create a member user
     await create_test_user(client, extract_cookies(admin_login), email="member@xbo.com")
-    member_login = await login(client, "member@xbo.com", "testpass123")
+    member_login = await login(client, "member@xbo.com", VALID_TEST_PASSWORD)
     # Member tries to create another user — must be rejected
     r = await create_test_user(client, extract_cookies(member_login), email="another@xbo.com")
     assert r.status_code == 403
@@ -175,7 +177,7 @@ async def test_token_version_invalidation(client: AsyncClient, seeded_db):
     user_id = create_r.json()["id"]
 
     # Member logs in — capture old cookies
-    member_login = await login(client, "verstest@xbo.com", "testpass123")
+    member_login = await login(client, "verstest@xbo.com", VALID_TEST_PASSWORD)
     old_cookies = extract_cookies(member_login)
 
     # Admin changes role (increments token_version on the user row)

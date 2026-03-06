@@ -410,7 +410,11 @@ async def get_dept_dashboard(
     ticket_rows = (
         await db.execute(
             select(Ticket)
-            .options(selectinload(Ticket.owner), selectinload(Ticket.department))
+            .options(
+                selectinload(Ticket.owner),
+                selectinload(Ticket.department),
+                selectinload(Ticket.contacts),
+            )
             .where(
                 Ticket.department_id == dept_id,
                 Ticket.status_column != StatusColumn.Done,

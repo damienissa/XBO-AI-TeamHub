@@ -1,6 +1,6 @@
 # backend/tests/test_tickets.py
 # Tests for ticket CRUD, move semantics, events, history, board, and auth/users endpoints.
-# Uses seeded_db fixture (7 departments + admin user).
+# Uses shared fixtures from conftest.py (seeded_db, auth_client, dept_id, created_ticket, etc.).
 
 import uuid
 
@@ -10,51 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.main import app
 from app.core.database import get_db
-
-
-@pytest.fixture(scope="function")
-async def auth_client(seeded_db: AsyncSession):
-    """AsyncClient authenticated as admin with an active session cookie."""
-    def override_get_db():
-        yield seeded_db
-
-    app.dependency_overrides[get_db] = override_get_db
-
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as ac:
-        # Login as admin to get auth cookie
-        resp = await ac.post("/api/auth/login", json={
-            "email": "admin@xbo.com",
-            "password": "seedpassword",
-        })
-        assert resp.status_code == 200, f"Login failed: {resp.text}"
-        yield ac
-
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture(scope="function")
-async def dept_id(seeded_db: AsyncSession) -> uuid.UUID:
-    """Return the UUID of the first seeded department (Cashier)."""
-    from sqlalchemy import select
-    from app.models.department import Department
-    result = await seeded_db.execute(
-        select(Department.id).where(Department.slug == "cashier")
-    )
-    return result.scalar_one()
-
-
-@pytest.fixture(scope="function")
-async def created_ticket(auth_client: AsyncClient, dept_id: uuid.UUID) -> dict:
-    """Create a ticket and return the response JSON."""
-    resp = await auth_client.post("/api/tickets/", json={
-        "title": "Test Ticket",
-        "department_id": str(dept_id),
-    })
-    assert resp.status_code == 201, f"Create failed: {resp.text}"
-    return resp.json()
+from tests.conftest import ADMIN_EMAIL
 
 
 # ---------------------------------------------------------------------------
@@ -126,14 +82,10 @@ async def test_move_ticket_out_of_backlog_without_owner_returns_400(
 # ---------------------------------------------------------------------------
 
 async def test_move_ticket_with_owner_succeeds(
-    auth_client: AsyncClient, created_ticket: dict, seeded_db: AsyncSession
+    auth_client: AsyncClient, created_ticket: dict, admin_user_id: uuid.UUID
 ):
     ticket_id = created_ticket["id"]
-    # Get the admin user's id to use as owner
-    from sqlalchemy import select
-    from app.models.user import User
-    result = await seeded_db.execute(select(User.id).where(User.email == "admin@xbo.com"))
-    admin_id = str(result.scalar_one())
+    admin_id = str(admin_user_id)
 
     resp = await auth_client.patch(f"/api/tickets/{ticket_id}/move", json={
         "target_column": "Discovery",
@@ -150,13 +102,10 @@ async def test_move_ticket_with_owner_succeeds(
 # ---------------------------------------------------------------------------
 
 async def test_move_ticket_closes_column_history(
-    auth_client: AsyncClient, created_ticket: dict, seeded_db: AsyncSession
+    auth_client: AsyncClient, created_ticket: dict, admin_user_id: uuid.UUID
 ):
     ticket_id = created_ticket["id"]
-    from sqlalchemy import select
-    from app.models.user import User
-    result = await seeded_db.execute(select(User.id).where(User.email == "admin@xbo.com"))
-    admin_id = str(result.scalar_one())
+    admin_id = str(admin_user_id)
 
     await auth_client.patch(f"/api/tickets/{ticket_id}/move", json={
         "target_column": "Discovery",
@@ -179,13 +128,10 @@ async def test_move_ticket_closes_column_history(
 # ---------------------------------------------------------------------------
 
 async def test_move_ticket_to_backlog_with_owner_returns_400(
-    auth_client: AsyncClient, created_ticket: dict, seeded_db: AsyncSession
+    auth_client: AsyncClient, created_ticket: dict, admin_user_id: uuid.UUID
 ):
     ticket_id = created_ticket["id"]
-    from sqlalchemy import select
-    from app.models.user import User
-    result = await seeded_db.execute(select(User.id).where(User.email == "admin@xbo.com"))
-    admin_id = str(result.scalar_one())
+    admin_id = str(admin_user_id)
 
     resp = await auth_client.patch(f"/api/tickets/{ticket_id}/move", json={
         "target_column": "Backlog",
@@ -200,13 +146,10 @@ async def test_move_ticket_to_backlog_with_owner_returns_400(
 # ---------------------------------------------------------------------------
 
 async def test_move_already_owned_ticket_freely(
-    auth_client: AsyncClient, dept_id: uuid.UUID, seeded_db: AsyncSession
+    auth_client: AsyncClient, dept_id: uuid.UUID, admin_user_id: uuid.UUID
 ):
     """Ticket with an existing owner can move out of Backlog without specifying owner_id."""
-    from sqlalchemy import select
-    from app.models.user import User
-    result = await seeded_db.execute(select(User.id).where(User.email == "admin@xbo.com"))
-    admin_id = str(result.scalar_one())
+    admin_id = str(admin_user_id)
 
     # Create and immediately assign owner via move
     create_resp = await auth_client.post("/api/tickets/", json={
@@ -223,9 +166,7 @@ async def test_move_already_owned_ticket_freely(
     })
     assert move1.status_code == 200
 
-    # Move back to Backlog (must strip owner — TICKET-07 says backlog cannot have owner)
-    # Actually the rule is only about sending owner_id; moving back to Backlog without
-    # owner_id should work. The ticket still has owner_id in DB; we just can't SEND owner_id.
+    # Move back to Backlog without owner_id
     move2 = await auth_client.patch(f"/api/tickets/{ticket_id}/move", json={
         "target_column": "Backlog",
     })
@@ -290,11 +231,11 @@ async def test_delete_ticket_requires_admin(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as ac:
-        login = await ac.post("/api/auth/login", json={
+        login_resp = await ac.post("/api/auth/login", json={
             "email": "member@xbo.com",
             "password": "memberpass",
         })
-        assert login.status_code == 200
+        assert login_resp.status_code == 200
 
         resp = await ac.delete(f"/api/tickets/{created_ticket['id']}")
         assert resp.status_code == 403
@@ -343,7 +284,6 @@ async def test_list_users_returns_active_users(auth_client: AsyncClient):
     users = resp.json()
     assert isinstance(users, list)
     assert len(users) >= 1
-    # Each user has the expected fields
     for user in users:
         assert "id" in user
         assert "email" in user
