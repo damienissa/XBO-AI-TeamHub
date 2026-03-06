@@ -1,15 +1,19 @@
 """AI Assistant — streaming chat with per-user conversation memory."""
 
 import json
+import logging
 import uuid
 from collections import defaultdict
 from typing import Annotated, AsyncIterator
 
 from anthropic import AsyncAnthropic, APIConnectionError, APIStatusError, RateLimitError
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
 from app.core.config import settings
+from app.core.limiter import limiter
+
+logger = logging.getLogger(__name__)
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.assistant import ChatRequest
@@ -19,6 +23,7 @@ router = APIRouter(prefix="/assistant", tags=["assistant"])
 # Per-user conversation store: user_id -> conv_id -> message list
 _store: dict[str, dict[str, list[dict]]] = defaultdict(dict)
 MAX_HISTORY = 40  # 20 turns
+MAX_CONVERSATIONS_PER_USER = 20
 
 SYSTEM_PROMPT = """You are Alex, a senior tech lead and engineering manager at XBO — a fintech company building XBO TeamHub, an internal project management platform.
 
@@ -58,12 +63,9 @@ Your style:
 
 
 def _get_client() -> AsyncAnthropic:
-    if not settings.AI_ENABLED:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI features are not enabled on this server.",
-        )
-    return AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=60.0)
+    from app.routers.ai import get_ai_client, _require_ai_enabled
+    _require_ai_enabled()
+    return get_ai_client()
 
 
 def _inject_context(req: ChatRequest) -> str:
@@ -178,14 +180,17 @@ async def _stream(
                 full.append(text)
                 yield f"data: {json.dumps({'text': text})}\n\n"
     except (RateLimitError, APIConnectionError, APIStatusError) as e:
-        yield f"data: {json.dumps({'error': getattr(e, 'message', str(e))})}\n\n"
+        logger.exception("AI assistant stream error: %s", getattr(e, "message", str(e)))
+        yield f"data: {json.dumps({'error': 'AI service temporarily unavailable. Please try again.'})}\n\n"
         return
     history.append({"role": "assistant", "content": "".join(full)})
     yield "data: [DONE]\n\n"
 
 
 @router.post("/chat")
+@limiter.limit("30/minute")
 async def chat(
+    request: Request,
     req: ChatRequest,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> StreamingResponse:
@@ -194,6 +199,11 @@ async def chat(
     conv_id = req.conversation_id or str(uuid.uuid4())
 
     if conv_id not in _store[uid]:
+        # Evict oldest conversation if at capacity
+        user_convs = _store[uid]
+        if len(user_convs) >= MAX_CONVERSATIONS_PER_USER:
+            oldest_key = next(iter(user_convs))
+            del user_convs[oldest_key]
         _store[uid][conv_id] = []
     history = _store[uid][conv_id]
 

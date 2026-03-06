@@ -14,18 +14,22 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_access_token_from_request,
     set_auth_cookies,
 )
 from app.dependencies import get_current_user, require_admin
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RoleUpdate, UserCreate, UserOut
-from app.services.auth import authenticate_user, create_user, refresh_tokens
+from app.core.limiter import limiter
+from app.services.auth import authenticate_user, create_user, invalidate_user_tokens, refresh_tokens
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=UserOut)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     data: LoginRequest,
     response: Response,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -47,8 +51,20 @@ async def get_me(
 
 
 @router.post("/logout")
-async def logout(response: Response) -> dict:
-    """AUTH-04: Clears both auth cookies. No auth required — logout is always allowed."""
+async def logout(
+    request: Request,
+    response: Response,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """AUTH-04: Clears auth cookies and invalidates token server-side if possible."""
+    token = get_access_token_from_request(request)
+    if token:
+        try:
+            payload = decode_token(token)
+            if payload.get("type") == "access":
+                await invalidate_user_tokens(payload["sub"], db)
+        except HTTPException:
+            pass  # Invalid/expired token — still clear cookies
     clear_auth_cookies(response)
     return {"message": "Logged out"}
 

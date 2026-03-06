@@ -11,7 +11,7 @@ from fastapi import HTTPException, Request, Response, status
 from app.core.config import settings
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours — practical for an internal tool
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Short-lived; refresh token handles session continuity
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 ACCESS_COOKIE_NAME = "access_token"

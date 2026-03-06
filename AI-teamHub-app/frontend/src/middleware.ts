@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const SECRET_KEY = new TextEncoder().encode(process.env.NEXT_PUBLIC_SESSION_SECRET);
+const SECRET_KEY = new TextEncoder().encode(process.env.SESSION_SECRET);
 
-const protectedRoutes = ["/board", "/dashboard", "/portal", "/wiki", "/roadmap"];
+const protectedRoutes = ["/board", "/dashboard", "/portal", "/wiki", "/roadmap", "/settings", "/dept"];
 const publicRoutes = ["/login"];
 
 export default async function middleware(req: NextRequest) {

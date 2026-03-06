@@ -3,8 +3,11 @@
 Registered under /api/tickets — so paths here start with /{ticket_id}/attachments.
 """
 
+import logging
 import re
 import uuid
+
+logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Annotated
 
@@ -85,12 +88,17 @@ async def upload_attachment(
             detail=f"Unsupported file type: {content_type}. Allowed: PDF, DOCX, TXT, MD.",
         )
 
-    data = await file.read()
-    if len(data) > settings.MAX_UPLOAD_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large. Maximum size is {settings.MAX_UPLOAD_BYTES // 1_048_576} MB.",
-        )
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(65_536):
+        total += len(chunk)
+        if total > settings.MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File too large. Maximum size is {settings.MAX_UPLOAD_BYTES // 1_048_576} MB.",
+            )
+        chunks.append(chunk)
+    data = b"".join(chunks)
 
     attachment_id = uuid.uuid4()
     dest = _attachment_path(ticket_id, attachment_id, file.filename or "upload")
@@ -163,7 +171,7 @@ async def get_attachments_text(
                 if text.strip():
                     parts.append(f"[{att.filename}]\n{text.strip()}")
             except Exception:
-                pass
+                logger.warning("Failed to extract text from %s", att.filename, exc_info=True)
 
     combined = "\n\n".join(parts)[:AI_CONTEXT_CHARS]
     return {"text": combined or None}

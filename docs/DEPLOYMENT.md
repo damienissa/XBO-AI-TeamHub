@@ -129,7 +129,7 @@ frontend:
   environment:
     NEXT_PUBLIC_API_URL: http://localhost:8000
     INTERNAL_API_URL: http://backend:8000
-    NEXT_PUBLIC_SESSION_SECRET: ${SECRET_KEY}
+    SESSION_SECRET: ${SECRET_KEY}
   depends_on:
     - backend
 ```
@@ -176,7 +176,7 @@ frontend:
 |----------|-------------|
 | `NEXT_PUBLIC_API_URL` | Backend URL for browser requests (e.g., `http://localhost:8000`) |
 | `INTERNAL_API_URL` | Backend URL for server-side requests (e.g., `http://backend:8000`) |
-| `NEXT_PUBLIC_SESSION_SECRET` | JWT secret for middleware verification |
+| `SESSION_SECRET` | JWT secret for middleware verification |
 
 ## Production Deployment
 
@@ -312,7 +312,7 @@ docker compose exec backend python -m app.scripts.seed
 - Check CORS: Backend allows `localhost:3000` by default
 
 ### Authentication issues
-- Verify `SECRET_KEY` matches between backend and frontend (`NEXT_PUBLIC_SESSION_SECRET`)
+- Verify `SECRET_KEY` matches between backend and frontend (`SESSION_SECRET`)
 - For dev: Set `COOKIE_SAMESITE=lax` (not `strict`)
 - Clear browser cookies if tokens are stale
 

@@ -8,7 +8,7 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import func, select, text
+from sqlalchemy import func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased, selectinload
 
@@ -131,7 +131,7 @@ async def get_dashboard(
     # 6. Throughput trend — last 8 weeks bucketed by week                 #
     # ------------------------------------------------------------------ #
     eight_weeks_ago = now_utc - timedelta(weeks=8)
-    week_trunc = func.date_trunc(text("'week'"), ColumnHistory.entered_at)
+    week_trunc = func.date_trunc(literal_column("'week'"), ColumnHistory.entered_at)
     throughput_rows = (
         await db.execute(
             select(

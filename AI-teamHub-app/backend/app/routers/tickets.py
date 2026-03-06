@@ -146,7 +146,11 @@ async def update_ticket(
     # Pop contacts before the setattr loop — handled separately via replace_contacts()
     contacts_in = update_data.pop("contacts", None)
 
+    # Defense-in-depth: only allow fields explicitly defined in TicketUpdate schema
+    _allowed = frozenset(TicketUpdate.model_fields.keys()) - {"contacts"}
     for field, value in update_data.items():
+        if field not in _allowed:
+            continue
         if getattr(ticket, field) != value:
             setattr(ticket, field, value)
             changed_fields.append(field)
@@ -256,6 +260,12 @@ async def update_custom_fields(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> dict:
     """ADV-03: Replace ticket's custom_field_values JSONB with the provided dict."""
+    import json as _json
+    if len(_json.dumps(values)) > 65_536:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Custom field values payload too large (max 64 KB)",
+        )
     result = await db.execute(select(Ticket).where(Ticket.id == ticket_id))
     ticket = result.scalar_one_or_none()
     if ticket is None:

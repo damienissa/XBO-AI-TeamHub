@@ -1,8 +1,11 @@
 import json
+import logging
 from typing import Annotated
 
 from anthropic import AsyncAnthropic, APIConnectionError, APIStatusError, RateLimitError
-from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, status, UploadFile
+
+logger = logging.getLogger(__name__)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +24,7 @@ from app.schemas.ai import (
     SubtaskRequest, SubtaskResponse,
     SummaryRequest, SummaryResponse,
 )
+from app.core.limiter import limiter
 from app.services.file_extraction import ALLOWED_CONTENT_TYPES, AI_CONTEXT_CHARS, extract_text, resolve_content_type
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -103,14 +107,17 @@ async def _call_claude(prompt: str, system: str, output_config: dict, max_tokens
             detail="Could not connect to AI service. Please try again.",
         )
     except APIStatusError as e:
+        logger.exception("AI API error: %s", e.message)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"AI service error: {e.message}",
+            detail="AI service temporarily unavailable. Please try again.",
         )
 
 
 @router.post("/subtasks", response_model=SubtaskResponse)
+@limiter.limit("20/minute")
 async def generate_subtasks(
+    request: Request,
     req: SubtaskRequest,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> SubtaskResponse:
@@ -158,8 +165,8 @@ async def generate_subtasks(
             title_only = f"<ticket>\n<title>{req.title}</title>\n</ticket>"
             subtasks = await _call_subtasks(title_only + "\n\nCall output_subtasks with the subtasks for this ticket.")
     except (RateLimitError, APIConnectionError, APIStatusError) as e:
-        detail = getattr(e, "message", str(e))
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI service error: {detail}")
+        logger.exception("AI subtask generation error: %s", getattr(e, "message", str(e)))
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable. Please try again.")
 
     if not subtasks:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI could not generate subtasks. Please try again.")
@@ -168,7 +175,9 @@ async def generate_subtasks(
 
 
 @router.post("/effort_estimate", response_model=EffortResponse)
+@limiter.limit("20/minute")
 async def estimate_effort(
+    request: Request,
     req: EffortRequest,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> EffortResponse:
@@ -203,13 +212,15 @@ async def estimate_effort(
         )
         hours = response.content[0].input["hours"]
     except (RateLimitError, APIConnectionError, APIStatusError) as e:
-        detail = getattr(e, "message", str(e))
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI service error: {detail}")
+        logger.exception("AI effort estimation error: %s", getattr(e, "message", str(e)))
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI service temporarily unavailable. Please try again.")
     return EffortResponse(hours=hours)
 
 
 @router.post("/summary", response_model=SummaryResponse)
+@limiter.limit("20/minute")
 async def summarize_ticket(
+    request: Request,
     req: SummaryRequest,
     current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db),
@@ -268,7 +279,9 @@ async def summarize_ticket(
 
 
 @router.post("/extract_fields", response_model=ExtractFieldsResponse)
+@limiter.limit("20/minute")
 async def extract_fields(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ) -> ExtractFieldsResponse:
@@ -285,12 +298,17 @@ async def extract_fields(
             detail=f"Unsupported file type: {content_type}. Allowed: PDF, DOCX, TXT, MD.",
         )
 
-    data = await file.read()
-    if len(data) > 10_485_760:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File too large. Maximum 10 MB.",
-        )
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(65_536):
+        total += len(chunk)
+        if total > settings.MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File too large. Maximum {settings.MAX_UPLOAD_BYTES // 1_048_576} MB.",
+            )
+        chunks.append(chunk)
+    data = b"".join(chunks)
 
     file_text = extract_text(data, content_type)
     if not file_text.strip():
@@ -336,10 +354,10 @@ async def extract_fields(
         )
         extracted = resp.content[0].input
     except (RateLimitError, APIConnectionError, APIStatusError) as e:
-        detail = getattr(e, "message", str(e))
+        logger.exception("AI field extraction error: %s", getattr(e, "message", str(e)))
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"AI service error: {detail}",
+            detail="AI service temporarily unavailable. Please try again.",
         )
 
     return ExtractFieldsResponse(

@@ -102,8 +102,10 @@ async def update_wiki_page(
                 detail="Parent wiki page not found",
             )
 
+    _allowed = frozenset(WikiPageUpdate.model_fields.keys())
     for field, value in update_data.items():
-        setattr(page, field, value)
+        if field in _allowed:
+            setattr(page, field, value)
 
     page.updated_at = datetime.now(timezone.utc)
     await db.commit()

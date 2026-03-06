@@ -1,4 +1,7 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("NEXT_PUBLIC_API_URL is required in production"); })()
+    : "http://localhost:8000");
 
 // ── Silent token-refresh interceptor ──────────────────────────────────────────
 // Deduplicates concurrent refresh calls so that if 10 queries all get a 401
@@ -81,7 +84,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function getDepartments() {
-  const res = await fetch(`${API_BASE}/api/departments`, { cache: "no-store" });
+  const res = await fetchWithAuth(`${API_BASE}/api/departments`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch departments");
   return res.json();
 }

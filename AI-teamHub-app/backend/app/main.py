@@ -1,7 +1,14 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
+from app.core.limiter import limiter
+
+logger = logging.getLogger(__name__)
 from app.routers import departments as departments_router
 from app.routers.auth import router as auth_router
 from app.routers.board import router as board_router
@@ -20,14 +27,22 @@ from app.routers.notifications import router as notifications_router
 from app.routers.assistant import router as assistant_router
 
 app = FastAPI(title="XBO TeamHub API", version="0.1.0")
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Requested-With"],
 )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 app.include_router(auth_router)
 app.include_router(departments_router.router)

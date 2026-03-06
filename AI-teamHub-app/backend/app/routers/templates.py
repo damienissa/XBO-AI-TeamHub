@@ -60,9 +60,9 @@ async def update_template(
     template_id: uuid.UUID,
     data: TemplateUpdate,
     db: Annotated[AsyncSession, Depends(get_db)],
-    _: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> TemplateOut:
-    """PORTAL-07: Partial update of a ticket template. Any authenticated user can update."""
+    """PORTAL-07: Partial update of a ticket template. Creator or admin only."""
     result = await db.execute(
         select(TicketTemplate).where(TicketTemplate.id == template_id)
     )
@@ -70,9 +70,14 @@ async def update_template(
     if template is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
 
+    if current_user.role != "admin" and template.created_by_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
     update_data = data.model_dump(exclude_unset=True)
+    _allowed = frozenset(TemplateUpdate.model_fields.keys())
     for field, value in update_data.items():
-        setattr(template, field, value)
+        if field in _allowed:
+            setattr(template, field, value)
 
     await db.commit()
     await db.refresh(template)
@@ -83,15 +88,18 @@ async def update_template(
 async def delete_template(
     template_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
-    _: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
-    """PORTAL-07: Delete a ticket template. Any authenticated user can delete."""
+    """PORTAL-07: Delete a ticket template. Creator or admin only."""
     result = await db.execute(
         select(TicketTemplate).where(TicketTemplate.id == template_id)
     )
     template = result.scalar_one_or_none()
     if template is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
+
+    if current_user.role != "admin" and template.created_by_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
     await db.delete(template)
     await db.commit()
