@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "XBO TeamHub",
-  description: "XBO AI Team request tracker",
+  title: "AI Hub",
+  description: "AI Hub — internal project management platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

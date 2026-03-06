@@ -42,7 +42,7 @@ async def create_notification(
         background_tasks.add_task(
             send_email,
             to=email,
-            subject=f"[XBO TeamHub] {message}",
+            subject=f"[AI Hub] {message}",
             body=message,
         )
 

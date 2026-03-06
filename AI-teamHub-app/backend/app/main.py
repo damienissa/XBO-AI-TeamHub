@@ -26,7 +26,7 @@ from app.routers.attachments import router as attachments_router
 from app.routers.notifications import router as notifications_router
 from app.routers.assistant import router as assistant_router
 
-app = FastAPI(title="XBO TeamHub API", version="0.1.0")
+app = FastAPI(title="AI Hub API", version="0.1.0")
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
 

@@ -1,20 +1,20 @@
 "use client";
 
+import { logoutAction } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
   SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import type { SessionUser } from "@/lib/dal";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { logoutAction } from "@/app/actions/auth";
-import type { SessionUser } from "@/lib/dal";
 
 const NAV_ITEMS = [
-  { label: "Board", href: "/board", enabled: true },
-  { label: "Roadmap", href: "/roadmap", enabled: true },
   { label: "Dashboard", href: "/dashboard", enabled: true },
+  { label: "Roadmap", href: "/roadmap", enabled: true },
+  { label: "Board", href: "/board", enabled: true },
   { label: "Project creation", href: "/portal", enabled: true },
   { label: "Templates", href: "/settings/templates", enabled: true },
   { label: "Wiki", href: "/wiki", enabled: true },
@@ -65,15 +65,15 @@ export function AppSidebar({ user }: { user: SessionUser }) {
     >
       {/* Logo */}
       <SidebarHeader className="px-3 py-3 border-b" style={{ borderColor: "#E9E9E6" }}>
-        <Link href="/board" className="flex items-center gap-2 px-1 py-1 rounded-md hover:bg-black/5 transition-colors">
+        <Link href="/dashboard" className="flex items-center gap-2 px-1 py-1 rounded-md hover:bg-black/5 transition-colors">
           <div
             className="h-6 w-6 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
             style={{ background: "#2383E2" }}
           >
-            X
+            A
           </div>
           <span className="font-semibold text-sm" style={{ color: "#37352F" }}>
-            XBO TeamHub
+            AI Hub
           </span>
         </Link>
       </SidebarHeader>

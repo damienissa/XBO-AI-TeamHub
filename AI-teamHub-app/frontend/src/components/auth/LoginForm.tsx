@@ -33,7 +33,7 @@ export function LoginForm() {
     setIsPending(true);
     try {
       await login({ email, password });
-      window.location.href = "/board";
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Invalid email or password");
       setIsPending(false);

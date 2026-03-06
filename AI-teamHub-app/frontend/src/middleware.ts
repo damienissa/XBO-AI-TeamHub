@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { NextRequest, NextResponse } from "next/server";
 
 const SECRET_KEY = new TextEncoder().encode(process.env.SESSION_SECRET);
 
@@ -32,7 +32,7 @@ export default async function middleware(req: NextRequest) {
     // Already authenticated — redirect away from login
     try {
       await jwtVerify(token, SECRET_KEY);
-      return NextResponse.redirect(new URL("/board", req.nextUrl));
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     } catch {
       // Invalid token on public route — let them stay on login
     }
