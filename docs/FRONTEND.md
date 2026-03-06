@@ -40,6 +40,9 @@ frontend/src/
 │       ├── board/
 │       │   ├── page.tsx        # Kanban board page
 │       │   └── _components/    # Board-specific components (20+)
+│       ├── roadmap/
+│       │   ├── page.tsx        # Roadmap timeline page
+│       │   └── _components/    # Roadmap components (5)
 │       ├── dashboard/page.tsx  # Executive KPI dashboard
 │       ├── portal/
 │       │   ├── page.tsx        # Department portal index
@@ -65,6 +68,7 @@ frontend/src/
 │       └── NotificationBell.tsx # Bell icon with unread count
 ├── hooks/
 │   ├── useBoard.ts             # Board data fetching + filtering
+│   ├── useRoadmap.ts           # Roadmap data fetching + department grouping
 │   ├── useTicketDetail.ts      # Single ticket data + mutations
 │   ├── useMoveTicket.ts        # Ticket move mutation
 │   ├── useNotifications.ts     # Notification polling
@@ -90,7 +94,7 @@ frontend/src/
 Server-side `verifySession()` checks JWT on every page load. Redirects to `/login` if unauthenticated.
 
 **Layout provides:**
-- `AppSidebar` — Navigation (Board, Dashboard, Portal, Wiki, Settings)
+- `AppSidebar` — Navigation (Board, Roadmap, Dashboard, Portal, Wiki, Settings)
 - `NotificationBar` — Top notification area
 - `AssistantDrawer` — Floating AI assistant panel
 - `Providers` — React Query, nuqs, toaster
@@ -105,6 +109,17 @@ The main Kanban interface. Renders `KanbanBoard` which orchestrates:
 - Filter bar with URL-synced params (owner, department, priority, urgency, dates)
 - Quick-add input for new tickets
 - Click card → opens `TicketDetailModal`
+
+### Roadmap (`/roadmap`)
+Gantt-style timeline view. Renders `RoadmapView` which orchestrates:
+- Horizontal swimlanes grouped by department (color-coded labels)
+- Ticket bars positioned by `created_at` → `due_date`, colored by status (Backlog, Discovery, In Progress, Review/QA, Done)
+- 12-month window starting from today
+- Three zoom levels: Year (months), Week, Day (default)
+- Department filter (URL-synced via nuqs)
+- Today marker (red vertical line) with "Today" button to scroll to it
+- Unscheduled section for tickets without due dates
+- Click bar → opens `TicketDetailModal` (reused from board)
 
 ### Dashboard (`/dashboard`)
 Executive analytics page with:
@@ -211,6 +226,12 @@ Board data fetching with 30s polling.
 - Fetches GET /api/board with filter params
 - `refetchInterval: 30000`
 - Returns tickets array + loading/error state
+
+### `useRoadmap()`
+Roadmap data fetching + department grouping.
+- Fetches GET /api/board with department filter (shares cache with `useBoard`)
+- Groups tickets into department swimlanes (scheduled) and unscheduled list
+- Returns `swimlanes`, `unscheduled`, `departments`, loading/error state
 
 ### `useTicketDetail(ticketId)`
 Single ticket data + mutations.

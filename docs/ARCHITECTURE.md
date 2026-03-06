@@ -59,6 +59,7 @@ src/app/
 │   └── login/
 ├── (app)/            # Protected routes (requires auth)
 │   ├── board/        # Kanban board
+│   ├── roadmap/      # Gantt-style timeline roadmap
 │   ├── dashboard/    # Executive KPI dashboard
 │   ├── portal/       # Department intake portal
 │   ├── wiki/         # Wiki pages

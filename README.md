@@ -7,6 +7,7 @@ XBO AI TeamHub serves XBO departments with full request lifecycle tracking from 
 ## Key Features
 
 - **Kanban Board** - 5-column workflow (Backlog, Discovery, In Progress, Review/QA, Done) with drag-and-drop
+- **Roadmap** - Gantt-style timeline view of all tickets by due date, grouped by department swimlanes, with filtering
 - **ROI Estimation** - Per-ticket business value calculation with weekly/annual cost projections
 - **Executive Dashboard** - KPI cards, throughput metrics, cycle time analytics, department breakdowns
 - **AI Assistant** - Claude-powered subtask generation, effort estimation, ticket summarization, and contextual chat
